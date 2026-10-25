@@ -2265,3 +2265,57 @@ pooling (not sequence mean), the dev-leak refusal, the single-arm refusal, and t
 paired-difference sign convention. A test fixture that accidentally included
 `dancetrack0004` was correctly rejected by the guard -- the guard was exercised by the test
 suite itself before it ever protected a headline number.
+
+### E071 — mechanism prepared: consensus-before-commit (`src/tgtrack/consensus.py`)
+
+Status: **module + tests landed; tracker wiring deliberately deferred until the E070 sweep ends**
+(editing `src/tgtrack/target_tracker.py` mid-sweep would mix code versions across the 110 pairs —
+the plan's own warning).
+
+Why the rule changes rather than the threshold: E070 measures a *trade-off*, E062/E063 show the
+failures are one-or-two-frame identity ties between people at the same place, and E064 proved the
+only available second witness (`stm` recent EMA) *is* the incumbent, so no two-reference test
+exists. A single-frame rule cannot separate "my person, briefly ambiguous" from "someone else".
+
+Design decision that deviates from `docs/E071_PLAN.md`: the vote chains on **two** legs —
+box IoU (spatial continuity) *and* descriptor agreement (`ident_thresh`) — because the plan's own
+trap says "consensus must key on identity, not on box stability"; two different people at the
+same screen position produce perfectly stable boxes. A box-only arm is kept as an explicit
+control (`ident_thresh=inf`) so the difference is measurable rather than asserted.
+
+`C:\Projects\track\tests\test_consensus.py` — **19 tests**, all pass, including
+`test_two_different_people_at_the_same_place_never_commit` (the trap) and
+`test_box_only_vote_is_available_as_the_control_arm` (proves which leg does the work).
+Counters (`n_opened/n_committed/n_abandoned/n_restarted/n_pending_frames`) are exposed because
+this campaign has four mechanisms that were silently inert.
+
+### E070-prep — the per-sequence paired analysis: the trade-off is NOT uniform
+
+`C:\Projects\track\scripts\gate_sweep_paired.py` -> `results/gate_sweep/PAIRED.md`
+(margin_0.00 vs the shipped margin_0.20, 22 held-out sequences, frame-weighted):
+
+| class | meaning | count |
+|---|---|---|
+| **FREE WIN** | TSR up, FAR not worse | **4** |
+| free loss | TSR not better, FAR worse | 6 |
+| trade-off up | both up | 9 |
+| trade-off down | both down | 0 |
+| flat | both within 1 pp | 3 |
+
+Pooled: TSR 0.2104 -> 0.2460 (+3.56 pp), FAR 0.2472 -> 0.4166 (+16.94 pp);
+**rank correlation between dTSR and dFAR = -0.03**, i.e. the two are uncorrelated across
+sequences. The four free wins are small (+0.5 to +1.8 pp TSR) while the free losses are large
+(+12 to +51 pp FAR), which is why the pooled result is a loss even though routing looks
+attractive at first glance. A per-sequence router is *conceivable* (a cheap observable predictor
+fitted on one half, evaluated on the other, per the split protocol) but the upside case is
+≤2 pp of TSR, so it is ranked below E071.
+
+**Known inconsistency, must be reconciled before quoting:** frame-weighted pooled FAR at the
+reference point is **0.2472** here versus **0.2364** in the E068/E070 split analysis, and TSR
+0.2104 vs 0.2102. Same 22 sequences, same point, two pooling implementations, ~1.1 pp apart on
+FAR. Until the difference is explained, quote E068's numbers for the criterion and this script's
+numbers only for the *classification* (which is a sign test, robust to the weighting).
+
+Programme position after E071-prep (63 experiments): criterion 1 best 0.5050 (not met),
+criterion 2 held-out TSR 0.2102 / FAR 0.2364 (not met), criterion 3 MET 0.8545,
+criterion 4 MET. Suite: **526 passed, 3 skipped**.

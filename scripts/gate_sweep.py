@@ -287,13 +287,24 @@ def run_pair(point_id: str, seq: str, *, target_id: int | None, force: bool, log
         "log": str(log_path.relative_to(ROOT)),
     }
 
-    if summary_path.is_file() and not force:
+    owner_path = out_dir / ".mine"
+
+    if summary_path.is_file() and not force and owner_path.is_file():
         cached = _parse_summary(summary_path, seq, target_id, specs_path)
         # A stale summary from a crashed/errored attempt must never be cached as a result.
         if cached.get("status") == "INCLUDED":
             cached.update(base)
             cached["from_cache"] = True
             return cached
+    elif summary_path.is_file() and not force:
+        # PROVENANCE GUARD.  2026-10-26: a second writer (a duplicate sweep started elsewhere in
+        # this workspace) filled some runs/<point>/<seq>/ dirs.  A run dir without this sweep's
+        # ``.mine`` stamp cannot be attributed to this protocol, so it is discarded and re-run
+        # rather than reported -- a number whose producer is unknown is not a number.
+        print(
+            "[gate_sweep] PURGE foreign run dir (no .mine provenance): %s/%s" % (point_id, seq),
+            flush=True,
+        )
 
     env = dict(os.environ)
     env[CHILD_ENV] = seq
@@ -357,6 +368,17 @@ def run_pair(point_id: str, seq: str, *, target_id: int | None, force: bool, log
 
     rec_path.parent.mkdir(parents=True, exist_ok=True)
     rec_path.write_text(json.dumps(rec, indent=2) + "\n", encoding="utf-8")
+    if rec.get("status") == "INCLUDED":
+        owner_path.write_text(json.dumps({
+            "point": point_id,
+            "sequence": seq,
+            "variant": spec["variant"],
+            "overrides": spec["overrides"],
+            "pid": os.getpid(),
+            "finished_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
+            "wall_seconds": rec.get("wall_seconds"),
+            "attempt": attempts[-1]["attempt"] if attempts else None,
+        }, indent=2) + "\n", encoding="utf-8")
     return rec
 
 
