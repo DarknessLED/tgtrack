@@ -1,0 +1,235 @@
+{
+  "generated_by": "scripts/gate_sweep.py",
+  "experiment": "E070",
+  "dev_sequences": [
+    "dancetrack0004",
+    "dancetrack0005",
+    "dancetrack0007"
+  ],
+  "dev_mot17": [
+    "MOT17-02-FRCNN"
+  ],
+  "heldout_sequences": [
+    "dancetrack0010",
+    "dancetrack0014",
+    "dancetrack0018",
+    "dancetrack0019",
+    "dancetrack0025",
+    "dancetrack0026",
+    "dancetrack0030",
+    "dancetrack0034",
+    "dancetrack0035",
+    "dancetrack0041",
+    "dancetrack0043",
+    "dancetrack0047",
+    "dancetrack0058",
+    "dancetrack0063",
+    "dancetrack0065",
+    "dancetrack0073",
+    "dancetrack0077",
+    "dancetrack0079",
+    "dancetrack0081",
+    "dancetrack0090",
+    "dancetrack0094",
+    "dancetrack0097"
+  ],
+  "sequences_run": [
+    "dancetrack0010"
+  ],
+  "partial": true,
+  "n_pairs_run": 1,
+  "protocol": {
+    "max_frames": 300,
+    "subsample": 2,
+    "mask": "none",
+    "jobs": 1,
+    "detector": "yolo (shipped default)",
+    "target_strategy": "stressed (shipped default)"
+  },
+  "shipped": {
+    "cost.search_margin": 0.2,
+    "cost.anchor_adaptive_k": 4.0
+  },
+  "acceptance_rule": {
+    "source": "docs/NEXT_ROUND.md:37-39",
+    "text": "ship a value only if pooled TSR rises by >= +5 pp and the upper bound of its FAR CI does not exceed the shipped FAR's upper bound. Anything else is recorded as a negative and the default is left alone.",
+    "tsr_accept_pp": 5.0,
+    "far_comparison": "candidate FAR CI p97.5 <= shipped FAR CI p97.5"
+  },
+  "bootstrap": {
+    "reps": 2000,
+    "seed": 0,
+    "unit": "sequence"
+  },
+  "cli": {
+    "points": "margin_0.20",
+    "subset": null,
+    "subset_seed": 0,
+    "force": false,
+    "limit_seqs": null
+  },
+  "order": [
+    "margin_0.20"
+  ],
+  "points": {
+    "margin_0.20": {
+      "point": "margin_0.20",
+      "axis": "cost.search_margin",
+      "value": 0.2,
+      "is_shipped": true,
+      "label": "search_margin=0.20 (shipped)",
+      "overrides": {
+        "cost.search_margin": 0.2
+      },
+      "variant": "sm_0.20",
+      "rows": [
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "variant": "sm_0.20",
+          "overrides": {
+            "cost.search_margin": 0.2
+          },
+          "tsr": 0.28308823529411764,
+          "far": 0.68,
+          "id_consistency": 0.25274725274725274,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 271,
+          "false_acquisition_frames": 204,
+          "target_switch_count": 5,
+          "ms_per_frame": 93.94641366748449,
+          "target_id": 5,
+          "target_reason": "observable",
+          "guard_passed": true,
+          "harness_wall_seconds": 33.59,
+          "exit_code": 0,
+          "wall_seconds": 36.1,
+          "point": "margin_0.20",
+          "axis": "cost.search_margin",
+          "value": 0.2,
+          "shipped": true,
+          "sequence": "dancetrack0010",
+          "target_id_forced": null,
+          "summary_path": "results\\gate_sweep\\runs\\margin_0.20\\dancetrack0010\\summary.json",
+          "log": "results\\gate_sweep\\logs\\margin_0.20__dancetrack0010.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 36.1
+            }
+          ],
+          "from_cache": false
+        }
+      ],
+      "included": [
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "variant": "sm_0.20",
+          "overrides": {
+            "cost.search_margin": 0.2
+          },
+          "tsr": 0.28308823529411764,
+          "far": 0.68,
+          "id_consistency": 0.25274725274725274,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 271,
+          "false_acquisition_frames": 204,
+          "target_switch_count": 5,
+          "ms_per_frame": 93.94641366748449,
+          "target_id": 5,
+          "target_reason": "observable",
+          "guard_passed": true,
+          "harness_wall_seconds": 33.59,
+          "exit_code": 0,
+          "wall_seconds": 36.1,
+          "point": "margin_0.20",
+          "axis": "cost.search_margin",
+          "value": 0.2,
+          "shipped": true,
+          "sequence": "dancetrack0010",
+          "target_id_forced": null,
+          "summary_path": "results\\gate_sweep\\runs\\margin_0.20\\dancetrack0010\\summary.json",
+          "log": "results\\gate_sweep\\logs\\margin_0.20__dancetrack0010.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 36.1
+            }
+          ],
+          "from_cache": false
+        }
+      ],
+      "excluded": [],
+      "pooled": {
+        "tsr": 0.283088,
+        "far": 0.68,
+        "tsr_mean": 0.283088,
+        "far_mean": 0.68,
+        "tsr_median": 0.283088,
+        "far_median": 0.68,
+        "tsr_min": 0.283088,
+        "tsr_max": 0.283088,
+        "far_min": 0.68,
+        "far_max": 0.68,
+        "total_report_frames": 300,
+        "n_included": 1,
+        "n_excluded": 0,
+        "estimator": "frame-weighted pooled mean over included sequences"
+      },
+      "bootstrap": {
+        "tsr": {
+          "reps": 2000,
+          "n_sequences": 1,
+          "seed": 0,
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 0.283088,
+          "p50": 0.283088,
+          "p97.5": 0.283088,
+          "mean": 0.283088
+        },
+        "far": {
+          "reps": 2000,
+          "n_sequences": 1,
+          "seed": 0,
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 0.68,
+          "p50": 0.68,
+          "p97.5": 0.68,
+          "mean": 0.68
+        },
+        "reps": 2000,
+        "seed": 0
+      },
+      "acceptance": {
+        "point": "margin_0.20",
+        "axis": "cost.search_margin",
+        "value": 0.2,
+        "is_shipped": true,
+        "rule": "SHIP iff (pooled TSR rises >= +5.0 pp vs shipped) AND (candidate FAR 95% CI upper bound <= shipped FAR 95% CI upper bound)",
+        "verdict": "REFERENCE",
+        "tsr_rise_pp": null,
+        "far_ci_upper_ok": null,
+        "text": "Shipped value: this is the reference point, not a candidate."
+      },
+      "deltas": {
+        "n_paired": 1,
+        "unpaired_sequences": [],
+        "tsr_moved_gt_5pp": [],
+        "n_tsr_moved_gt_5pp": 0,
+        "far_moved_gt_5pp": [],
+        "n_far_moved_gt_5pp": 0
+      }
+    }
+  },
+  "target_ids": {
+    "dancetrack0010": 5
+  },
+  "wall_seconds": 36.1
+}

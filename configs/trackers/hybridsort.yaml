@@ -1,0 +1,51 @@
+# Hybrid-SORT-style association backend (7th tracker, E012).
+#
+# Same style as the shipped `ultralytics/cfg/trackers/*.yaml` files, plus the
+# Hybrid-SORT "weak cue" knobs. Loaded by `tgtrack.mot_hybrid.HybridSortTracker`;
+# `MotCfg` fields (tracker/thresholds/buffer/match_thresh/with_reid/gmc_method) and
+# `MotCfg.extra` override these values, exactly like `mot_layer.build_tracker_args`.
+#
+# Recipe (docs/research/R1_mot_association.md): HMIoU = HIoU * IoU with
+# HIoU = h_over/h_union, a tracklet-confidence STATE with linear extrapolation, and a
+# height state, on top of a ByteTrack-style two-stage high/low-score association.
+
+tracker_type: hybridsort
+
+# --- association thresholds (also settable from MotCfg) -------------------------
+track_high_thresh: 0.25      # stage-1 detections
+track_low_thresh: 0.10       # stage-2 (recovery) detections
+new_track_thresh: 0.25       # a leftover high-score detection must reach this to spawn an ID
+track_buffer: 30             # frames a lost track is kept before removal
+match_thresh: 0.8            # stage-1 cost ceiling (cost = 1-HMIoU + weak-cue terms)
+match_thresh_low: 0.5        # stage-2 cost ceiling (IoU only)
+fuse_score: false            # ByteTrack's score fusion; off because the conf state already scores matches
+with_reid: false             # this backend has no appearance branch (see module docstring)
+gmc_method: sparseOptFlow    # identical camera-motion budget to the baseline backend
+gmc_downscale: 2
+
+# --- Hybrid-SORT weak cues -----------------------------------------------------
+w_hmiou: 0.5                 # geometry = w_hmiou*(1-HMIoU) + (1-w_hmiou)*(1-IoU); 1.0 = pure HMIoU (TrackTrack), 0.0 = pure IoU
+w_vel: 0.2                   # weight of the ROCM corner-angle momentum cost
+w_conf: 0.1                  # weight of |projected confidence state - detection score|
+w_height: 0.05               # weight of |log(h_pred / h_det)| (height state)
+vel_deltas: [1, 2, 3]        # ROCM looks back over these many frames
+conf_alpha: 0.6              # EMA factor of the tracklet confidence state
+conf_decay: 0.04             # linear extrapolation rate while the track is unobserved
+conf_floor: 0.05             # a track below this state is not eligible for re-binding
+height_gate: 2.5             # reject a pair whose height ratio exceeds this (0 disables)
+h_clip: 1.5                  # bound the KF height extrapolation to h_state*[1/h_clip, h_clip]
+                             # (without it an abrupt height change -- e.g. a truncated box --
+                             # poisons vh and the next predicted box mis-gates the match)
+rescue_ratio: 1.15           # stage-1 second round: greedy mutually-nearest pairs up to
+                             # match_thresh*this (1.0 disables) -- recovers the correct pair that
+                             # `lap` dropped when two tracks competed for one detection
+
+# --- occlusion re-binding of LOST tracks (the AssA lever) ----------------------
+rebind_thresh: 0.8           # relaxed ceiling for the lost-track pass
+rebind_max_frames: 60        # only re-bind tracks lost for at most this many frames
+rebind_lost_penalty: 0.10    # cost added in proportion to how long the track has been lost
+
+# --- activation policy ---------------------------------------------------------
+n_init: 1                    # a new track is output once it has been matched this many extra times
+activate_first_frame: true   # frame 1 tracks are output immediately (ByteTrack/OC3 convention)
+activate_on_creation: false  # true = output brand-new tracks right away (max recall, more FP)

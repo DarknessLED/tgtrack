@@ -1,0 +1,3 @@
+﻿detector:
+  weights: C:/Projects/track/data/weights/crowdhuman_yolov8n_best.pt
+  imgsz: 960

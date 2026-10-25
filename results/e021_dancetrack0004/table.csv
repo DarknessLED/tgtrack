@@ -1,0 +1,6 @@
+group,variant,mask,seqs,frames,visible,TSR,prec,loss,loss_lock,recq_rate,recq_lat,recq_p90,recq_max,FAR,FAR_lock,FA_ev,FA_ev_lock,id_cons,switches,frag,longest,coast_ok,worst_id,detect,ms/frame
+baseline,baseline,none,1,200,200,0.2650,0.2714,0.7350,0.2550,,,,,0.22500,0.42718,7,7,0.5361,10,4,45,,,,198.35
+drift,drift_w4_0.35,none,1,200,200,0.0400,0.0849,0.9600,0.4850,,,,,0.45000,0.85437,10,10,0.0816,8,2,4,,,,186.48
+drift,drift_w4_0.50,none,1,200,200,0.0450,0.0995,0.9550,0.4300,,,,,0.36000,0.73684,11,11,0.1000,8,4,4,,,,166.01
+drift,drift_w8_0.35,none,1,200,200,0.0550,0.1020,0.9450,0.4650,,,,,0.42500,0.80583,8,8,0.1053,7,5,4,,,,169.13
+drift,drift_w8_0.50,none,1,200,200,0.2650,0.2714,0.7350,0.2550,,,,,0.22500,0.42718,7,7,0.5361,10,4,45,,,,127.36

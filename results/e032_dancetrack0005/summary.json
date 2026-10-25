@@ -1,0 +1,349 @@
+{
+  "meta": {
+    "data_root": "data\\raw\\_root_dancetrack0005",
+    "dry_run": false,
+    "detector": "yolo",
+    "embedder": "real",
+    "masks": [
+      "none"
+    ],
+    "ablate": "motion_band",
+    "jobs": 2,
+    "subsample": 2,
+    "max_frames": 200,
+    "target_strategy": "stressed",
+    "target_ids": {
+      "dancetrack0005": 2
+    },
+    "variants": [
+      "baseline",
+      "motion_band_k2",
+      "motion_band_k3",
+      "motion_band_k4"
+    ],
+    "guard": {
+      "min_visible_h": 80.0,
+      "min_visible_area": 0.0,
+      "masks": [
+        "none"
+      ]
+    },
+    "allow_invisible_target": false,
+    "target_decisions": {
+      "dancetrack0005": {
+        "target_id": 2,
+        "reason": "forced",
+        "invisible": false,
+        "control": "partial-view",
+        "guard_passed": true,
+        "guard": {
+          "min_visible_h": 80.0,
+          "min_visible_area": 0.0,
+          "masks": [
+            "none"
+          ]
+        },
+        "observability": {
+          "0": {
+            "target_id": 0,
+            "masks": {
+              "none": {
+                "mode": "none",
+                "frames": 200,
+                "first": 0,
+                "median_w": 219.0,
+                "median_h": 465.5,
+                "median_area": 103367.5,
+                "min_h": 291.0,
+                "min_area": 28595.0,
+                "visible_fraction": 1.0
+              }
+            },
+            "worst_mask": "none",
+            "median_w": 219.0,
+            "median_h": 465.5,
+            "median_area": 103367.5,
+            "frames": 200
+          },
+          "1": {
+            "target_id": 1,
+            "masks": {
+              "none": {
+                "mode": "none",
+                "frames": 198,
+                "first": 2,
+                "median_w": 225.0,
+                "median_h": 440.5,
+                "median_area": 107985.0,
+                "min_h": 282.0,
+                "min_area": 31866.0,
+                "visible_fraction": 1.0
+              }
+            },
+            "worst_mask": "none",
+            "median_w": 225.0,
+            "median_h": 440.5,
+            "median_area": 107985.0,
+            "frames": 198
+          },
+          "2": {
+            "target_id": 2,
+            "masks": {
+              "none": {
+                "mode": "none",
+                "frames": 200,
+                "first": 0,
+                "median_w": 189.5,
+                "median_h": 424.5,
+                "median_area": 89078.5,
+                "min_h": 251.0,
+                "min_area": 27610.0,
+                "visible_fraction": 1.0
+              }
+            },
+            "worst_mask": "none",
+            "median_w": 189.5,
+            "median_h": 424.5,
+            "median_area": 89078.5,
+            "frames": 200
+          },
+          "3": {
+            "target_id": 3,
+            "masks": {
+              "none": {
+                "mode": "none",
+                "frames": 200,
+                "first": 0,
+                "median_w": 224.0,
+                "median_h": 488.0,
+                "median_area": 115661.0,
+                "min_h": 313.0,
+                "min_area": 49248.0,
+                "visible_fraction": 1.0
+              }
+            },
+            "worst_mask": "none",
+            "median_w": 224.0,
+            "median_h": 488.0,
+            "median_area": 115661.0,
+            "frames": 200
+          }
+        },
+        "selected": {
+          "target_id": 2,
+          "masks": {
+            "none": {
+              "mode": "none",
+              "frames": 200,
+              "first": 0,
+              "median_w": 189.5,
+              "median_h": 424.5,
+              "median_area": 89078.5,
+              "min_h": 251.0,
+              "min_area": 27610.0,
+              "visible_fraction": 1.0
+            }
+          },
+          "worst_mask": "none",
+          "median_w": 189.5,
+          "median_h": 424.5,
+          "median_area": 89078.5,
+          "frames": 200
+        },
+        "message": ""
+      }
+    },
+    "wall_seconds": 67.96
+  },
+  "n_runs": 4,
+  "n_errors": 0,
+  "n_headline_runs": 4,
+  "n_invisible_runs": 0,
+  "headline": [
+    {
+      "n_sequences": 1,
+      "n_frames": 200,
+      "n_visible_frames": 200,
+      "n_report_frames": 200,
+      "target_success_rate": 0.695,
+      "loss_rate": 0.305,
+      "target_precision": 0.6055874195694924,
+      "reacquire_events": 0,
+      "reacquire_ok": 0,
+      "reacquire_rate": null,
+      "reacquire_latency": null,
+      "false_acquisition_rate": 0.205,
+      "false_acquisition_frames": 41,
+      "false_acquisition_events": 3,
+      "n_locked_frames": 163,
+      "n_reported_locked": 163,
+      "false_acquisition_frames_locked": 25,
+      "false_acquisition_rate_locked": 0.15337423312883436,
+      "false_acquisition_events_locked": 4,
+      "loss_frames_locked": 24,
+      "loss_rate_locked": 0.12,
+      "id_consistency": 0.770949720670391,
+      "id_consistency_frames": 138,
+      "id_consistency_denominator": 179,
+      "target_switch_count": 2,
+      "fragmentation": 1,
+      "variant": "baseline",
+      "group": "baseline",
+      "mask": "none",
+      "control": "partial-view",
+      "ms_per_frame": 163.75059150275774,
+      "visibility_mean": 1.0,
+      "longest_correct_streak": 105,
+      "mean_correct_streak": 69.5,
+      "target_success_rate_fullgt": 0.695,
+      "reacquire_latency_p90": null,
+      "reacquire_latency_max": null,
+      "sequences": [
+        "dancetrack0005"
+      ]
+    },
+    {
+      "n_sequences": 1,
+      "n_frames": 200,
+      "n_visible_frames": 200,
+      "n_report_frames": 200,
+      "target_success_rate": 0.56,
+      "loss_rate": 0.44,
+      "target_precision": 0.47826505033941885,
+      "reacquire_events": 0,
+      "reacquire_ok": 0,
+      "reacquire_rate": null,
+      "reacquire_latency": null,
+      "false_acquisition_rate": 0.015,
+      "false_acquisition_frames": 3,
+      "false_acquisition_events": 1,
+      "n_locked_frames": 87,
+      "n_reported_locked": 87,
+      "false_acquisition_frames_locked": 3,
+      "false_acquisition_rate_locked": 0.034482758620689655,
+      "false_acquisition_events_locked": 1,
+      "loss_frames_locked": 5,
+      "loss_rate_locked": 0.025,
+      "id_consistency": 0.9739130434782609,
+      "id_consistency_frames": 112,
+      "id_consistency_denominator": 115,
+      "target_switch_count": 1,
+      "fragmentation": 6,
+      "variant": "motion_band_k2",
+      "group": "motion_band",
+      "mask": "none",
+      "control": "partial-view",
+      "ms_per_frame": 161.0497194994241,
+      "visibility_mean": 1.0,
+      "longest_correct_streak": 33,
+      "mean_correct_streak": 16.0,
+      "target_success_rate_fullgt": 0.56,
+      "reacquire_latency_p90": null,
+      "reacquire_latency_max": null,
+      "sequences": [
+        "dancetrack0005"
+      ]
+    },
+    {
+      "n_sequences": 1,
+      "n_frames": 200,
+      "n_visible_frames": 200,
+      "n_report_frames": 200,
+      "target_success_rate": 0.56,
+      "loss_rate": 0.44,
+      "target_precision": 0.47826505033941885,
+      "reacquire_events": 0,
+      "reacquire_ok": 0,
+      "reacquire_rate": null,
+      "reacquire_latency": null,
+      "false_acquisition_rate": 0.015,
+      "false_acquisition_frames": 3,
+      "false_acquisition_events": 1,
+      "n_locked_frames": 87,
+      "n_reported_locked": 87,
+      "false_acquisition_frames_locked": 3,
+      "false_acquisition_rate_locked": 0.034482758620689655,
+      "false_acquisition_events_locked": 1,
+      "loss_frames_locked": 5,
+      "loss_rate_locked": 0.025,
+      "id_consistency": 0.9739130434782609,
+      "id_consistency_frames": 112,
+      "id_consistency_denominator": 115,
+      "target_switch_count": 1,
+      "fragmentation": 6,
+      "variant": "motion_band_k3",
+      "group": "motion_band",
+      "mask": "none",
+      "control": "partial-view",
+      "ms_per_frame": 146.30674000480212,
+      "visibility_mean": 1.0,
+      "longest_correct_streak": 33,
+      "mean_correct_streak": 16.0,
+      "target_success_rate_fullgt": 0.56,
+      "reacquire_latency_p90": null,
+      "reacquire_latency_max": null,
+      "sequences": [
+        "dancetrack0005"
+      ]
+    },
+    {
+      "n_sequences": 1,
+      "n_frames": 200,
+      "n_visible_frames": 200,
+      "n_report_frames": 200,
+      "target_success_rate": 0.56,
+      "loss_rate": 0.44,
+      "target_precision": 0.47826505033941885,
+      "reacquire_events": 0,
+      "reacquire_ok": 0,
+      "reacquire_rate": null,
+      "reacquire_latency": null,
+      "false_acquisition_rate": 0.015,
+      "false_acquisition_frames": 3,
+      "false_acquisition_events": 1,
+      "n_locked_frames": 87,
+      "n_reported_locked": 87,
+      "false_acquisition_frames_locked": 3,
+      "false_acquisition_rate_locked": 0.034482758620689655,
+      "false_acquisition_events_locked": 1,
+      "loss_frames_locked": 5,
+      "loss_rate_locked": 0.025,
+      "id_consistency": 0.9739130434782609,
+      "id_consistency_frames": 112,
+      "id_consistency_denominator": 115,
+      "target_switch_count": 1,
+      "fragmentation": 6,
+      "variant": "motion_band_k4",
+      "group": "motion_band",
+      "mask": "none",
+      "control": "partial-view",
+      "ms_per_frame": 146.04822949855588,
+      "visibility_mean": 1.0,
+      "longest_correct_streak": 33,
+      "mean_correct_streak": 16.0,
+      "target_success_rate_fullgt": 0.56,
+      "reacquire_latency_p90": null,
+      "reacquire_latency_max": null,
+      "sequences": [
+        "dancetrack0005"
+      ]
+    }
+  ],
+  "control": [],
+  "targets": {
+    "dancetrack0005": {
+      "target_id": 2,
+      "reason": "forced",
+      "control": "partial-view",
+      "guard_passed": true,
+      "visible_median_w": 189.5,
+      "visible_median_h": 424.5,
+      "visible_median_area": 89078.5,
+      "detection_rate": 1.0,
+      "wrong_identity_locked": 4,
+      "coasting_correct_frames": 30,
+      "onsets_agree": true,
+      "message": ""
+    }
+  }
+}

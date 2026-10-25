@@ -1,0 +1,54 @@
+{
+  "source": "results/_assets/persons_pan.mp4",
+  "frames": 40,
+  "click": null,
+  "click_frame": 0,
+  "init_box": [
+    709.0,
+    213.125,
+    1063.0,
+    716.0
+  ],
+  "init_track_id": 2,
+  "target_gt_id": null,
+  "wall_s": 2.661,
+  "pipeline_fps": 15.03,
+  "ms_per_frame": 66.52,
+  "state_histogram": {
+    "tracking": 40
+  },
+  "n_events": 1,
+  "event_kinds": [
+    "init"
+  ],
+  "followed_track_id_changes": 0,
+  "config": {
+    "tracker": "botsort.yaml",
+    "distractor_margin": 0.06,
+    "target_parts": [
+      "full",
+      "upper",
+      "lower",
+      "head"
+    ],
+    "frozen_states": [
+      "occluded_soft",
+      "lost_short",
+      "lost_long",
+      "out_of_frame"
+    ],
+    "with_reid": true
+  },
+  "embedder": {
+    "mode": "onnx",
+    "dim": 512,
+    "provider": "CUDAExecutionProvider",
+    "device": "cuda:0"
+  },
+  "ort": {
+    "torch_lib": "C:\\Software\\Anaconda3\\Lib\\site-packages\\torch\\lib",
+    "path_added": true,
+    "add_dll_directory": true,
+    "applied": true
+  }
+}

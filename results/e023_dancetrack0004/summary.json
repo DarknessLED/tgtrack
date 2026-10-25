@@ -1,0 +1,349 @@
+{
+  "meta": {
+    "data_root": "data\\raw\\_root_dancetrack0004",
+    "dry_run": false,
+    "detector": "yolo",
+    "embedder": "real",
+    "masks": [
+      "none"
+    ],
+    "ablate": "ltm_anchor",
+    "jobs": 2,
+    "subsample": 2,
+    "max_frames": 200,
+    "target_strategy": "stressed",
+    "target_ids": {
+      "dancetrack0004": 3
+    },
+    "variants": [
+      "baseline",
+      "anchor_4",
+      "anchor_16",
+      "anchor_32"
+    ],
+    "guard": {
+      "min_visible_h": 80.0,
+      "min_visible_area": 0.0,
+      "masks": [
+        "none"
+      ]
+    },
+    "allow_invisible_target": false,
+    "target_decisions": {
+      "dancetrack0004": {
+        "target_id": 3,
+        "reason": "forced",
+        "invisible": false,
+        "control": "partial-view",
+        "guard_passed": true,
+        "guard": {
+          "min_visible_h": 80.0,
+          "min_visible_area": 0.0,
+          "masks": [
+            "none"
+          ]
+        },
+        "observability": {
+          "0": {
+            "target_id": 0,
+            "masks": {
+              "none": {
+                "mode": "none",
+                "frames": 186,
+                "first": 6,
+                "median_w": 205.5,
+                "median_h": 253.0,
+                "median_area": 46439.5,
+                "min_h": 76.0,
+                "min_area": 15708.0,
+                "visible_fraction": 1.0
+              }
+            },
+            "worst_mask": "none",
+            "median_w": 205.5,
+            "median_h": 253.0,
+            "median_area": 46439.5,
+            "frames": 186
+          },
+          "1": {
+            "target_id": 1,
+            "masks": {
+              "none": {
+                "mode": "none",
+                "frames": 198,
+                "first": 0,
+                "median_w": 269.0,
+                "median_h": 363.0,
+                "median_area": 70419.0,
+                "min_h": 80.0,
+                "min_area": 22898.0,
+                "visible_fraction": 1.0
+              }
+            },
+            "worst_mask": "none",
+            "median_w": 269.0,
+            "median_h": 363.0,
+            "median_area": 70419.0,
+            "frames": 198
+          },
+          "2": {
+            "target_id": 2,
+            "masks": {
+              "none": {
+                "mode": "none",
+                "frames": 197,
+                "first": 0,
+                "median_w": 317.0,
+                "median_h": 427.0,
+                "median_area": 108703.0,
+                "min_h": 109.0,
+                "min_area": 35397.0,
+                "visible_fraction": 1.0
+              }
+            },
+            "worst_mask": "none",
+            "median_w": 317.0,
+            "median_h": 427.0,
+            "median_area": 108703.0,
+            "frames": 197
+          },
+          "3": {
+            "target_id": 3,
+            "masks": {
+              "none": {
+                "mode": "none",
+                "frames": 200,
+                "first": 0,
+                "median_w": 387.0,
+                "median_h": 446.0,
+                "median_area": 146531.5,
+                "min_h": 160.0,
+                "min_area": 58680.0,
+                "visible_fraction": 1.0
+              }
+            },
+            "worst_mask": "none",
+            "median_w": 387.0,
+            "median_h": 446.0,
+            "median_area": 146531.5,
+            "frames": 200
+          }
+        },
+        "selected": {
+          "target_id": 3,
+          "masks": {
+            "none": {
+              "mode": "none",
+              "frames": 200,
+              "first": 0,
+              "median_w": 387.0,
+              "median_h": 446.0,
+              "median_area": 146531.5,
+              "min_h": 160.0,
+              "min_area": 58680.0,
+              "visible_fraction": 1.0
+            }
+          },
+          "worst_mask": "none",
+          "median_w": 387.0,
+          "median_h": 446.0,
+          "median_area": 146531.5,
+          "frames": 200
+        },
+        "message": ""
+      }
+    },
+    "wall_seconds": 74.4
+  },
+  "n_runs": 4,
+  "n_errors": 0,
+  "n_headline_runs": 4,
+  "n_invisible_runs": 0,
+  "headline": [
+    {
+      "n_sequences": 1,
+      "n_frames": 200,
+      "n_visible_frames": 200,
+      "n_report_frames": 200,
+      "target_success_rate": 0.235,
+      "loss_rate": 0.765,
+      "target_precision": 0.2175850580423139,
+      "reacquire_events": 0,
+      "reacquire_ok": 0,
+      "reacquire_rate": null,
+      "reacquire_latency": null,
+      "false_acquisition_rate": 0.155,
+      "false_acquisition_frames": 31,
+      "false_acquisition_events": 3,
+      "n_locked_frames": 77,
+      "n_reported_locked": 77,
+      "false_acquisition_frames_locked": 31,
+      "false_acquisition_rate_locked": 0.4025974025974026,
+      "false_acquisition_events_locked": 3,
+      "loss_frames_locked": 33,
+      "loss_rate_locked": 0.165,
+      "id_consistency": 0.6025641025641025,
+      "id_consistency_frames": 47,
+      "id_consistency_denominator": 78,
+      "target_switch_count": 3,
+      "fragmentation": 4,
+      "variant": "baseline",
+      "group": "baseline",
+      "mask": "none",
+      "control": "partial-view",
+      "ms_per_frame": 187.47588400146924,
+      "visibility_mean": 1.0,
+      "longest_correct_streak": 32,
+      "mean_correct_streak": 9.4,
+      "target_success_rate_fullgt": 0.235,
+      "reacquire_latency_p90": null,
+      "reacquire_latency_max": null,
+      "sequences": [
+        "dancetrack0004"
+      ]
+    },
+    {
+      "n_sequences": 1,
+      "n_frames": 200,
+      "n_visible_frames": 200,
+      "n_report_frames": 200,
+      "target_success_rate": 0.235,
+      "loss_rate": 0.765,
+      "target_precision": 0.2175850580423139,
+      "reacquire_events": 0,
+      "reacquire_ok": 0,
+      "reacquire_rate": null,
+      "reacquire_latency": null,
+      "false_acquisition_rate": 0.155,
+      "false_acquisition_frames": 31,
+      "false_acquisition_events": 3,
+      "n_locked_frames": 77,
+      "n_reported_locked": 77,
+      "false_acquisition_frames_locked": 31,
+      "false_acquisition_rate_locked": 0.4025974025974026,
+      "false_acquisition_events_locked": 3,
+      "loss_frames_locked": 33,
+      "loss_rate_locked": 0.165,
+      "id_consistency": 0.6025641025641025,
+      "id_consistency_frames": 47,
+      "id_consistency_denominator": 78,
+      "target_switch_count": 3,
+      "fragmentation": 4,
+      "variant": "anchor_16",
+      "group": "ltm_anchor",
+      "mask": "none",
+      "control": "partial-view",
+      "ms_per_frame": 154.42066250136122,
+      "visibility_mean": 1.0,
+      "longest_correct_streak": 32,
+      "mean_correct_streak": 9.4,
+      "target_success_rate_fullgt": 0.235,
+      "reacquire_latency_p90": null,
+      "reacquire_latency_max": null,
+      "sequences": [
+        "dancetrack0004"
+      ]
+    },
+    {
+      "n_sequences": 1,
+      "n_frames": 200,
+      "n_visible_frames": 200,
+      "n_report_frames": 200,
+      "target_success_rate": 0.235,
+      "loss_rate": 0.765,
+      "target_precision": 0.2175850580423139,
+      "reacquire_events": 0,
+      "reacquire_ok": 0,
+      "reacquire_rate": null,
+      "reacquire_latency": null,
+      "false_acquisition_rate": 0.155,
+      "false_acquisition_frames": 31,
+      "false_acquisition_events": 3,
+      "n_locked_frames": 77,
+      "n_reported_locked": 77,
+      "false_acquisition_frames_locked": 31,
+      "false_acquisition_rate_locked": 0.4025974025974026,
+      "false_acquisition_events_locked": 3,
+      "loss_frames_locked": 33,
+      "loss_rate_locked": 0.165,
+      "id_consistency": 0.6025641025641025,
+      "id_consistency_frames": 47,
+      "id_consistency_denominator": 78,
+      "target_switch_count": 3,
+      "fragmentation": 4,
+      "variant": "anchor_32",
+      "group": "ltm_anchor",
+      "mask": "none",
+      "control": "partial-view",
+      "ms_per_frame": 154.51192799780983,
+      "visibility_mean": 1.0,
+      "longest_correct_streak": 32,
+      "mean_correct_streak": 9.4,
+      "target_success_rate_fullgt": 0.235,
+      "reacquire_latency_p90": null,
+      "reacquire_latency_max": null,
+      "sequences": [
+        "dancetrack0004"
+      ]
+    },
+    {
+      "n_sequences": 1,
+      "n_frames": 200,
+      "n_visible_frames": 200,
+      "n_report_frames": 200,
+      "target_success_rate": 0.235,
+      "loss_rate": 0.765,
+      "target_precision": 0.2175850580423139,
+      "reacquire_events": 0,
+      "reacquire_ok": 0,
+      "reacquire_rate": null,
+      "reacquire_latency": null,
+      "false_acquisition_rate": 0.155,
+      "false_acquisition_frames": 31,
+      "false_acquisition_events": 3,
+      "n_locked_frames": 77,
+      "n_reported_locked": 77,
+      "false_acquisition_frames_locked": 31,
+      "false_acquisition_rate_locked": 0.4025974025974026,
+      "false_acquisition_events_locked": 3,
+      "loss_frames_locked": 33,
+      "loss_rate_locked": 0.165,
+      "id_consistency": 0.6025641025641025,
+      "id_consistency_frames": 47,
+      "id_consistency_denominator": 78,
+      "target_switch_count": 3,
+      "fragmentation": 4,
+      "variant": "anchor_4",
+      "group": "ltm_anchor",
+      "mask": "none",
+      "control": "partial-view",
+      "ms_per_frame": 187.8888404997997,
+      "visibility_mean": 1.0,
+      "longest_correct_streak": 32,
+      "mean_correct_streak": 9.4,
+      "target_success_rate_fullgt": 0.235,
+      "reacquire_latency_p90": null,
+      "reacquire_latency_max": null,
+      "sequences": [
+        "dancetrack0004"
+      ]
+    }
+  ],
+  "control": [],
+  "targets": {
+    "dancetrack0004": {
+      "target_id": 3,
+      "reason": "forced",
+      "control": "partial-view",
+      "guard_passed": true,
+      "visible_median_w": 387.0,
+      "visible_median_h": 446.0,
+      "visible_median_area": 146531.5,
+      "detection_rate": 0.99,
+      "wrong_identity_locked": 33,
+      "coasting_correct_frames": 3,
+      "onsets_agree": true,
+      "message": ""
+    }
+  }
+}

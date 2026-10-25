@@ -1,0 +1,8 @@
+group,variant,mask,seqs,frames,visible,TSR,prec,loss,loss_lock,recq_rate,recq_lat,recq_p90,recq_max,FAR,FAR_lock,FA_ev,FA_ev_lock,id_cons,switches,frag,longest,coast_ok,worst_id,detect,ms/frame
+adaptive_forget,adaptive_thr_0.25,none,1,200,200,0.2900,0.2645,0.7100,0.0300,,,,,0.01500,0.04918,2,2,0.9508,2,4,43,,,,166.87
+adaptive_forget,adaptive_thr_0.30,none,1,200,200,0.2900,0.2645,0.7100,0.0300,,,,,0.01500,0.04918,2,2,0.9508,2,4,43,,,,186.35
+adaptive_forget,adaptive_thr_0.35,none,1,200,200,0.2900,0.2645,0.7100,0.0300,,,,,0.01500,0.04918,2,2,0.9508,2,4,43,,,,168.06
+adaptive_forget,anchor_drift_0.25,none,1,200,200,0.2900,0.2645,0.7100,0.0300,,,,,0.01500,0.04918,2,2,0.9508,2,4,43,,,,164.68
+adaptive_forget,anchor_drift_0.35,none,1,200,200,0.2900,0.2645,0.7100,0.0300,,,,,0.01500,0.04918,2,2,0.9508,2,4,43,,,,164.30
+adaptive_forget,anchor_drift_0.50,none,1,200,200,0.2350,0.2176,0.7650,0.1650,,,,,0.15500,0.40260,3,3,0.6026,3,4,32,,,,107.11
+baseline,baseline,none,1,200,200,0.2350,0.2176,0.7650,0.1650,,,,,0.15500,0.40260,3,3,0.6026,3,4,32,,,,175.69

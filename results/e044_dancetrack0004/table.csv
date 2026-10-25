@@ -1,0 +1,5 @@
+group,variant,mask,seqs,frames,visible,TSR,prec,loss,loss_lock,recq_rate,recq_lat,recq_p90,recq_max,FAR,FAR_lock,FA_ev,FA_ev_lock,id_cons,switches,frag,longest,coast_ok,worst_id,detect,ms/frame
+baseline,baseline,none,1,200,200,0.4150,0.4136,0.5850,0.0700,,,,,0.04000,0.08602,5,5,0.9111,7,8,67,,,,157.13
+distractor_margin,margin_0.00,none,1,200,200,0.0750,0.0919,0.9250,0.2550,,,,,0.20500,0.62121,6,6,0.2545,6,6,5,,,,141.63
+distractor_margin,margin_0.06,none,1,200,200,0.4150,0.4136,0.5850,0.0700,,,,,0.04000,0.08602,5,5,0.9111,7,8,67,,,,146.98
+distractor_margin,margin_0.12,none,1,200,200,0.0400,0.0959,0.9600,0.3700,,,,,0.31500,0.75610,9,10,0.1127,8,4,4,,,,146.75

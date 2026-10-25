@@ -1,0 +1,349 @@
+{
+  "meta": {
+    "data_root": "data\\raw\\_root_dancetrack0004",
+    "dry_run": false,
+    "detector": "yolo",
+    "embedder": "real",
+    "masks": [
+      "none"
+    ],
+    "ablate": "trail",
+    "jobs": 2,
+    "subsample": 2,
+    "max_frames": 200,
+    "target_strategy": "stressed",
+    "target_ids": {
+      "dancetrack0004": 3
+    },
+    "variants": [
+      "baseline",
+      "trail_w0.5",
+      "trail_w1",
+      "trail_w2"
+    ],
+    "guard": {
+      "min_visible_h": 80.0,
+      "min_visible_area": 0.0,
+      "masks": [
+        "none"
+      ]
+    },
+    "allow_invisible_target": false,
+    "target_decisions": {
+      "dancetrack0004": {
+        "target_id": 3,
+        "reason": "forced",
+        "invisible": false,
+        "control": "partial-view",
+        "guard_passed": true,
+        "guard": {
+          "min_visible_h": 80.0,
+          "min_visible_area": 0.0,
+          "masks": [
+            "none"
+          ]
+        },
+        "observability": {
+          "0": {
+            "target_id": 0,
+            "masks": {
+              "none": {
+                "mode": "none",
+                "frames": 186,
+                "first": 6,
+                "median_w": 205.5,
+                "median_h": 253.0,
+                "median_area": 46439.5,
+                "min_h": 76.0,
+                "min_area": 15708.0,
+                "visible_fraction": 1.0
+              }
+            },
+            "worst_mask": "none",
+            "median_w": 205.5,
+            "median_h": 253.0,
+            "median_area": 46439.5,
+            "frames": 186
+          },
+          "1": {
+            "target_id": 1,
+            "masks": {
+              "none": {
+                "mode": "none",
+                "frames": 198,
+                "first": 0,
+                "median_w": 269.0,
+                "median_h": 363.0,
+                "median_area": 70419.0,
+                "min_h": 80.0,
+                "min_area": 22898.0,
+                "visible_fraction": 1.0
+              }
+            },
+            "worst_mask": "none",
+            "median_w": 269.0,
+            "median_h": 363.0,
+            "median_area": 70419.0,
+            "frames": 198
+          },
+          "2": {
+            "target_id": 2,
+            "masks": {
+              "none": {
+                "mode": "none",
+                "frames": 197,
+                "first": 0,
+                "median_w": 317.0,
+                "median_h": 427.0,
+                "median_area": 108703.0,
+                "min_h": 109.0,
+                "min_area": 35397.0,
+                "visible_fraction": 1.0
+              }
+            },
+            "worst_mask": "none",
+            "median_w": 317.0,
+            "median_h": 427.0,
+            "median_area": 108703.0,
+            "frames": 197
+          },
+          "3": {
+            "target_id": 3,
+            "masks": {
+              "none": {
+                "mode": "none",
+                "frames": 200,
+                "first": 0,
+                "median_w": 387.0,
+                "median_h": 446.0,
+                "median_area": 146531.5,
+                "min_h": 160.0,
+                "min_area": 58680.0,
+                "visible_fraction": 1.0
+              }
+            },
+            "worst_mask": "none",
+            "median_w": 387.0,
+            "median_h": 446.0,
+            "median_area": 146531.5,
+            "frames": 200
+          }
+        },
+        "selected": {
+          "target_id": 3,
+          "masks": {
+            "none": {
+              "mode": "none",
+              "frames": 200,
+              "first": 0,
+              "median_w": 387.0,
+              "median_h": 446.0,
+              "median_area": 146531.5,
+              "min_h": 160.0,
+              "min_area": 58680.0,
+              "visible_fraction": 1.0
+            }
+          },
+          "worst_mask": "none",
+          "median_w": 387.0,
+          "median_h": 446.0,
+          "median_area": 146531.5,
+          "frames": 200
+        },
+        "message": ""
+      }
+    },
+    "wall_seconds": 72.52
+  },
+  "n_runs": 4,
+  "n_errors": 0,
+  "n_headline_runs": 4,
+  "n_invisible_runs": 0,
+  "headline": [
+    {
+      "n_sequences": 1,
+      "n_frames": 200,
+      "n_visible_frames": 200,
+      "n_report_frames": 200,
+      "target_success_rate": 0.415,
+      "loss_rate": 0.585,
+      "target_precision": 0.41358556372462774,
+      "reacquire_events": 0,
+      "reacquire_ok": 0,
+      "reacquire_rate": null,
+      "reacquire_latency": null,
+      "false_acquisition_rate": 0.04,
+      "false_acquisition_frames": 8,
+      "false_acquisition_events": 5,
+      "n_locked_frames": 93,
+      "n_reported_locked": 93,
+      "false_acquisition_frames_locked": 8,
+      "false_acquisition_rate_locked": 0.08602150537634409,
+      "false_acquisition_events_locked": 5,
+      "loss_frames_locked": 14,
+      "loss_rate_locked": 0.07,
+      "id_consistency": 0.9111111111111111,
+      "id_consistency_frames": 82,
+      "id_consistency_denominator": 90,
+      "target_switch_count": 7,
+      "fragmentation": 8,
+      "variant": "baseline",
+      "group": "baseline",
+      "mask": "none",
+      "control": "partial-view",
+      "ms_per_frame": 183.53454299794976,
+      "visibility_mean": 1.0,
+      "longest_correct_streak": 67,
+      "mean_correct_streak": 9.222222222222221,
+      "target_success_rate_fullgt": 0.415,
+      "reacquire_latency_p90": null,
+      "reacquire_latency_max": null,
+      "sequences": [
+        "dancetrack0004"
+      ]
+    },
+    {
+      "n_sequences": 1,
+      "n_frames": 200,
+      "n_visible_frames": 200,
+      "n_report_frames": 200,
+      "target_success_rate": 0.095,
+      "loss_rate": 0.905,
+      "target_precision": 0.11528266619192436,
+      "reacquire_events": 0,
+      "reacquire_ok": 0,
+      "reacquire_rate": null,
+      "reacquire_latency": null,
+      "false_acquisition_rate": 0.115,
+      "false_acquisition_frames": 23,
+      "false_acquisition_events": 9,
+      "n_locked_frames": 42,
+      "n_reported_locked": 42,
+      "false_acquisition_frames_locked": 18,
+      "false_acquisition_rate_locked": 0.42857142857142855,
+      "false_acquisition_events_locked": 10,
+      "loss_frames_locked": 25,
+      "loss_rate_locked": 0.125,
+      "id_consistency": 0.43902439024390244,
+      "id_consistency_frames": 18,
+      "id_consistency_denominator": 41,
+      "target_switch_count": 10,
+      "fragmentation": 6,
+      "variant": "trail_w0.5",
+      "group": "trail",
+      "mask": "none",
+      "control": "partial-view",
+      "ms_per_frame": 160.30522900167853,
+      "visibility_mean": 1.0,
+      "longest_correct_streak": 7,
+      "mean_correct_streak": 2.7142857142857144,
+      "target_success_rate_fullgt": 0.095,
+      "reacquire_latency_p90": null,
+      "reacquire_latency_max": null,
+      "sequences": [
+        "dancetrack0004"
+      ]
+    },
+    {
+      "n_sequences": 1,
+      "n_frames": 200,
+      "n_visible_frames": 200,
+      "n_report_frames": 200,
+      "target_success_rate": 0.08,
+      "loss_rate": 0.92,
+      "target_precision": 0.1038931241928367,
+      "reacquire_events": 0,
+      "reacquire_ok": 0,
+      "reacquire_rate": null,
+      "reacquire_latency": null,
+      "false_acquisition_rate": 0.075,
+      "false_acquisition_frames": 15,
+      "false_acquisition_events": 10,
+      "n_locked_frames": 41,
+      "n_reported_locked": 41,
+      "false_acquisition_frames_locked": 15,
+      "false_acquisition_rate_locked": 0.36585365853658536,
+      "false_acquisition_events_locked": 10,
+      "loss_frames_locked": 27,
+      "loss_rate_locked": 0.135,
+      "id_consistency": 0.5,
+      "id_consistency_frames": 15,
+      "id_consistency_denominator": 30,
+      "target_switch_count": 8,
+      "fragmentation": 5,
+      "variant": "trail_w1",
+      "group": "trail",
+      "mask": "none",
+      "control": "partial-view",
+      "ms_per_frame": 152.73993850045372,
+      "visibility_mean": 1.0,
+      "longest_correct_streak": 7,
+      "mean_correct_streak": 2.6666666666666665,
+      "target_success_rate_fullgt": 0.08,
+      "reacquire_latency_p90": null,
+      "reacquire_latency_max": null,
+      "sequences": [
+        "dancetrack0004"
+      ]
+    },
+    {
+      "n_sequences": 1,
+      "n_frames": 200,
+      "n_visible_frames": 200,
+      "n_report_frames": 200,
+      "target_success_rate": 0.08,
+      "loss_rate": 0.92,
+      "target_precision": 0.1038931241928367,
+      "reacquire_events": 0,
+      "reacquire_ok": 0,
+      "reacquire_rate": null,
+      "reacquire_latency": null,
+      "false_acquisition_rate": 0.075,
+      "false_acquisition_frames": 15,
+      "false_acquisition_events": 10,
+      "n_locked_frames": 41,
+      "n_reported_locked": 41,
+      "false_acquisition_frames_locked": 15,
+      "false_acquisition_rate_locked": 0.36585365853658536,
+      "false_acquisition_events_locked": 10,
+      "loss_frames_locked": 27,
+      "loss_rate_locked": 0.135,
+      "id_consistency": 0.5,
+      "id_consistency_frames": 15,
+      "id_consistency_denominator": 30,
+      "target_switch_count": 8,
+      "fragmentation": 5,
+      "variant": "trail_w2",
+      "group": "trail",
+      "mask": "none",
+      "control": "partial-view",
+      "ms_per_frame": 151.3767734990688,
+      "visibility_mean": 1.0,
+      "longest_correct_streak": 7,
+      "mean_correct_streak": 2.6666666666666665,
+      "target_success_rate_fullgt": 0.08,
+      "reacquire_latency_p90": null,
+      "reacquire_latency_max": null,
+      "sequences": [
+        "dancetrack0004"
+      ]
+    }
+  ],
+  "control": [],
+  "targets": {
+    "dancetrack0004": {
+      "target_id": 3,
+      "reason": "forced",
+      "control": "partial-view",
+      "guard_passed": true,
+      "visible_median_w": 387.0,
+      "visible_median_h": 446.0,
+      "visible_median_area": 146531.5,
+      "detection_rate": 0.99,
+      "wrong_identity_locked": 26,
+      "coasting_correct_frames": 2,
+      "onsets_agree": true,
+      "message": ""
+    }
+  }
+}

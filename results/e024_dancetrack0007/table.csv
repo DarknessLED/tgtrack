@@ -1,0 +1,7 @@
+group,variant,mask,seqs,frames,visible,TSR,prec,loss,loss_lock,recq_rate,recq_lat,recq_p90,recq_max,FAR,FAR_lock,FA_ev,FA_ev_lock,id_cons,switches,frag,longest,coast_ok,worst_id,detect,ms/frame
+baseline,baseline,none,1,200,197,0.4010,0.4122,0.5990,0.4162,0.0000,,,,0.43500,0.52174,2,3,0.4663,5,1,62,,,,235.66
+gallery_hygiene,hl_150,none,1,200,197,0.3198,0.3615,0.6802,0.6599,0.0000,,,,0.70000,0.69744,2,3,0.3000,5,1,62,,,,261.33
+gallery_hygiene,hl_5000,none,1,200,197,0.3147,0.3053,0.6853,0.6853,0.0000,,,,0.70500,0.70500,1,1,0.2950,1,0,62,,,,263.47
+gallery_hygiene,hl_none,none,1,200,197,0.3147,0.3053,0.6853,0.6853,0.0000,,,,0.70500,0.70500,1,1,0.2950,1,0,62,,,,253.64
+gallery_hygiene,minq_0.50,none,1,200,197,0.4010,0.4122,0.5990,0.4162,0.0000,,,,0.43500,0.52174,2,3,0.4663,5,1,62,,,,237.12
+gallery_hygiene,minq_0.70,none,1,200,197,0.4010,0.4122,0.5990,0.4162,0.0000,,,,0.43500,0.52174,2,3,0.4663,5,1,62,,,,234.18

@@ -1,0 +1,72 @@
+{
+  "source": "results/_assets/persons_pan.mp4",
+  "source_kind": "video",
+  "source_name": "persons_pan.mp4",
+  "source_frames": 40,
+  "stride": 1,
+  "tracker": "botsort.yaml",
+  "detector": {
+    "weights": "C:\\Projects\\track\\yolo26n.pt",
+    "device": "cuda",
+    "half": true,
+    "imgsz": 640,
+    "conf": 0.25,
+    "iou": 0.7,
+    "max_det": 300,
+    "person_class": 0,
+    "n_classes": 80,
+    "weights_path": "C:\\Projects\\track\\yolo26n.pt",
+    "weights_bytes": 5544453,
+    "n_params": 2572280,
+    "n_params_M": 2.5723
+  },
+  "tracker_cfg": {
+    "tracker_type": "botsort",
+    "track_high_thresh": 0.25,
+    "track_low_thresh": 0.1,
+    "new_track_thresh": 0.25,
+    "track_buffer": 30,
+    "match_thresh": 0.8,
+    "fuse_score": true,
+    "with_reid": true,
+    "model": "auto",
+    "gmc_method": "sparseOptFlow",
+    "proximity_thresh": 0.5,
+    "appearance_thresh": 0.8,
+    "tracker_yaml": "C:\\Software\\Anaconda3\\Lib\\site-packages\\ultralytics\\cfg\\trackers\\botsort.yaml",
+    "device": "cuda"
+  },
+  "embedder": {
+    "mode": "disabled"
+  },
+  "frames_processed": 40,
+  "frames_with_person": 40,
+  "total_detections": 96,
+  "ms_mean": 31.87,
+  "ms_p95": 33.62,
+  "ms_min": 25.518,
+  "pipeline_fps": 31.38,
+  "wall_seconds": 1.411,
+  "end_to_end_fps": 28.35,
+  "video_written": null,
+  "jsonl": "results\\run_all\\botsort\\detections.jsonl",
+  "warnings": [],
+  "unique_track_ids": 3,
+  "ids_on_first_frame": 3,
+  "ids_created_after_first_frame": 0,
+  "id_gap_events": 0,
+  "short_tracks_lt3_frames": 0,
+  "max_concurrent_tracks": 3,
+  "mean_tracks_per_frame": 2.225,
+  "id_switch_proxy": 0.0,
+  "track_lifetimes": {
+    "1": 40,
+    "2": 40,
+    "3": 9
+  },
+  "first_seen_frame": {
+    "1": 0,
+    "2": 0,
+    "3": 0
+  }
+}

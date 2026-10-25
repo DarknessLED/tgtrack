@@ -1,0 +1,5 @@
+group,variant,mask,seqs,frames,visible,TSR,prec,loss,loss_lock,recq_rate,recq_lat,recq_p90,recq_max,FAR,FAR_lock,FA_ev,FA_ev_lock,id_cons,switches,frag,longest,coast_ok,worst_id,detect,ms/frame
+anchor_ceiling,anchor_ceiling_0.45,none,1,200,197,0.3198,0.2965,0.6802,0.1827,0.0000,,,,0.33500,0.37113,13,12,0.4724,16,1,62,,,,174.98
+anchor_ceiling,anchor_ceiling_0.55,none,1,200,197,0.4010,0.4262,0.5990,0.5533,0.0000,,,,0.61500,0.59686,3,6,0.3819,5,1,62,,,,232.96
+anchor_ceiling,anchor_ceiling_0.65,none,1,200,197,0.4010,0.4122,0.5990,0.4162,0.0000,,,,0.43500,0.52174,2,3,0.4663,5,1,62,,,,220.60
+baseline,baseline,none,1,200,197,0.4010,0.4122,0.5990,0.4162,0.0000,,,,0.43500,0.52174,2,3,0.4663,5,1,62,,,,219.12

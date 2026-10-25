@@ -1,0 +1,5 @@
+group,variant,mask,seqs,frames,visible,TSR,prec,loss,loss_lock,recq_rate,recq_lat,recq_p90,recq_max,FAR,FAR_lock,FA_ev,FA_ev_lock,id_cons,switches,frag,longest,coast_ok,worst_id,detect,ms/frame
+baseline,baseline,none,1,200,200,0.4150,0.4136,0.5850,0.0700,,,,,0.04000,0.08602,5,5,0.9111,7,8,67,,,,183.53
+trail,trail_w0.5,none,1,200,200,0.0950,0.1153,0.9050,0.1250,,,,,0.11500,0.42857,9,10,0.4390,10,6,7,,,,160.31
+trail,trail_w1,none,1,200,200,0.0800,0.1039,0.9200,0.1350,,,,,0.07500,0.36585,10,10,0.5000,8,5,7,,,,152.74
+trail,trail_w2,none,1,200,200,0.0800,0.1039,0.9200,0.1350,,,,,0.07500,0.36585,10,10,0.5000,8,5,7,,,,151.38

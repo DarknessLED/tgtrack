@@ -1,0 +1,6 @@
+group,variant,mask,seqs,frames,visible,TSR,prec,loss,loss_lock,recq_rate,recq_lat,recq_p90,recq_max,FAR,FAR_lock,FA_ev,FA_ev_lock,id_cons,switches,frag,longest,coast_ok,worst_id,detect,ms/frame
+baseline,baseline,upper,6,1200,1073,0.2209,0.2513,0.7791,0.1044,,,,,0.02069,0.04893,18,14,0.9080,21,20,57,,,,221.69
+partial_fusion,partial_m0.2_a2.4,upper,6,1200,1073,0.2684,0.2883,0.7316,0.0932,,,,,0.00690,0.01714,5,5,0.9730,6,20,63,,,,223.06
+partial_fusion,partial_m0.4_a2.2,upper,6,1200,1073,0.2209,0.2525,0.7791,0.0979,,,,,0.00690,0.01961,5,5,0.9673,6,21,57,,,,234.61
+partial_fusion,partial_m0.5_a2.0,upper,6,1200,1073,0.2209,0.2513,0.7791,0.1044,,,,,0.02069,0.04893,18,14,0.9080,21,20,57,,,,223.17
+partial_fusion,partial_m1.0_a1.6,upper,6,1200,1073,0.1938,0.2282,0.8062,0.1240,,,,,0.04741,0.14241,15,17,0.7909,16,20,57,,,,216.89

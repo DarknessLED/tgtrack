@@ -1,0 +1,6 @@
+group,variant,mask,seqs,frames,visible,TSR,prec,loss,loss_lock,recq_rate,recq_lat,recq_p90,recq_max,FAR,FAR_lock,FA_ev,FA_ev_lock,id_cons,switches,frag,longest,coast_ok,worst_id,detect,ms/frame
+audit,audit_3_m05,none,1,200,200,0.1350,0.1832,0.8650,0.2300,,,,,0.17500,0.50725,7,7,0.4355,9,9,7,,,,588.86
+audit,audit_5_m05,none,1,200,200,0.4150,0.4136,0.5850,0.0700,,,,,0.04000,0.08602,5,5,0.9111,7,8,67,,,,664.58
+audit,audit_5_m10,none,1,200,200,0.4150,0.4136,0.5850,0.0700,,,,,0.04000,0.08602,5,5,0.9111,7,8,67,,,,515.14
+audit,audit_off,none,1,200,200,0.4150,0.4136,0.5850,0.0700,,,,,0.04000,0.08602,5,5,0.9111,7,8,67,,,,678.19
+baseline,baseline,none,1,200,200,0.4150,0.4136,0.5850,0.0700,,,,,0.04000,0.08602,5,5,0.9111,7,8,67,,,,667.65

@@ -1,0 +1,5 @@
+group,variant,mask,seqs,frames,visible,TSR,prec,loss,loss_lock,recq_rate,recq_lat,recq_p90,recq_max,FAR,FAR_lock,FA_ev,FA_ev_lock,id_cons,switches,frag,longest,coast_ok,worst_id,detect,ms/frame
+baseline,baseline,none,1,200,200,0.4150,0.4136,0.5850,0.0700,,,,,0.04000,0.08602,5,5,0.9111,7,8,67,,,,341.32
+tube_velocity,tube_vel_w0.3,none,1,200,200,0.1450,0.2032,0.8550,0.1650,,,,,0.18500,0.51724,10,9,0.3833,11,12,4,,,,313.37
+tube_velocity,tube_vel_w0.6,none,1,200,200,0.2200,0.2163,0.7800,0.0850,,,,,0.07000,0.22642,9,9,0.7455,8,6,24,,,,272.90
+tube_velocity,tube_vel_w1.2,none,1,200,200,0.0750,0.0855,0.9250,0.0900,,,,,0.04500,0.27586,7,7,0.6250,9,4,8,,,,243.94

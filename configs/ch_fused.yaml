@@ -1,0 +1,4 @@
+﻿detector:
+  extra_weights:
+    - C:/Projects/track/data/weights/crowdhuman_yolov8n_best.pt
+  fusion_iou: 0.55
