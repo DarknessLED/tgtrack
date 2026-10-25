@@ -5,6 +5,11 @@
 ## Verdict
 
 - **search_margin=0.20 (shipped): REFERENCE** -- Shipped value: this is the reference point, not a candidate.
+- **search_margin=0.00: NO-SHIP** -- TSR +3.56 pp (needs >= +5.0) and candidate FAR CI upper 0.5070 vs shipped 0.3487.
+- **search_margin=0.10: NO-SHIP** -- TSR +1.77 pp (needs >= +5.0) and candidate FAR CI upper 0.4511 vs shipped 0.3487.
+- **search_margin=0.15: NO-SHIP** -- TSR +0.59 pp (needs >= +5.0) and candidate FAR CI upper 0.3476 vs shipped 0.3487.
+- **search_margin=0.30: NO-SHIP** -- TSR -1.74 pp (needs >= +5.0) and candidate FAR CI upper 0.2463 vs shipped 0.3487.
+- **anchor_adaptive_k=3.0: NO-SHIP** -- TSR +2.00 pp (needs >= +5.0) and candidate FAR CI upper 0.3989 vs shipped 0.3487.
 
 ## Split (printed at startup, asserted dev-free)
 
@@ -21,47 +26,125 @@
 
 ## Pooled results per axis point
 
-| axis | point | n incl | TSR | TSR 95%% CI | FAR | FAR 95%% CI | TSR vs shipped | FAR CI-hi vs shipped | sequences TSR>5pp | verdict |
+| axis | point | n incl | TSR | TSR 95% CI | FAR | FAR 95% CI | TSR vs shipped | FAR CI-hi vs shipped | sequences TSR>5pp | verdict |
 |---|---|---|---|---|---|---|---|---|---|---|
-| `cost.search_margin` | 0.20 | 1 | 0.2831 | [0.2831, 0.2831] | 0.6800 | [0.6800, 0.6800] | -- | -- | 0 | **REFERENCE** |
+| `cost.search_margin` | 0.20 | 22 | 0.2104 | [0.1157, 0.3254] | 0.2472 | [0.1489, 0.3487] | -- | -- | 0 | **REFERENCE** |
+| `cost.search_margin` | 0.00 | 22 | 0.2460 | [0.1491, 0.3568] | 0.4166 | [0.3182, 0.5070] | +3.56 pp | NO | 4 | **NO-SHIP** |
+| `cost.search_margin` | 0.10 | 22 | 0.2282 | [0.1358, 0.3437] | 0.3433 | [0.2357, 0.4511] | +1.77 pp | NO | 3 | **NO-SHIP** |
+| `cost.search_margin` | 0.15 | 22 | 0.2163 | [0.1236, 0.3295] | 0.2407 | [0.1410, 0.3476] | +0.59 pp | yes | 1 | **NO-SHIP** |
+| `cost.search_margin` | 0.30 | 22 | 0.1931 | [0.0972, 0.3120] | 0.1443 | [0.0654, 0.2463] | -1.74 pp | yes | 1 | **NO-SHIP** |
+| `cost.anchor_adaptive_k` | 3.00 | 22 | 0.2304 | [0.1283, 0.3485] | 0.3017 | [0.2060, 0.3989] | +2.00 pp | NO | 2 | **NO-SHIP** |
 
 ## Sequences whose TSR moves by more than 5 pp
 
-None: no sequence moves its TSR by more than 5 pp at any measured point.
+**margin_0.00** (4/22 paired sequences)
+
+- `dancetrack0041`: +28.72 pp (0.174 -> 0.462)
+- `dancetrack0019`: +11.11 pp (0.219 -> 0.330)
+- `dancetrack0063`: +8.00 pp (0.030 -> 0.110)
+- `dancetrack0026`: +5.65 pp (0.081 -> 0.137)
+
+**margin_0.10** (3/22 paired sequences)
+
+- `dancetrack0081`: +11.42 pp (0.027 -> 0.142)
+- `dancetrack0065`: +7.00 pp (0.047 -> 0.117)
+- `dancetrack0034`: +6.45 pp (0.181 -> 0.246)
+
+**margin_0.15** (1/22 paired sequences)
+
+- `dancetrack0035`: +8.33 pp (0.022 -> 0.105)
+
+**margin_0.30** (1/22 paired sequences)
+
+- `dancetrack0010`: -25.00 pp (0.283 -> 0.033)
+
+**band_k3.0** (2/22 paired sequences)
+
+- `dancetrack0010`: +36.76 pp (0.283 -> 0.651)
+- `dancetrack0047`: +6.15 pp (0.146 -> 0.208)
 
 ## Per-sequence table
 
-| sequence | margin_0.20 TSR/FAR |
-|---|---|
-| `dancetrack0010` | 0.283 / 0.680 |
-| `dancetrack0014` | -- |
-| `dancetrack0018` | -- |
-| `dancetrack0019` | -- |
-| `dancetrack0025` | -- |
-| `dancetrack0026` | -- |
-| `dancetrack0030` | -- |
-| `dancetrack0034` | -- |
-| `dancetrack0035` | -- |
-| `dancetrack0041` | -- |
-| `dancetrack0043` | -- |
-| `dancetrack0047` | -- |
-| `dancetrack0058` | -- |
-| `dancetrack0063` | -- |
-| `dancetrack0065` | -- |
-| `dancetrack0073` | -- |
-| `dancetrack0077` | -- |
-| `dancetrack0079` | -- |
-| `dancetrack0081` | -- |
-| `dancetrack0090` | -- |
-| `dancetrack0094` | -- |
-| `dancetrack0097` | -- |
+| sequence | margin_0.20 TSR/FAR | margin_0.00 TSR/FAR | margin_0.10 TSR/FAR | margin_0.15 TSR/FAR | margin_0.30 TSR/FAR | band_k3.0 TSR/FAR |
+|---|---|---|---|---|---|---|
+| `dancetrack0010` | 0.283 / 0.680 | 0.301 / 0.680 | 0.301 / 0.680 | 0.301 / 0.680 | 0.033 / 0.697 | 0.651 / 0.143 |
+| `dancetrack0014` | 0.069 / 0.657 | 0.074 / 0.760 | 0.069 / 0.670 | 0.069 / 0.667 | 0.069 / 0.640 | 0.069 / 0.657 |
+| `dancetrack0018` | 0.258 / 0.587 | 0.266 / 0.532 | 0.258 / 0.587 | 0.258 / 0.587 | 0.258 / 0.571 | 0.258 / 0.587 |
+| `dancetrack0019` | 0.219 / 0.037 | 0.330 / 0.273 | 0.244 / 0.083 | 0.219 / 0.047 | 0.219 / 0.030 | 0.219 / 0.057 |
+| `dancetrack0025` | 0.015 / 0.060 | 0.015 / 0.570 | 0.023 / 0.120 | 0.019 / 0.077 | 0.015 / 0.060 | 0.015 / 0.060 |
+| `dancetrack0026` | 0.081 / 0.053 | 0.137 / 0.457 | 0.048 / 0.199 | 0.073 / 0.066 | 0.040 / 0.013 | 0.081 / 0.046 |
+| `dancetrack0030` | 0.370 / 0.017 | 0.403 / 0.357 | 0.387 / 0.330 | 0.370 / 0.020 | 0.370 / 0.017 | 0.340 / 0.543 |
+| `dancetrack0034` | 0.181 / 0.155 | 0.222 / 0.186 | 0.246 / 0.186 | 0.185 / 0.192 | 0.133 / 0.107 | 0.181 / 0.155 |
+| `dancetrack0035` | 0.022 / 0.057 | 0.022 / 0.471 | 0.022 / 0.620 | 0.105 / 0.165 | 0.009 / 0.034 | 0.022 / 0.057 |
+| `dancetrack0041` | 0.174 / 0.047 | 0.462 / 0.250 | 0.169 / 0.087 | 0.169 / 0.080 | 0.169 / 0.023 | 0.169 / 0.223 |
+| `dancetrack0043` | 0.111 / 0.043 | 0.111 / 0.163 | 0.111 / 0.098 | 0.111 / 0.087 | 0.097 / 0.043 | 0.111 / 0.043 |
+| `dancetrack0047` | 0.146 / 0.470 | 0.192 / 0.453 | 0.188 / 0.350 | 0.146 / 0.070 | 0.146 / 0.207 | 0.208 / 0.357 |
+| `dancetrack0058` | 0.047 / 0.340 | 0.044 / 0.763 | 0.057 / 0.600 | 0.071 / 0.653 | 0.044 / 0.020 | 0.047 / 0.340 |
+| `dancetrack0063` | 0.030 / 0.157 | 0.110 / 0.333 | 0.020 / 0.210 | 0.023 / 0.117 | 0.023 / 0.180 | 0.077 / 0.787 |
+| `dancetrack0065` | 0.047 / 0.027 | 0.077 / 0.460 | 0.117 / 0.137 | 0.057 / 0.333 | 0.043 / 0.000 | 0.047 / 0.347 |
+| `dancetrack0073` | 0.228 / 0.583 | 0.228 / 0.607 | 0.228 / 0.607 | 0.228 / 0.597 | 0.228 / 0.023 | 0.208 / 0.600 |
+| `dancetrack0077` | 0.233 / 0.410 | 0.263 / 0.403 | 0.263 / 0.377 | 0.233 / 0.433 | 0.233 / 0.257 | 0.233 / 0.233 |
+| `dancetrack0079` | 0.913 / 0.023 | 0.913 / 0.023 | 0.913 / 0.023 | 0.913 / 0.023 | 0.913 / 0.023 | 0.913 / 0.043 |
+| `dancetrack0081` | 0.027 / 0.200 | 0.023 / 0.517 | 0.142 / 0.517 | 0.023 / 0.117 | 0.023 / 0.050 | 0.018 / 0.460 |
+| `dancetrack0090` | 0.004 / 0.554 | 0.030 / 0.668 | 0.004 / 0.775 | 0.004 / 0.047 | 0.004 / 0.013 | 0.004 / 0.537 |
+| `dancetrack0094` | 0.880 / 0.097 | 0.880 / 0.097 | 0.880 / 0.097 | 0.880 / 0.097 | 0.880 / 0.097 | 0.880 / 0.097 |
+| `dancetrack0097` | 0.160 / 0.000 | 0.160 / 0.000 | 0.160 / 0.000 | 0.160 / 0.000 | 0.160 / 0.000 | 0.160 / 0.000 |
 
 ## Exclusions
 
 None: every (sequence, point) pair produced an observable target; denominators are 22 in every pool.
 
+## Spec notes (docs/NEXT_ROUND.md vs this tree)
+
+- `docs/NEXT_ROUND.md` names the secondary knob `cost.anchor_band_k`. No such key exists in `src/tgtrack/config.py`; the adaptive-band knob is `cost.anchor_adaptive_k` (`CostCfg.anchor_adaptive_k`), which is what a `band_k*` point overrides.
+- `docs/NEXT_ROUND.md` describes 3.0 as the shipped `anchor_band_k`. The tree ships `anchor_adaptive_k = 4.0`, so the doc's {3.0, 4.0} pair is {3.0 candidate, 4.0 shipped}, not {new, shipped}.
+- `scripts/run_target.py --ablate` defaults to `"all"` (84 variants) and cannot express baseline-only, so this sweep pins `run_target.build_variants` in the child and asserts the variant count and overrides on every run.
+
+## Shipped point vs E068 (is the reference still the published run?)
+
+**No.** The shipped value re-run in this sweep differs from `results\heldout_dancetrack\report.json` on 2 of 22 sequences (tolerance 0.5 pp). E068 was produced 2026-10-25 18:25:51; `src/tgtrack/target_tracker.py` (18:40:11) and `src/tgtrack/appearance.py` (18:54:48) were modified after it, so the tree measured here is not bit-identical to E068's. This sweep's own margin=0.20 pass is therefore the reference the rule is applied against; E068 is quoted for context only.
+
+| sequence | E068 TSR/FAR | sweep TSR/FAR | d TSR | d FAR |
+|---|---|---|---|---|
+| `dancetrack0047` | 0.146 / 0.263 | 0.146 / 0.470 | +0.00 pp | +20.67 pp |
+| `dancetrack0041` | 0.169 / 0.030 | 0.174 / 0.047 | +0.51 pp | +1.67 pp |
+
+E068 pooled: TSR 0.2102 / FAR 0.2364 (wall 1946.6 s).
+
+## Code state (hashes captured when the sweep started)
+
+| file | sha256[:16] | mtime |
+|---|---|---|
+| `scripts\gate_sweep.py` | c88bb9b5c9c120a6 | 2026-10-26T01:08:16 |
+| `scripts\run_target.py` | d2ce4849b7ab249a | 2026-10-25T16:48:14 |
+| `src\tgtrack\__init__.py` | a1d17b9a12814b8c | 2026-10-24T19:34:40 |
+| `src\tgtrack\appearance.py` | c62ab646664eccbe | 2026-10-25T18:54:48 |
+| `src\tgtrack\association.py` | b1fafe4704d285bc | 2026-10-25T00:49:26 |
+| `src\tgtrack\config.py` | b89e0885ac681bd3 | 2026-10-25T16:44:59 |
+| `src\tgtrack\consensus.py` | 9ef65d69fba7a641 | 2026-10-26T01:15:51 |
+| `src\tgtrack\data.py` | fedda3ba2502ad98 | 2026-10-24T19:03:16 |
+| `src\tgtrack\detector.py` | f8f5f5f0af9eeb9c | 2026-10-25T13:11:32 |
+| `src\tgtrack\evaluate.py` | da01cf65dc4f2004 | 2026-10-24T21:36:17 |
+| `src\tgtrack\memory.py` | abfe4807778c8c95 | 2026-10-25T05:58:27 |
+| `src\tgtrack\mot_hybrid.py` | 4c35c5cbda160017 | 2026-10-25T03:30:31 |
+| `src\tgtrack\mot_layer.py` | 86b09e8fecdf1f80 | 2026-10-25T02:53:20 |
+| `src\tgtrack\motion.py` | 0960ac6205dda149 | 2026-10-25T04:28:57 |
+| `src\tgtrack\parts.py` | 01798fec26ddfa60 | 2026-10-24T18:47:47 |
+| `src\tgtrack\promote.py` | 3943831b5e11e34b | 2026-10-25T02:16:30 |
+| `src\tgtrack\runtime.py` | 0a6eff50ae6c8ce1 | 2026-10-24T19:20:43 |
+| `src\tgtrack\target_tracker.py` | 7bdd9f0f1a3d7c85 | 2026-10-25T18:40:11 |
+| `src\tgtrack\trail.py` | 2029f79fc031dfd0 | 2026-10-25T14:28:01 |
+| `src\tgtrack\types.py` | fcf6c23b1e16f0a0 | 2026-10-24T18:48:04 |
+
+## Provenance
+
+- one parent process at a time: `results/gate_sweep/.sweep.lock` (live-pid checked) makes a second instance exit before it touches the GPU or any output file
+- every included pair carries `runs/<point>/<seq>/.mine`; a run dir without that stamp is purged and re-run rather than reported, so no number here comes from an unattributable writer
+- a `summary.json` with trailing garbage is salvaged from its first JSON document and flagged `json_recovered` in the pair record instead of aborting the sweep
+
 ## Wall time and commands
 
-- total wall: **36.1 s** (0.6 min) for 1 (sequence, point) pairs
-- exact parent command: `python scripts/gate_sweep.py --points margin_0.20`
+- total wall: **1694.4 s** (28.2 min) for 132 (sequence, point) pairs
+- summed per-pair GPU wall (all pairs, including ones cached by an earlier invocation of this sweep): **1694.1 s** (28.2 min)
+- exact parent command: `python scripts/gate_sweep.py --points margin_0.00,margin_0.10,margin_0.15,margin_0.20,margin_0.30,band_k3.0`
 - per-pair child command (logged verbatim in `results/gate_sweep/logs/`): `python scripts/gate_sweep.py` with `GATESWEEP_CHILD_SEQUENCE=<seq> GATESWEEP_POINT=<point> GATESWEEP_TARGET_ID=<id>`

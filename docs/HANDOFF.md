@@ -43,7 +43,7 @@ report on it.
 | # | criterion | status | best measured |
 |---|---|---|---|
 | 1 | all-person MOT: MOT17 HOTA from 0.4827 to ≥0.55 | **not met** | 0.5050 (`crowdhuman_yolov8n` + ignore-region convention). The detector, not the strategy, is the ceiling: emitted recall is ~0.55–0.74 and gating only costs 1–3 pp of it |
-| 2 | single-target on DanceTrack: FAR from 0.49 to <0.20 with TSR ≥0.55 | **not met** | dev 0.512 / 0.280 but **held-out 22 sequences: TSR 0.2102 [0.115, 0.325] / FAR 0.2364**. The dev number does not generalise |
+| 2 | single-target on DanceTrack: FAR from 0.49 to <0.20 with TSR ≥0.55 | **not met** | dev 0.512 / 0.280 but **held-out 22 sequences: TSR 0.2104 / FAR 0.2472** (E070, 6-point gate sweep, 132 pairs, 0 excluded; CIs [0.116, 0.325] / [0.149, 0.349]). The dev number does not generalise, and no gate axis point reaches the pre-registered +5 pp bar |
 | 3 | partial-view (upper/lower body) TSR +10 pp | **met** | +10.18 pp in a same-round controlled comparison (0.7527 → 0.8545), from reliability-weighted part fusion behind a shape-deviation gate |
 | 4 | reusable experiment ledger + methodology | **met** | `docs/EXPERIMENTS.md` + `docs/METHOD.md` |
 

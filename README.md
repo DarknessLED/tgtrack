@@ -618,8 +618,8 @@ shipped defaults, no ablation — is in `results/heldout_dancetrack/` and
 
 | quantity | dev split (n=3) | **held-out (n=22)** | 95% cluster bootstrap CI |
 |---|---|---|---|
-| target success rate | 0.512 | **0.2102** | **[0.1154, 0.3253]** |
-| false acquisition rate | 0.280 | **0.2364** | [0.1419, 0.3391] |
+| target success rate | 0.512 | **0.2104** | **[0.1157, 0.3254]** |
+| false acquisition rate | 0.280 | **0.2472** | [0.1489, 0.3487] |
 
 **The dev figure does not generalise.** 0.512 lies outside the held-out CI. The FAR is statistically
 indistinguishable, so on unseen sequences the system's problem is **losing the target**, not following

@@ -5,7 +5,8 @@ no new model, no new dataset, no fine-tuning is needed.
 
 ## The diagnosis this round produced
 
-1. **Criterion 2's real value is TSR 0.2102 / FAR 0.2364 over the 22 held-out sequences**
+1. **Criterion 2's real value is TSR 0.2104 / FAR 0.2472 over the 22 held-out sequences**
+   (E070's shipped-configuration re-run on today's code; E068's 0.2102 / 0.2364 is superseded — it predates `target_tracker.py` 18:40:11) 
    (`results/heldout_dancetrack/report.json`, E068), not the dev-split 0.512/0.280. The dev TSR lies
    outside the held-out CI, so the dev split certifies nothing (its intervals were +-0.394 TSR and
    +-0.708 FAR on n=3).
@@ -28,7 +29,7 @@ refusing a correct re-acquisition.
 Sweep the search-side gate **on the 22 held-out sequences only** (never on dancetrack0004/0005/0007):
 
 - primary axis: `cost.search_margin` in {0.0, 0.10, 0.15, 0.20 (shipped), 0.30};
-- secondary: `cost.anchor_band_k` in {3.0 (shipped), 4.0}, only if the primary shows a monotone trade;
+- secondary: `cost.anchor_adaptive_k` in {3.0, 4.0 (shipped)}, only if the primary shows a monotone trade;
 - protocol: `scripts/heldout_report.py` (it refuses sweep flags by design — add a narrow, explicit
   exception for these two knobs, or drive it from a child process that pins `build_variants`), 300
   frames, subsample 2, `--jobs 1`, `--target-id` from each run's own `meta.target_ids`;

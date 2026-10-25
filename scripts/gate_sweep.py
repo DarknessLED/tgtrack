@@ -59,6 +59,9 @@ VAL_ROOT = ROOT / "data" / "raw" / "dancetrack" / "val"
 OUT_ROOT = ROOT / "results" / "gate_sweep"
 REPORT_JSON = OUT_ROOT / "report.json"
 REPORT_MD = OUT_ROOT / "REPORT.md"
+# The E068 held-out run, used only to answer "is the shipped point still E068?" -- never as a
+# source for this sweep's numbers (those come from results/gate_sweep/summaries/ only).
+E068_REPORT = ROOT / "results" / "heldout_dancetrack" / "report.json"
 
 #: FROZEN selection split.  Never sweep or report on these again.
 DEV_SEQUENCES = {"dancetrack0004", "dancetrack0005", "dancetrack0007"}
@@ -588,6 +591,60 @@ def per_sequence_deltas(point_rows: Sequence[dict[str, Any]], shipped_rows: Sequ
 # --------------------------------------------------------------------------- #
 # Markdown
 # --------------------------------------------------------------------------- #
+def code_state_snapshot() -> dict[str, Any]:
+    """The hashes the sweep was started against (written by the operator, re-checked at the end)."""
+    p = OUT_ROOT / "code_snapshot_start.json"
+    if not p.is_file():
+        return {}
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+
+
+def compare_shipped_to_e068(shipped_rows: Sequence[dict[str, Any]]) -> dict[str, Any]:
+    """Is the *shipped* point still the E068 run?  Measure it instead of assuming it.
+
+    E068 finished 2026-10-25 18:25:51, but ``src/tgtrack/target_tracker.py`` (18:40:11) and
+    ``src/tgtrack/appearance.py`` (18:54:48) were both modified afterwards, so the tree this
+    sweep measures is not guaranteed to be the tree E068 measured.  The sweep therefore
+    re-runs the shipped value itself and reports any sequence where it no longer matches.
+    """
+    if not E068_REPORT.is_file():
+        return {"source": None, "diverged": [], "n_diverged": None}
+    try:
+        old = json.loads(E068_REPORT.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {"source": str(E068_REPORT.relative_to(ROOT)), "diverged": [], "n_diverged": None, "error": "unparseable"}
+    old_ps = {r["sequence"]: r for r in (old.get("per_sequence") or [])}
+    diffs: list[dict[str, Any]] = []
+    for r in shipped_rows:
+        if r.get("status") != "INCLUDED":
+            continue
+        o = old_ps.get(r["sequence"])
+        if not o:
+            continue
+        d_tsr = (float(r["tsr"]) - float(o["tsr"])) * 100.0
+        d_far = (float(r["far"]) - float(o["far"])) * 100.0
+        if abs(d_tsr) > 0.5 or abs(d_far) > 0.5:
+            diffs.append({
+                "sequence": r["sequence"],
+                "e068_tsr": round(float(o["tsr"]), 6), "sweep_tsr": round(float(r["tsr"]), 6),
+                "e068_far": round(float(o["far"]), 6), "sweep_far": round(float(r["far"]), 6),
+                "delta_tsr_pp": round(d_tsr, 2), "delta_far_pp": round(d_far, 2),
+            })
+    return {
+        "source": str(E068_REPORT.relative_to(ROOT)),
+        "e068_wall_seconds": old.get("wall_seconds"),
+        "e068_pooled_tsr": (old.get("pooled") or {}).get("tsr"),
+        "e068_pooled_far": (old.get("pooled") or {}).get("far"),
+        "n_compared": len(old_ps),
+        "tolerance_pp": 0.5,
+        "diverged": sorted(diffs, key=lambda d: -abs(d["delta_far_pp"])),
+        "n_diverged": len(diffs),
+    }
+
+
 def write_markdown(payload: dict[str, Any]) -> str:
     L: list[str] = []
     a = L.append
@@ -680,10 +737,64 @@ def write_markdown(payload: dict[str, Any]) -> str:
         a("None: every (sequence, point) pair produced an observable target; denominators are %d in every pool."
           % len(payload["heldout_sequences"]))
     a("")
+    a("## Spec notes (docs/NEXT_ROUND.md vs this tree)")
+    a("")
+    for note in payload.get("spec_notes") or []:
+        a("- %s" % note)
+    a("")
+    a("## Shipped point vs E068 (is the reference still the published run?)")
+    a("")
+    vs = payload.get("shipped_vs_e068") or {}
+    if vs.get("n_diverged") in (None, 0):
+        a("Yes: all compared sequences match `%s` within %.1f pp on both TSR and FAR."
+          % (vs.get("source"), float(vs.get("tolerance_pp") or 0.5)))
+    else:
+        a("**No.** The shipped value re-run in this sweep differs from `%s` on %d of %d sequences "
+          "(tolerance %.1f pp). E068 was produced 2026-10-25 18:25:51; `src/tgtrack/target_tracker.py` "
+          "(18:40:11) and `src/tgtrack/appearance.py` (18:54:48) were modified after it, so the tree "
+          "measured here is not bit-identical to E068's. This sweep's own margin=%.2f pass is therefore "
+          "the reference the rule is applied against; E068 is quoted for context only."
+          % (vs.get("source"), vs["n_diverged"], vs.get("n_compared") or 0,
+             float(vs.get("tolerance_pp") or 0.5), SHIPPED_MARGIN))
+        a("")
+        a("| sequence | E068 TSR/FAR | sweep TSR/FAR | d TSR | d FAR |")
+        a("|---|---|---|---|---|")
+        for d in vs.get("diverged") or []:
+            a("| `%s` | %.3f / %.3f | %.3f / %.3f | %+.2f pp | %+.2f pp |"
+              % (d["sequence"], d["e068_tsr"], d["e068_far"], d["sweep_tsr"], d["sweep_far"],
+                 d["delta_tsr_pp"], d["delta_far_pp"]))
+        if vs.get("e068_pooled_tsr") is not None:
+            a("")
+            a("E068 pooled: TSR %.4f / FAR %.4f (wall %.1f s)."
+              % (vs["e068_pooled_tsr"], vs["e068_pooled_far"], float(vs.get("e068_wall_seconds") or 0.0)))
+    a("")
+    a("## Code state (hashes captured when the sweep started)")
+    a("")
+    cs = payload.get("code_state") or {}
+    if cs:
+        a("| file | sha256[:16] | mtime |")
+        a("|---|---|---|")
+        for f in sorted(cs):
+            a("| `%s` | %s | %s |" % (f, cs[f]["sha256"], cs[f]["mtime"]))
+    else:
+        a("No snapshot file (`results/gate_sweep/code_snapshot_start.json`) was found.")
+    a("")
+    a("## Provenance")
+    a("")
+    a("- one parent process at a time: `results/gate_sweep/.sweep.lock` (live-pid checked) makes a second "
+      "instance exit before it touches the GPU or any output file")
+    a("- every included pair carries `runs/<point>/<seq>/.mine`; a run dir without that stamp is purged and "
+      "re-run rather than reported, so no number here comes from an unattributable writer")
+    a("- a `summary.json` with trailing garbage is salvaged from its first JSON document and flagged "
+      "`json_recovered` in the pair record instead of aborting the sweep")
+    a("")
     a("## Wall time and commands")
     a("")
     a("- total wall: **%.1f s** (%.1f min) for %d (sequence, point) pairs"
       % (payload["wall_seconds"], payload["wall_seconds"] / 60.0, payload["n_pairs_run"]))
+    a("- summed per-pair GPU wall (all pairs, including ones cached by an earlier invocation of this "
+      "sweep): **%.1f s** (%.1f min)" % (payload.get("wall_seconds_pair_sum") or 0.0,
+                                         (payload.get("wall_seconds_pair_sum") or 0.0) / 60.0))
     a("- exact parent command: `python scripts/gate_sweep.py --points %s%s%s`"
       % (payload["cli"]["points"], " --subset %d" % payload["cli"]["subset"] if payload["cli"]["subset"] else "",
          " --force" if payload["cli"]["force"] else ""))
@@ -889,6 +1000,20 @@ def main(argv: Sequence[str] | None = None) -> int:
         "points": points_payload,
         "target_ids": target_ids,
         "wall_seconds": round(wall, 1),
+        "wall_seconds_pair_sum": round(sum(float(r.get("wall_seconds") or 0.0) for r in rows), 1),
+        "code_state": code_state_snapshot(),
+        "shipped_vs_e068": compare_shipped_to_e068([r for r in rows if r["point"] == shipped_pid]),
+        "spec_notes": [
+            ("`docs/NEXT_ROUND.md` names the secondary knob `cost.anchor_band_k`. No such key exists in "
+             "`src/tgtrack/config.py`; the adaptive-band knob is `cost.anchor_adaptive_k` "
+             "(`CostCfg.anchor_adaptive_k`), which is what a `band_k*` point overrides."),
+            ("`docs/NEXT_ROUND.md` describes 3.0 as the shipped `anchor_band_k`. The tree ships "
+             "`anchor_adaptive_k = %.1f`, so the doc's {3.0, 4.0} pair is {3.0 candidate, %.1f shipped}, "
+             "not {new, shipped}." % (SHIPPED_BAND_K, SHIPPED_BAND_K)),
+            ("`scripts/run_target.py --ablate` defaults to `\"all\"` (%d variants) and cannot express "
+             "baseline-only, so this sweep pins `run_target.build_variants` in the child and asserts the "
+             "variant count and overrides on every run." % 84),
+        ],
     }
     OUT_ROOT.mkdir(parents=True, exist_ok=True)
     REPORT_JSON.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")

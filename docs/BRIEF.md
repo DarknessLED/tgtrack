@@ -400,3 +400,22 @@ with nothing accepted).
   (dancetrack0007), and the loss there is not "we cannot find the target" (139/141 wrong frames had
   the target detected, E020) but "the memory prefers the wrong person" -- i.e. the next lever is
   gallery hygiene / long-term bank partitioning, not another association knob.
+
+## Programme position after E070/E071/E072-prep (2026-10-26)
+
+- **Criterion 2 baseline is E070's shipped re-run on today's code: TSR 0.2104 / FAR 0.2472**
+  (22 held-out DanceTrack seqs, 300 frames, subsample 2, 132 pairs, 0 excluded, CIs
+  [0.1157, 0.3254] / [0.1489, 0.3487]). E068's 0.2102 / 0.2364 is **superseded**: it finished at
+  18:25:51, before `target_tracker.py` (18:40:11) and `appearance.py` (18:54:48); the re-run matches
+  on 20/22 sequences and diverges only on dancetrack0041 (FAR 0.030 -> 0.047) and dancetrack0047
+  (0.2633 -> 0.470). That is also the explanation of the earlier "pooling inconsistency".
+- **The gate axis is closed**: 6/6 points NO-SHIP, best +3.56 pp TSR against a +5 pp pre-registered
+  bar, and the two loosest points also breach the FAR CI-upper bound. Defaults stay
+  `search_margin = 0.20`, `anchor_adaptive_k = 4.0`.
+- **One observation worth keeping, not shipping**: `margin 0.15` is the only point that weakly
+  dominates the shipped one on the full held-out pooled numbers (TSR 0.2163 vs 0.2104, FAR 0.2407
+  vs 0.2472). It fails the pre-registered bar so it does not ship, but it is the right candidate for
+  a future tighter B-vs-B test (larger `--reps`, both seeds fixed, one-shot).
+- Harness traps learned here: `cost.anchor_band_k` does not exist (it is `anchor_adaptive_k`);
+  a sweep re-imports `tgtrack` per child, so any source edit mid-sweep invalidates comparability
+  (see `results/gate_sweep/PROVENANCE.md`).

@@ -1,6 +1,6 @@
 # MANIFEST — what is in this package
 
-Generated 2026-10-26 01:23 中国标准时间 by `scripts/build_handoff.py`. 910 files, 12.08 MB uncompressed.
+Generated 2026-10-26 03:04 中国标准时间 by `scripts/build_handoff.py`. 914 files, 12.46 MB uncompressed.
 
 This file is generated; do not edit by hand.
 
@@ -11,11 +11,11 @@ This file is generated; do not edit by hand.
 | `README.md/` | 1 | 0.06 MB | — |
 | `configs/` | 12 | 0.01 MB | tracker configs (ultralytics-compatible) used by the runs |
 | `conftest.py/` | 1 | 0.00 MB | — |
-| `docs/` | 34 | 1.10 MB | reports, the experiment ledger, surveys, plans, external reviews |
+| `docs/` | 34 | 1.12 MB | reports, the experiment ledger, surveys, plans, external reviews |
 | `pytest.ini/` | 1 | 0.00 MB | — |
 | `requirements.txt/` | 1 | 0.00 MB | — |
-| `results/` | 781 | 9.32 MB | the measured numbers as markdown/csv/small json summaries |
-| `scripts/` | 41 | 0.68 MB | every reproducible entry point; each experiment cites one |
+| `results/` | 785 | 9.68 MB | the measured numbers as markdown/csv/small json summaries |
+| `scripts/` | 41 | 0.69 MB | every reproducible entry point; each experiment cites one |
 | `src/` | 18 | 0.50 MB | the library itself (`tgtrack`) |
 | `tests/` | 20 | 0.40 MB | the guarantees: 470+ tests encoding every measured behaviour |
 | root files | 4 | — | README, pytest config, requirements |
@@ -36,7 +36,7 @@ First 40 files by path, with sha256 prefix (12 hex), so a copy can be verified:
 
 | path | bytes | sha256[:12] |
 |---|---|---|
-| `README.md` | 59054 | `6e772020a7d3` |
+| `README.md` | 59054 | `e8fb2a4b166f` |
 | `configs/bs_reid.yaml` | 254 | `96710faf56f6` |
 | `configs/ch_1280.yaml` | 97 | `1b237aa3b148` |
 | `configs/ch_960.yaml` | 96 | `6d55902072cb` |
@@ -50,16 +50,16 @@ First 40 files by path, with sha256 prefix (12 hex), so a copy can be verified:
 | `configs/trackers/hybridsort.yaml` | 3597 | `764e726f08fc` |
 | `configs/trk_reid.yaml` | 369 | `932d099fa5e6` |
 | `conftest.py` | 377 | `4d6e789412d1` |
-| `docs/BRIEF.md` | 31705 | `88858321750c` |
+| `docs/BRIEF.md` | 33595 | `1fc7a5c1a38e` |
 | `docs/E045_PLAN.md` | 4649 | `9bd3080e5161` |
 | `docs/E071_PLAN.md` | 5269 | `953140f88667` |
-| `docs/EXPERIMENTS.md` | 143328 | `01477c598c8a` |
+| `docs/EXPERIMENTS.md` | 156796 | `bae944bcab1c` |
 | `docs/EXPLORATION_TREE.md` | 17127 | `e05ff6c14385` |
-| `docs/HANDOFF.md` | 8092 | `393f8e1427dc` |
-| `docs/HANDOFF.md` | 8092 | `393f8e1427dc` |
+| `docs/HANDOFF.md` | 8352 | `37f32706ca30` |
+| `docs/HANDOFF.md` | 8352 | `37f32706ca30` |
 | `docs/METHOD.md` | 13146 | `3399dee859e0` |
-| `docs/NEXT_ROUND.md` | 3061 | `65a779dab695` |
-| `docs/REPORT.md` | 45517 | `c2722fea6c74` |
+| `docs/NEXT_ROUND.md` | 3207 | `1f0623874375` |
+| `docs/REPORT.md` | 46694 | `1b473970046f` |
 | `docs/REPORT_v1_chronological.md` | 18078 | `539368cad236` |
 | `docs/RESEARCH_PLAN.md` | 10296 | `c549f7af1c95` |
 | `docs/research/R1_mot_association.md` | 60749 | `85ba048e4d6f` |
