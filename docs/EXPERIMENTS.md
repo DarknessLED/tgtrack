@@ -2509,3 +2509,97 @@ the driver spawns, per (sequence, point), a child equivalent to:
                           --mask none --max-frames 300 --subsample 2 --jobs 1
                           --ablate gate_sweep [--target-id <pinned>]
 
+### E074 — decomposing the held-out single-target loss (GT-only proxy, no GPU)
+
+`scripts/probe_selectability.py` + `scripts/probe_regimes.py` (pure arithmetic over
+`results/gate_sweep/report.json` + DanceTrack GT; artifacts `results/selectability*.json`).
+
+Pooled shipped TSR **0.2104** over 6181 report frames. The target is present in GT on
+**88.25 %** of those frames, so the loss decomposes as **0.7896 = 0.1175 absence + 0.6720
+in-present**. Naive regime labels (by `id_consistency` and TSR/presence) attributed the in-present
+loss as: churn **+0.4126** (12 seqs), wrong-hold **+0.2494** (8 seqs), working **+0.0100** (2 seqs).
+Only **2 of 22** sequences work (0.8967 pooled efficiency: 0079 0.913, 0094 0.880).
+
+Spearman of GT-only features against TSR: presence **+0.504**, click-frame neighbour count
+**-0.521**, click-frame max IoU with any other person **-0.530**, target height +0.162, area +0.150,
+median max-IoU -0.421. Reading: **absence and click-time crowding each explain about a quarter of
+the variance and nothing explains more** — there is no single GT-visible property that predicts
+which sequences the tracker will fail, which is why the search for a knob never worked.
+
+### E075 — the "wrong-hold" exemplar is actually BLINDNESS: the regime labels are falsified
+
+dancetrack0097 (tid 3) was the cleanest wrong-hold case: TSR 0.160, **id_consistency 1.000**, 0
+target switches, and its target is spatially isolated in GT (max IoU with any other person 0.000,
+presence 1.00).
+
+Running the shipped config with `--debug-csv` accidentally ran the **whole 51-variant grid** (see the
+trap below). Result: **TSR spans only 0.127-0.157 across all 51 variants and 48 of them are
+bit-identical** (dom share 0.84, top wrong-GT-id the target's own id). The sequence is invariant to
+every knob in the programme.
+
+Mechanism, from the trace: of 253 frames with `iou_target < 0.5`, **all 253 are in `lost_short`
+(38) or `lost_long` (209)** with median `frames_since_update` **163** and `frac(fsu==0) = 0.0`.
+TSR at looser IoU: **0.573 @0.1, 0.567 @0.2, 0.470 @0.3, 0.283 @0.4, 0.157 @0.5**. `best_gt_id`
+equals the target on 56.7 % of frames.
+
+So the sequence is not "holding the wrong person" — **the tracker is blind for 82 % of it and
+coasts**, and its coasting box partially overlaps the target. Lessons:
+- `id_consistency` high + TSR low does **NOT** imply a wrong identity; it can mean confident
+  coasting. The **state mix** is the discriminating variable (E076 re-does the decomposition on it).
+- The two failure mechanisms need different fixes: blindness needs re-detection/coasting quality;
+  a wrong latch needs identity evidence. E074 conflated them.
+- **Time trap:** `--ablate` defaults to `all`, so a "quick single-sequence debug run" costs 51x
+  (35 s/variant, 31 min instead of 40 s). Always pass an explicit `--ablate group:variant`.
+
+Programme position: criterion 2 remains 0.2104 / 0.2472 and now has a *mechanistic* decomposition
+pending in E076; criteria 1 (0.5050), 3 (MET 0.8545), 4 (MET) unchanged.
+
+### E076 — the blindness mechanism: the NEURAL APPEARANCE term refuses the correct candidate
+
+Follow-up forensics on dancetrack0097 (the E075 exemplar). Tools added:
+`scripts/probe_selectability.py`, `scripts/probe_regimes.py`, `scripts/probe_states.py`; artifacts
+`results/selectability*.json`, `results/e076_states/`.
+
+**What the state trace says.** `results/e076_states/` (shipped config, `--debug-csv`, all DanceTrack
+val sequences, 300 frames, subsample 2). For 0097 the state mix is tracking 10 / occluded_soft 11 /
+lost_short 48 / lost_long 209 frames: the tracker is **blind for 82 % of the sequence** and
+`frames_since_update` reaches 163. It never reports a false acquisition (FAR 0.000), so this is not
+a wrong identity — it is **premature loss followed by permanent refusal**.
+
+**The target is always available while it refuses.** `scripts/probe_recovery7.py --sequence
+dancetrack0097 --target-id 3` (60 frames): `det_hit_rate_all_frames = 1.0`,
+`wrong_frames_true_target_detected = 28/28`, `wrong_det_iou_p50 = 0.968`. The detection sitting on
+the target is near-perfect while we refuse it.
+
+**The refusal is invariant to the whole knob grid.** The full 51-variant ablation on this sequence
+spans TSR **0.127-0.157** with 48 arms bit-identical (E075). Targeted controls, each 2 runs at 70
+frames, produce **byte-identical state sequences**: `distractor_margin 0.00` (max_fsu 31/70 both),
+`hard_negative_off` (max_fsu 61, mean_fsu 27.0, blind 0.86 both). So neither the distractor margin
+nor the hard-negative bank causes it.
+
+**What does change it: removing the neural encoder.** `--no-embed` (HSV/HOG fallback descriptor) on
+the same 70 frames moves the state mix from `tracking 10 / occluded_soft 11 / lost_short 48` to
+`tracking 27 / occluded_soft 11 / lost_short 32` — it stays in `tracking` **17 frames longer** and
+blind share falls 0.86 -> 0.61. The neural appearance term is what denies the correct candidate.
+
+**A second, separate defect: the coast inflates the box's ASPECT.** Frame-wise on 0097: height is
+tracked to 1.5 % all the way through the loss (h_ratio 0.97-1.03), but the **width** runs away —
+area ratio 0.79 at f8 -> 1.36 at f24 -> **2.86 at f29** with height unchanged, i.e. the box's aspect
+`w/h` triples while blind. Once that happens IoU with the (perfect) detection collapses to ~0.35,
+which is a second reason the gate cannot recover. Also visible: our detector boxes are systematically
+**narrower** than DanceTrack GT even when healthy (area ratio 0.79-0.92 at IoU 0.75-0.79), so the
+IoU-0.5 success threshold is partly a box-convention tax, not an identity error.
+
+**Verdict / next.** Root cause is an *additive* cost with a fixed appearance weight (`w_appearance
+1.6`) applied to a modality that E013 measured as almost uninformative on DanceTrack (AUC 0.59-0.67).
+An additive cost must over-refuse exactly there. E077 therefore replaces additive fusion with
+**channel-conditional fusion**: evidence that is individually confident may carry the decision, and
+the appearance weight is reduced where geometry is already conclusive. Second fix queued with it:
+**bounded-aspect coasting** (clamp the extrapolated aspect to the last observed aspect, not just
+clamp velocity).
+
+**Tooling traps recorded:** `--ablate group:variant` runs the group's reference *plus* the variant
+(2 runs, not 1); `--limit-sequences` is an `int` (it is not a sequence-name filter — point
+`--data-root` at the single sequence instead).
+
+Programme position: criterion 2 remains 0.2104 / 0.2472; the loss now has a named mechanism.

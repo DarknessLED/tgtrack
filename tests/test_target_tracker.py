@@ -673,3 +673,156 @@ def test_bootstrap_anchor_stops_after_the_budget_and_ignores_missing_features():
     assert tr._bootstrap_left == 0
     tr._bootstrap_anchor(np.array([0.0, 0.0, 1.0, 0.0], np.float32))
     assert len(tr._bootstrap_feats) == 1  # budget exhausted -> frozen anchor
+
+
+# --------------------------------------------------------------------------- #
+# E071 -- temporal consensus on the handback (docs/E071_PLAN.md)
+# --------------------------------------------------------------------------- #
+#: The identity cross-over used by these tests: the stub encoder assigns IDENT_A
+#: left of this box centre and IDENT_B right of it, so walking a person across it
+#: changes WHO they are without changing where they are -- the crossing that E061
+#: lost, in its smallest form.
+CROSS_X = 700.0
+
+#: Knobs that leave the consensus vote as the ONLY gate between the crossing
+#: candidate and the identity.  Both shipped vetoes would otherwise refuse the
+#: challenger before the vote ever sees it: an orthogonal descriptor costs
+#: 1.0 x w_appearance 1.6 = 1.6 > accept_cost 1.0, and the E029 adaptive anchor
+#: band (floor 0.35) vetoes the same candidate on appearance.  That is fine for
+#: the *measurement* (the sweep runs the shipped config, not this one) but it
+#: would make these tests measure the vetoes instead of the vote.
+_CONSENSUS_ONLY = {
+    "cost.accept_cost": 2.0,
+    "cost.accept_cost_lost": 2.5,
+    "cost.anchor_adaptive": False,
+    "cost.anchor_max_dist": None,
+}
+
+
+def _crossing_tracker(**overrides):
+    """Track a person walking right, across the identity cross-over."""
+    cfg = Config().clone(**{**_CONSENSUS_ONLY, **overrides})
+    emb = StubEmbedder(split=CROSS_X)
+    tt = TargetTracker(cfg, emb)
+    tt.initialize(FRAME, [500, 200, 600, 500], frame_idx=0)
+    return tt
+
+
+def _walk(tt, n, *, start=500.0, dx=20.0, first=1):
+    """Step ``n`` frames of the walk; returns ``(frame_idx, x, status)`` rows."""
+    rows = []
+    x = start
+    for i in range(first, first + n):
+        x += dx
+        rows.append((i, x, tt.step(FRAME, [_det([x, 200, x + 100, 500])], frame_idx=i)))
+    return rows
+
+
+def test_consensus_off_is_indistinguishable_from_the_shipped_path():
+    """The master switch must be inert when off.
+
+    The reference is the module's own ``frames_required=1`` control, which
+    commits on the first proposal -- i.e. exactly the pre-E071 rule.  Every
+    frame must agree on state, acceptance and reported box, and the mechanism
+    must leave no trace in the diagnostics or the counters.
+    """
+    shipped = _crossing_tracker()
+    control = _crossing_tracker(**{"cost.commit_consensus": True, "cost.consensus_frames": 1})
+    for a, b in zip(_walk(shipped, 12), _walk(control, 12)):
+        assert a[2].state == b[2].state, a[0]
+        assert a[2].diag["accepted"] == b[2].diag["accepted"], a[0]
+        assert np.allclose(a[2].xyxy, b[2].xyxy, atol=1e-4), a[0]
+
+    st = shipped.stats()
+    assert st["challenge_enabled"] is False
+    assert st["challenge_opened"] == 0
+    assert st["challenge_committed"] == 0
+    assert st["challenge_pending_frames"] == 0
+    assert [e.kind for e in shipped.events if e.kind.startswith("consensus")] == []
+    assert "challenge_state" not in shipped.status().diag
+
+
+def test_consensus_refuses_a_challenger_until_it_commits():
+    """A non-incumbent may only take the identity once the vote commits."""
+    tt = _crossing_tracker(**{"cost.commit_consensus": True, "cost.consensus_frames": 2})
+    rows = _walk(tt, 8)  # frame 8 is where the descriptor flips
+    frame, _, pending = rows[-1]
+    assert pending.diag["accepted"] is False
+    assert pending.diag["reason"] == "consensus_pending"
+    assert pending.diag["challenge_state"] == "pending"
+    assert pending.state == TargetState.TRACKING
+    assert pending.frames_since_update == 0, "a pending challenge is not a miss"
+    hits_before = tt.hits
+    assert tt.stats()["challenge_opened"] == 1
+    assert tt.stats()["challenge_committed"] == 0
+
+    _, _, committed = _walk(tt, 1, start=640.0, first=frame + 1)[0]
+    assert committed.diag["accepted"] is True
+    assert tt.hits == hits_before + 1, "only the committed frame is a hit"
+    st = tt.stats()
+    assert st["challenge_committed"] == 1
+    assert st["challenge_pending_frames"] == 1
+    kinds = [e.kind for e in tt.events]
+    assert kinds.count("consensus_pending") == 1
+    assert kinds.count("consensus_commit") == 1
+
+
+def test_consensus_pending_frames_do_not_escalate_the_state_machine():
+    """Three frames without a commit, still TRACKING with fsu 0.
+
+    Counting a pending challenge as a miss would walk the ladder
+    TRACKING -> SOFT_OCCLUSION after ``soft_occlusion_after`` frames and freeze
+    appearance memory exactly when the challenger's crops are the evidence the
+    vote needs (docs/E071_PLAN.md, trap 1).
+    """
+    tt = _crossing_tracker(**{"cost.commit_consensus": True, "cost.consensus_frames": 3})
+    _walk(tt, 7)  # everything before the cross-over
+    x = 640.0
+    for frame in (8, 9):
+        x += 20.0
+        s = tt.step(FRAME, [_det([x, 200, x + 100, 500])], frame_idx=frame)
+        assert s.diag["reason"] == "consensus_pending"
+        assert s.frames_since_update == 0
+        assert s.state == TargetState.TRACKING
+    assert tt.stats()["challenge_pending_frames"] == 2
+    assert tt.stats()["challenge_committed"] == 0
+
+
+def test_snapshot_restore_preserves_an_open_challenge():
+    """The half-built vote is state: a round-trip must not lose it."""
+    tt = _crossing_tracker(**{"cost.commit_consensus": True, "cost.consensus_frames": 2})
+    _walk(tt, 8)
+    assert tt.stats()["challenge_pending_frames"] == 1
+    snap = tt.snapshot()
+    assert snap["challenge"]["chain_frames"] == [8]
+    assert snap["challenge"]["counters"]["n_opened"] == 1
+
+    # run past the commit, then rewind to the pending frame
+    _, _, committed = _walk(tt, 1, start=640.0, first=9)[0]
+    assert committed.diag["accepted"] is True
+    assert tt.stats()["challenge_committed"] == 1
+    tt.restore(snap)
+    st = tt.stats()
+    assert st["challenge_opened"] == 1
+    assert st["challenge_committed"] == 0
+    assert st["challenge_pending_frames"] == 1
+
+    # ...and the restored chain still commits, instead of opening a fresh one
+    _, _, again = _walk(tt, 1, start=640.0, first=9)[0]
+    assert again.diag["accepted"] is True
+    assert tt.stats()["challenge_committed"] == 1
+    assert tt.stats()["challenge_opened"] == 1, "restore must not double-count openings"
+
+
+def test_consensus_classifies_a_candidate_without_evidence_as_incumbent():
+    """No descriptor (encoder failure) or no reference (first frame) -> no vote.
+
+    Refusing on absent evidence is E067's failure mode wearing a new hat, and
+    "no incumbent to keep" is the documented fallback to the shipped path.
+    """
+    tt = _crossing_tracker(**{"cost.commit_consensus": True, "cost.consensus_frames": 2})
+    _walk(tt, 3)
+    assert tt._consensus_is_incumbent(IDENT_A) is True
+    assert tt._consensus_is_incumbent(IDENT_B) is False
+    assert tt._consensus_is_incumbent(None) is True
+

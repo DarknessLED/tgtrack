@@ -60,6 +60,7 @@ from .trail import (
 )
 from .association import CostBreakdown, MatchResult, compute_costs, gate_radius, select_candidate
 from .config import Config, CostCfg, EmbedderCfg, StateCfg
+from .consensus import ChallengeState, ChallengeTracker
 from .memory import LongTermGallery, ShortTermMemory
 from .motion import MotionModel
 from .parts import crop_quality, estimate_partial_state, part_boxes, visible_ratio
@@ -74,6 +75,11 @@ CONFUSABLE_DIST = 0.35
 #: Hard cap on how many detections we are willing to push through the ReID
 #: encoder in a single frame during global re-detection.
 MAX_ENCODE = 64
+
+#: E071: refusal reason for a candidate that won the frame but has not yet been
+#: confirmed by the temporal vote.  Matched by the state machine in `step`, so
+#: the string lives here instead of being spelled out twice.
+REASON_CONSENSUS_PENDING = "consensus_pending"
 
 
 class TargetState(str, Enum):
@@ -191,6 +197,26 @@ class TargetTracker:
         self._anchor_seed: np.ndarray | None = None
         self._bootstrap_feats: list[np.ndarray] = []
         self._bootstrap_left: int = 0
+        #: E071 -- temporal consensus on the handback (docs/E071_PLAN.md). Built
+        #: only when ``CostCfg.commit_consensus`` is on; with the switch off the
+        #: attribute stays None and every hook below is skipped, which is what
+        #: keeps the shipped path byte-for-byte identical to the pre-E071 one.
+        self._challenge: ChallengeTracker | None = None
+        #: Appearance of the last ACCEPTED box: the descriptor of "the person we
+        #: currently report".  It is the only reference the consensus gate has
+        #: for the incumbent/challenger question, because this tracker is
+        #: single-hypothesis -- at association time exactly one candidate won,
+        #: and the only evidence about WHO it is, is its distance to this
+        #: vector.  Updated by `_on_match`, so it always describes the person
+        #: whose box we hand to the operator.
+        self._consensus_feat: np.ndarray | None = None
+        if bool(getattr(cfg.cost, "commit_consensus", False)):
+            self._challenge = ChallengeTracker(
+                frames_required=int(getattr(cfg.cost, "consensus_frames", 2)),
+                iou_thresh=float(getattr(cfg.cost, "consensus_iou", 0.30)),
+                ident_thresh=float(getattr(cfg.cost, "consensus_ident", 0.35)),
+                pool=bool(getattr(cfg.cost, "consensus_pool", True)),
+            )
 
     # ------------------------------------------------------------------ #
     # construction helpers
@@ -275,7 +301,26 @@ class TargetTracker:
             "encoder_errors": int(self._encode_errors),
             "encoder_error": self._last_diag.get("encoder_error"),
             "encoder_error_frame": self._last_diag.get("encoder_error_frame"),
+            # E071: mechanism evidence. A consensus rule that never opens a
+            # challenge is indistinguishable from a no-op, so the decision
+            # counters are part of the run record even when the switch is off
+            # (all zeros then, which is itself the proof that it was off).
+            "challenge_enabled": self._challenge is not None,
+            **self._challenge_stats(),
         }
+
+    def _challenge_stats(self) -> dict[str, Any]:
+        """E071 counters, zeroed when the mechanism is not built."""
+        if self._challenge is not None:
+            return dict(self._challenge.stats())
+        return {
+            "challenge_opened": 0,
+            "challenge_committed": 0,
+            "challenge_abandoned": 0,
+            "challenge_restarted": 0,
+            "challenge_pending_frames": 0,
+        }
+
 
     # ------------------------------------------------------------------ #
     # events
@@ -304,7 +349,78 @@ class TargetTracker:
             "stm_recent": [np.asarray(r, np.float32).tolist() for r in self.stm.recent(8)],
             "part_ema": {k: v.tolist() for k, v in self._part_ema.items()},
             "ltm": self.ltm.snapshot(),
+            # E071: the vote is *state* -- a challenger half-way to a commit must
+            # not be forgotten by a snapshot round-trip, or replaying a run from
+            # any frame would give a different commit decision than the run it
+            # replays.
+            "consensus_feat": (
+                None if self._consensus_feat is None
+                else np.asarray(self._consensus_feat, np.float32).reshape(-1).tolist()
+            ),
+            "challenge": self._challenge_snapshot(),
         }
+
+    # ------------------------------------------------------------------ #
+    # E071 consensus state (snapshot helpers)
+    # ------------------------------------------------------------------ #
+    def _challenge_snapshot(self) -> dict[str, Any] | None:
+        """Serialise the consensus chain.
+
+        ``ChallengeTracker`` exposes no snapshot API of its own, and its chain is
+        three parallel lists plus five counters, so mirroring those is the whole
+        of it.  Kept here rather than in ``consensus.py`` so the module stays a
+        pure decision function with a tiny surface.
+        """
+        ch = self._challenge
+        if ch is None:
+            return None
+        return {
+            "config": {
+                "frames_required": int(ch.frames_required),
+                "iou_thresh": float(ch.iou_thresh),
+                "ident_thresh": float(ch.ident_thresh),
+                "max_age": int(ch.max_age),
+                "pool": bool(ch.pool),
+            },
+            "chain_frames": [int(f) for f in ch._frames],
+            "chain_boxes": [np.asarray(b, np.float64).reshape(-1)[:4].tolist() for b in ch._boxes],
+            "chain_feats": [np.asarray(f, np.float32).reshape(-1).tolist() for f in ch._feats],
+            "last_frame": None if ch._last_frame is None else int(ch._last_frame),
+            "counters": {
+                "n_opened": int(ch.n_opened),
+                "n_committed": int(ch.n_committed),
+                "n_abandoned": int(ch.n_abandoned),
+                "n_restarted": int(ch.n_restarted),
+                "n_pending_frames": int(ch.n_pending_frames),
+            },
+        }
+
+    def _challenge_restore(self, snap: Any) -> None:
+        """Inverse of :meth:`_challenge_snapshot`; tolerates partial snapshots."""
+        ch = self._challenge
+        if ch is None or not isinstance(snap, dict):
+            return
+        cfg = dict(snap.get("config") or {})
+        for key in ("frames_required", "iou_thresh", "ident_thresh", "max_age", "pool"):
+            if key in cfg:
+                try:
+                    setattr(ch, key, type(getattr(ch, key))(cfg[key]))
+                except Exception:  # pragma: no cover - defensive
+                    pass
+        ch._frames = [int(f) for f in (snap.get("chain_frames") or [])]
+        ch._boxes = [
+            np.asarray(b, np.float64).reshape(-1)[:4] for b in (snap.get("chain_boxes") or [])
+        ]
+        ch._feats = [
+            np.asarray(f, np.float32).reshape(-1) for f in (snap.get("chain_feats") or [])
+        ]
+        last = snap.get("last_frame")
+        ch._last_frame = None if last is None else int(last)
+        for key, val in dict(snap.get("counters") or {}).items():
+            try:
+                setattr(ch, key, int(val))
+            except Exception:  # pragma: no cover - defensive
+                pass
 
     def restore(self, snap: dict[str, Any]) -> None:
         """Inverse of :meth:`snapshot`. Tolerates older/partial snapshots."""
@@ -330,6 +446,10 @@ class TargetTracker:
         self._part_ema_quality = {k: 1.0 for k in self._part_ema}
         if snap.get("ltm") is not None:
             self.ltm.restore(snap["ltm"])
+        # E071
+        cf = snap.get("consensus_feat")
+        self._consensus_feat = None if cf is None else np.asarray(cf, np.float32).reshape(-1)
+        self._challenge_restore(snap.get("challenge"))
 
     # ------------------------------------------------------------------ #
     # initialization (the click)
@@ -437,6 +557,10 @@ class TargetTracker:
         else:
             self.frame_idx = int(frame_idx)
         self.age += 1
+        # E071: remembered so that a refused challenger can leave the
+        # incumbent's time-since-seen untouched -- a pending challenge must not
+        # be counted as a miss (docs/E071_PLAN.md, trap 1).
+        fsu_before = self.frames_since_update
         self.frames_since_update += 1
         self._reacquired = False
 
@@ -465,6 +589,13 @@ class TargetTracker:
             self._on_match(frame_bgr, chosen, result, h, w)
             self._check_drift(chosen)
             self._audit_switch(frame_bgr, dets, chosen, h, w)
+        elif str(result.reason).startswith(REASON_CONSENSUS_PENDING):
+            # E071: the frame's winner is a challenger the vote has not
+            # confirmed yet, so the incumbent keeps the identity. This is a
+            # refusal of the challenger, NOT a missed observation of the
+            # incumbent: undo the miss bookkeeping and hold the last state.
+            self.frames_since_update = fsu_before
+            self._on_consensus_pending()
         else:
             self._on_miss(prev_state, result)
         # ---- out-of-frame bookkeeping (independent of detection) --------
@@ -729,9 +860,134 @@ class TargetTracker:
                     margin=float(res.margin),
                     diag=dict(res.diag or {}),
                 )
+        # ---- E071: temporal consensus on the handback ----------------------
+        # Deliberately LAST, after every existing veto.  Those answer "is this
+        # candidate the target?", and a candidate they refuse never reaches this
+        # gate; the vote only ever answers the different question "is this a NEW
+        # person taking over from the one we already report?".  Wiring it before
+        # the vetoes would let a challenger accumulate votes on frames where the
+        # tracker was never going to accept anything, which would turn a
+        # sustained refusal into an eventual handover -- the opposite of the
+        # intent.
+        if self._challenge is not None and not self.is_blind:
+            if res.accepted and res.index is not None:
+                res = self._consensus_gate(res, sub[int(res.index)])
+            else:
+                # No proposal this frame, so no vote: age any open chain instead
+                # of letting it survive unbounded.  A one-frame lookalike blip
+                # dies here, and that abandonment is the "we refused a tie"
+                # event the campaign wants to count.
+                self._last_diag.update(self._challenge.tick(self.frame_idx).as_diag())
         if res.index is not None:
             return res, full, sub[int(res.index)]
         return res, full, None
+
+    # ------------------------------------------------------------------ #
+    # E071 consensus
+    # ------------------------------------------------------------------ #
+    def _consensus_is_incumbent(self, feat: np.ndarray | None) -> bool:
+        """Is the frame's winning candidate the person we already report?
+
+        Three answers, and only one of them is "challenger":
+
+        * no reference yet (the first accepted frame after the click, or a
+          snapshot that carried no consensus state) -> incumbent: with nothing to
+          compare against there is no incumbent to *keep*, so the vote must stay
+          out of the way and the existing behaviour is preserved;
+        * no usable descriptor for this candidate -> incumbent, for the same
+          reason.  The identity leg is the whole point of the vote, and guessing
+          "different person" from a missing descriptor would refuse candidates on
+          frames where the encoder failed -- E067's failure mode wearing a new
+          hat;
+        * otherwise the candidate is a challenger when its cosine distance to the
+          incumbent's descriptor exceeds ``consensus_ident``.
+        """
+        ch = self._challenge
+        if ch is None or self._consensus_feat is None or feat is None:
+            return True
+        vec = np.asarray(feat, np.float32).reshape(-1)
+        if vec.size == 0 or vec.size != self._consensus_feat.size:
+            return True
+        if not (np.all(np.isfinite(vec)) and np.all(np.isfinite(self._consensus_feat))):
+            return True
+        d = float(cosine_distance_matrix(vec[None, :], self._consensus_feat[None, :])[0, 0])
+        return bool(d <= float(ch.ident_thresh))
+
+    def _consensus_gate(self, res: MatchResult, det: Detection) -> MatchResult:
+        """Feed one accepted proposal to the vote; refuse it until committed.
+
+        The commit rule from the plan: a *non-incumbent* candidate may only take
+        the identity once ``ChallengeTracker`` reports ``COMMITTED``.  Until then
+        the incumbent keeps the identity, which from the association layer's
+        point of view is a refusal of this candidate with reason
+        ``consensus_pending`` -- not a miss (see :meth:`_on_consensus_pending`).
+        """
+        ch = self._challenge
+        assert ch is not None  # guarded by the caller
+        feat = getattr(det, "feat", None)
+        if feat is not None:
+            try:
+                feat = np.asarray(feat, np.float32).reshape(-1)
+            except Exception:  # pragma: no cover - defensive
+                feat = None
+        incumbent = self._consensus_is_incumbent(feat)
+        report = ch.observe(
+            self.frame_idx,
+            np.asarray(det.xyxy, np.float64).reshape(-1)[:4],
+            feat,
+            incumbent=incumbent,
+        )
+        # An incumbent frame carries no proposal, so the chain clock has to be
+        # advanced explicitly; on a proposal frame this is a no-op.
+        if incumbent:
+            ch.tick(self.frame_idx)
+        self._last_diag.update(report.as_diag())
+        if incumbent or report.state == ChallengeState.COMMITTED:
+            if report.state == ChallengeState.COMMITTED:
+                self._emit(
+                    "consensus_commit",
+                    span=int(report.span),
+                    pending_n=int(report.pending_n),
+                    committed=int(ch.n_committed),
+                )
+            return res
+        self._last_diag["consensus_refused"] = 1
+        self._emit(
+            "consensus_pending",
+            pending_n=int(report.pending_n),
+            state=str(report.state),
+            why=str(report.reason),
+        )
+        return MatchResult(
+            index=res.index,
+            cost=float(res.cost),
+            accepted=False,
+            reason=REASON_CONSENSUS_PENDING,
+            margin=float(res.margin),
+            diag=dict(res.diag or {}),
+        )
+
+    def _on_consensus_pending(self) -> None:
+        """The chosen candidate was refused by the vote; keep the incumbent.
+
+        Crucially this is *not* :meth:`_on_miss`: the incumbent was not observed,
+        but it was not contradicted either, so ``frames_since_update`` was already
+        restored by the caller and the state machine must not escalate.  Counting
+        a pending challenge as a miss would push TRACKING -> SOFT_OCCLUSION after
+        ``soft_occlusion_after`` frames, i.e. it would turn the vote into a blind
+        window -- exactly the cascade ``docs/E071_PLAN.md`` warns about, and it
+        would freeze appearance memory right when the challenger's crops are the
+        evidence needed to decide.
+        """
+        self._last_diag["consensus_pending"] = 1
+        if self.motion.started and self.state is not TargetState.GAVE_UP:
+            # Report the incumbent's coasted position: refusing the challenger
+            # must not freeze the operator's box on the spot where the
+            # challenger happened to be.
+            try:
+                self._box = np.asarray(self.motion.coast(), np.float32)
+            except Exception:  # pragma: no cover - defensive
+                pass
 
     def _global_search(self) -> bool:
         """True when the target could be anywhere (so the motion gate is off).
@@ -1025,6 +1281,20 @@ class TargetTracker:
         self._box = np.asarray(det.xyxy, np.float32)
         self._score = float(det.score)
         self._rolled_back = False
+        # E071: this crop is now the person we report, so its descriptor becomes
+        # the reference the consensus gate compares the next frame against. Only
+        # a usable vector replaces it -- an unreadable crop (encoder failure,
+        # E067) must not erase the only evidence we have about the incumbent.
+        if self._challenge is not None:
+            feat = getattr(det, "feat", None)
+            if feat is not None:
+                try:
+                    vec = np.asarray(feat, np.float32).reshape(-1)
+                    n = float(np.linalg.norm(vec))
+                    if vec.size and np.all(np.isfinite(vec)) and n > 1e-12:
+                        self._consensus_feat = vec / n
+                except Exception:  # pragma: no cover - defensive
+                    pass
 
         # Absorb appearance only when memory is not frozen. A match during a
         # blind state is a *re-acquisition*: the crop may be the right person

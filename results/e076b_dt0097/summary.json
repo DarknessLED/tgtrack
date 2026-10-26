@@ -1,0 +1,17 @@
+{
+ "sequence": "dancetrack0097",
+ "target_id": 3,
+ "frames_scored": 60,
+ "tsr": 0.5333,
+ "wrong_frames": 28,
+ "wrong_frames_true_target_detected": 28,
+ "wrong_frames_true_target_iou_ge_0_3": 28,
+ "det_hit_rate_all_frames": 1.0,
+ "wrong_state_counts": {
+  "lost_short": 28
+ },
+ "wrong_det_iou_p50": 0.9683,
+ "wrong_area_ratio_p50": 2.614,
+ "correct_area_ratio_p50": 1.055,
+ "wrong_gt_h_p50": 404.0
+}

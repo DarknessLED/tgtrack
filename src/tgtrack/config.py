@@ -383,6 +383,39 @@ class CostCfg:
     #: margin 0.0635 against the 0.06 tracking threshold -- clearing it by 0.0035.
     #: Left at 0.0 (inert) until the A/B on an observable target says otherwise.
     distractor_margin_lost: float = 0.0
+    #: E071 -- TEMPORAL CONSENSUS ON THE HANDBACK (docs/E071_PLAN.md).
+    #:
+    #: Every refusal in the E029/E032/E060-E063 line is a *one-frame* test: a
+    #: cost bound, a margin over the runner-up, an appearance band.  That is the
+    #: wrong instrument for the failure that actually dominates here -- a
+    #: one/two-frame tie between two people, decided by whichever descriptor
+    #: happened to survive a partial crop on that single frame (E061: TSR 0.451
+    #: against the click-anchored subset, and the loss is a *confident* wrong
+    #: lock, not a lost target).  A vote over consecutive proposals separates
+    #: "this person keeps winning" from "this person won once".
+    #:
+    #: ``commit_consensus`` is the master switch and defaults to False, so the
+    #: shipped behaviour is byte-for-byte unchanged; the other four knobs are
+    #: inert while it is off.  ``consensus_frames`` is how many consecutive,
+    #: mutually consistent non-incumbent proposals are required before a
+    #: challenger may take the identity (0/1 = commit on the first frame, i.e.
+    #: the pre-E071 behaviour, available as an explicit control arm).
+    #:
+    #: ``consensus_iou`` gates agreement between *proposals*, not acceptance --
+    #: it is deliberately loose (0.15-0.30) because a person under a partial
+    #: crop moves in the box; ``consensus_ident`` is the leg that stops two
+    #: people standing in the same place from being read as agreement (cosine
+    #: distance between consecutive proposal descriptors).
+    #:
+    #: ``consensus_pool`` exposes the chain's pooled descriptor (L2-normalised
+    #: mean) for the caller -- the "pool before you decide" step from video face
+    #: recognition.  It is instrumentation: the shipped commit rule does not
+    #: read it, so turning it on cannot change a decision.
+    commit_consensus: bool = False
+    consensus_frames: int = 2
+    consensus_iou: float = 0.30
+    consensus_ident: float = 0.35
+    consensus_pool: bool = True
     #: Appearance cost charged to a candidate whose crop yielded NO usable
     #: descriptor. This is a HAZARD, not a neutral default.
     #:

@@ -1,6 +1,6 @@
 # MANIFEST — what is in this package
 
-Generated 2026-10-26 03:04 中国标准时间 by `scripts/build_handoff.py`. 914 files, 12.46 MB uncompressed.
+Generated 2026-10-27 01:34 中国标准时间 by `scripts/build_handoff.py`. 1043 files, 17.18 MB uncompressed.
 
 This file is generated; do not edit by hand.
 
@@ -14,10 +14,10 @@ This file is generated; do not edit by hand.
 | `docs/` | 34 | 1.12 MB | reports, the experiment ledger, surveys, plans, external reviews |
 | `pytest.ini/` | 1 | 0.00 MB | — |
 | `requirements.txt/` | 1 | 0.00 MB | — |
-| `results/` | 785 | 9.68 MB | the measured numbers as markdown/csv/small json summaries |
-| `scripts/` | 41 | 0.69 MB | every reproducible entry point; each experiment cites one |
-| `src/` | 18 | 0.50 MB | the library itself (`tgtrack`) |
-| `tests/` | 20 | 0.40 MB | the guarantees: 470+ tests encoding every measured behaviour |
+| `results/` | 908 | 14.30 MB | the measured numbers as markdown/csv/small json summaries |
+| `scripts/` | 47 | 0.76 MB | every reproducible entry point; each experiment cites one |
+| `src/` | 18 | 0.52 MB | the library itself (`tgtrack`) |
+| `tests/` | 20 | 0.41 MB | the guarantees: 470+ tests encoding every measured behaviour |
 | root files | 4 | — | README, pytest config, requirements |
 
 ## Deliberately EXCLUDED (and how to regenerate)
@@ -53,7 +53,7 @@ First 40 files by path, with sha256 prefix (12 hex), so a copy can be verified:
 | `docs/BRIEF.md` | 33595 | `1fc7a5c1a38e` |
 | `docs/E045_PLAN.md` | 4649 | `9bd3080e5161` |
 | `docs/E071_PLAN.md` | 5269 | `953140f88667` |
-| `docs/EXPERIMENTS.md` | 156796 | `bae944bcab1c` |
+| `docs/EXPERIMENTS.md` | 163484 | `87090361024a` |
 | `docs/EXPLORATION_TREE.md` | 17127 | `e05ff6c14385` |
 | `docs/HANDOFF.md` | 8352 | `37f32706ca30` |
 | `docs/HANDOFF.md` | 8352 | `37f32706ca30` |

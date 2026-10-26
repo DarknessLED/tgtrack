@@ -1,0 +1,62 @@
+{
+  "generated_by": "scripts/consensus_sweep.py",
+  "experiment": "E071",
+  "protocol": {
+    "max_frames": 300,
+    "subsample": 2,
+    "mask": "none",
+    "jobs": 1,
+    "detector": "yolo (shipped default)",
+    "target_strategy": "stressed (shipped default)"
+  },
+  "bootstrap": {
+    "reps": 2000,
+    "seed": 0,
+    "unit": "sequence"
+  },
+  "data_root": "data\\raw\\dancetrack\\val",
+  "dev_sequences": [
+    "dancetrack0004",
+    "dancetrack0005",
+    "dancetrack0007"
+  ],
+  "arms": {
+    "consensus_off": {
+      "variant": "consensus_off",
+      "overrides": {
+        "cost.commit_consensus": false
+      },
+      "label": "consensus off (shipped handback rule)",
+      "mechanism": "none"
+    },
+    "consensus_2f": {
+      "variant": "consensus_2f",
+      "overrides": {
+        "cost.commit_consensus": true,
+        "cost.consensus_frames": 2
+      },
+      "label": "two consecutive consistent proposals",
+      "mechanism": "vote 2 frames"
+    },
+    "consensus_3f": {
+      "variant": "consensus_3f",
+      "overrides": {
+        "cost.commit_consensus": true,
+        "cost.consensus_frames": 3
+      },
+      "label": "three consecutive consistent proposals",
+      "mechanism": "vote 3 frames"
+    },
+    "consensus_2f_pool": {
+      "variant": "consensus_2f_pool",
+      "overrides": {
+        "cost.commit_consensus": true,
+        "cost.consensus_frames": 2,
+        "cost.consensus_pool": true
+      },
+      "label": "two frames + pooled chain descriptor",
+      "mechanism": "vote 2 frames, pool on"
+    }
+  },
+  "note": "consensus_2f and consensus_2f_pool are configurationally identical because cost.consensus_pool ships as True; their agreement is a determinism check."
+}

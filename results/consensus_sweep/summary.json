@@ -1,0 +1,670 @@
+{
+  "generated_by": "scripts/consensus_sweep.py",
+  "experiment": "E071",
+  "dev_sequences": [
+    "dancetrack0004",
+    "dancetrack0005",
+    "dancetrack0007"
+  ],
+  "heldout_sequences": [
+    "dancetrack0010",
+    "dancetrack0014",
+    "dancetrack0018",
+    "dancetrack0019",
+    "dancetrack0025",
+    "dancetrack0026",
+    "dancetrack0030",
+    "dancetrack0034",
+    "dancetrack0035",
+    "dancetrack0041",
+    "dancetrack0043",
+    "dancetrack0047",
+    "dancetrack0058",
+    "dancetrack0063",
+    "dancetrack0065",
+    "dancetrack0073",
+    "dancetrack0077",
+    "dancetrack0079",
+    "dancetrack0081",
+    "dancetrack0090",
+    "dancetrack0094",
+    "dancetrack0097"
+  ],
+  "sequences_run": [
+    "dancetrack0010"
+  ],
+  "partial": true,
+  "n_pairs_run": 2,
+  "n_pairs_included": 2,
+  "n_pairs_excluded": 0,
+  "n_pairs_errors": 0,
+  "protocol": {
+    "max_frames": 300,
+    "subsample": 2,
+    "mask": "none",
+    "jobs": 1,
+    "detector": "yolo (shipped default)",
+    "target_strategy": "stressed (shipped default)"
+  },
+  "acceptance_rule": {
+    "source": "task statement / docs/E071_PLAN.md",
+    "text": "SHIP only if pooled TSR rises by >= +3 pp with the 95% CI of the paired delta excluding 0, and the upper bound of the paired dFAR CI is < +3 pp. KILL if TSR is unchanged (inert) or falls.",
+    "tsr_ship_pp": 3.0,
+    "far_max_pp": 3.0,
+    "statistic": "mean paired per-sequence delta vs consensus_off, cluster bootstrap over sequences"
+  },
+  "bootstrap": {
+    "reps": 2000,
+    "seed": 0,
+    "unit": "sequence"
+  },
+  "cli": {
+    "arms": "consensus_off,consensus_2f",
+    "force": false,
+    "limit_seqs": null,
+    "run_only": "dancetrack0010",
+    "command": "python scripts/consensus_sweep.py --arms consensus_off,consensus_2f --run-only dancetrack0010"
+  },
+  "order": [
+    "consensus_off",
+    "consensus_2f"
+  ],
+  "arms": {
+    "consensus_off": {
+      "arm": "consensus_off",
+      "variant": "consensus_off",
+      "overrides": {
+        "cost.commit_consensus": false
+      },
+      "label": "consensus off (shipped handback rule)",
+      "mechanism": "none",
+      "is_reference": true,
+      "rows": [
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "consensus_off",
+          "overrides": {
+            "cost.commit_consensus": false
+          },
+          "tsr": 0.28308823529411764,
+          "far": 0.68,
+          "id_consistency": 0.25274725274725274,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 271,
+          "false_acquisition_frames": 204,
+          "target_switch_count": 5,
+          "ms_per_frame": 147.20826466645426,
+          "target_id": 5,
+          "target_reason": "observable",
+          "guard_passed": true,
+          "harness_wall_seconds": 52.91,
+          "n_events": -1,
+          "available": true,
+          "challenge_enabled": false,
+          "n_opened": 0,
+          "n_committed": 0,
+          "n_abandoned": 0,
+          "n_restarted": 0,
+          "n_pending_frames": 0,
+          "arm": "consensus_off",
+          "label": "consensus off (shipped handback rule)",
+          "mechanism": "none",
+          "sequence": "dancetrack0010",
+          "target_id_forced": null,
+          "summary_path": "results\\consensus_sweep\\runs\\consensus_off\\dancetrack0010\\summary.json",
+          "log": "results\\consensus_sweep\\logs\\consensus_off__dancetrack0010.log",
+          "from_cache": true
+        }
+      ],
+      "included": [
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "consensus_off",
+          "overrides": {
+            "cost.commit_consensus": false
+          },
+          "tsr": 0.28308823529411764,
+          "far": 0.68,
+          "id_consistency": 0.25274725274725274,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 271,
+          "false_acquisition_frames": 204,
+          "target_switch_count": 5,
+          "ms_per_frame": 147.20826466645426,
+          "target_id": 5,
+          "target_reason": "observable",
+          "guard_passed": true,
+          "harness_wall_seconds": 52.91,
+          "n_events": -1,
+          "available": true,
+          "challenge_enabled": false,
+          "n_opened": 0,
+          "n_committed": 0,
+          "n_abandoned": 0,
+          "n_restarted": 0,
+          "n_pending_frames": 0,
+          "arm": "consensus_off",
+          "label": "consensus off (shipped handback rule)",
+          "mechanism": "none",
+          "sequence": "dancetrack0010",
+          "target_id_forced": null,
+          "summary_path": "results\\consensus_sweep\\runs\\consensus_off\\dancetrack0010\\summary.json",
+          "log": "results\\consensus_sweep\\logs\\consensus_off__dancetrack0010.log",
+          "from_cache": true
+        }
+      ],
+      "excluded": [],
+      "pooled": {
+        "total_report_frames": 300,
+        "n_included": 1,
+        "n_excluded": 0,
+        "estimator": "frame-weighted pooled mean over included sequences",
+        "tsr": 0.283088,
+        "tsr_mean": 0.283088,
+        "tsr_median": 0.283088,
+        "tsr_min": 0.283088,
+        "tsr_max": 0.283088,
+        "far": 0.68,
+        "far_mean": 0.68,
+        "far_median": 0.68,
+        "far_min": 0.68,
+        "far_max": 0.68,
+        "id_consistency": 0.252747,
+        "id_consistency_mean": 0.252747,
+        "id_consistency_median": 0.252747,
+        "id_consistency_min": 0.252747,
+        "id_consistency_max": 0.252747,
+        "ms_per_frame": 147.208265,
+        "ms_per_frame_mean": 147.208265,
+        "ms_per_frame_median": 147.208265,
+        "ms_per_frame_min": 147.208265,
+        "ms_per_frame_max": 147.208265
+      },
+      "bootstrap": {
+        "tsr": {
+          "reps": 2000,
+          "n_sequences": 1,
+          "seed": 0,
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 0.283088,
+          "p50": 0.283088,
+          "p97.5": 0.283088,
+          "mean": 0.283088
+        },
+        "far": {
+          "reps": 2000,
+          "n_sequences": 1,
+          "seed": 0,
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 0.68,
+          "p50": 0.68,
+          "p97.5": 0.68,
+          "mean": 0.68
+        },
+        "id_consistency": {
+          "reps": 2000,
+          "n_sequences": 1,
+          "seed": 0,
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 0.252747,
+          "p50": 0.252747,
+          "p97.5": 0.252747,
+          "mean": 0.252747
+        },
+        "ms_per_frame": {
+          "reps": 2000,
+          "n_sequences": 1,
+          "seed": 0,
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 147.208265,
+          "p50": 147.208265,
+          "p97.5": 147.208265,
+          "mean": 147.208265
+        }
+      },
+      "engagement": {
+        "n_opened": 0,
+        "n_committed": 0,
+        "n_abandoned": 0,
+        "n_restarted": 0,
+        "n_pending_frames": 0,
+        "n_sequences_with_any_challenge": 0,
+        "n_sequences_with_a_commit": 0,
+        "available": true
+      },
+      "frame_counts": {
+        "n_sequences": 1,
+        "n_report_frames": 300,
+        "n_frames": 300
+      },
+      "paired": {
+        "tsr": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 1,
+          "unpaired_sequences": [],
+          "delta_mean": 0.0,
+          "p2.5": 0.0,
+          "p50": 0.0,
+          "p97.5": 0.0,
+          "sequences_up": 0,
+          "sequences_down": 0,
+          "sequences_flat": 1,
+          "excludes_zero": false,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": 0.0,
+              "arm_value": 0.283088235,
+              "reference_value": 0.283088235,
+              "delta_pp": 0.0
+            }
+          ]
+        },
+        "far": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 1,
+          "unpaired_sequences": [],
+          "delta_mean": 0.0,
+          "p2.5": 0.0,
+          "p50": 0.0,
+          "p97.5": 0.0,
+          "sequences_up": 0,
+          "sequences_down": 0,
+          "sequences_flat": 1,
+          "excludes_zero": false,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": 0.0,
+              "arm_value": 0.68,
+              "reference_value": 0.68,
+              "delta_pp": 0.0
+            }
+          ]
+        },
+        "id_consistency": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 1,
+          "unpaired_sequences": [],
+          "delta_mean": 0.0,
+          "p2.5": 0.0,
+          "p50": 0.0,
+          "p97.5": 0.0,
+          "sequences_up": 0,
+          "sequences_down": 0,
+          "sequences_flat": 1,
+          "excludes_zero": false,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": 0.0,
+              "arm_value": 0.252747253,
+              "reference_value": 0.252747253,
+              "delta_pp": 0.0
+            }
+          ]
+        },
+        "ms_per_frame": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 1,
+          "unpaired_sequences": [],
+          "delta_mean": 0.0,
+          "p2.5": 0.0,
+          "p50": 0.0,
+          "p97.5": 0.0,
+          "sequences_up": 0,
+          "sequences_down": 0,
+          "sequences_flat": 1,
+          "excludes_zero": false,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": 0.0,
+              "arm_value": 147.208264666,
+              "reference_value": 147.208264666,
+              "delta_pp": 0.0
+            }
+          ]
+        }
+      },
+      "verdict": {
+        "arm": "consensus_off",
+        "rule": "SHIP iff pooled dTSR >= +3.0 pp AND paired-dTSR 95% CI excludes 0 AND paired-dFAR 95% CI upper bound < +3.0 pp; KILL if pooled dTSR <= 0",
+        "verdict": "REFERENCE",
+        "text": "Reference arm: the shipped handback rule."
+      }
+    },
+    "consensus_2f": {
+      "arm": "consensus_2f",
+      "variant": "consensus_2f",
+      "overrides": {
+        "cost.commit_consensus": true,
+        "cost.consensus_frames": 2
+      },
+      "label": "two consecutive consistent proposals",
+      "mechanism": "vote 2 frames",
+      "is_reference": false,
+      "rows": [
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "consensus_2f",
+          "overrides": {
+            "cost.commit_consensus": true,
+            "cost.consensus_frames": 2
+          },
+          "tsr": 0.25735294117647056,
+          "far": 0.42,
+          "id_consistency": 0.32978723404255317,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 194,
+          "false_acquisition_frames": 126,
+          "target_switch_count": 17,
+          "ms_per_frame": 150.23877266833247,
+          "target_id": 5,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 51.54,
+          "n_events": -1,
+          "available": true,
+          "challenge_enabled": true,
+          "n_opened": 29,
+          "n_committed": 11,
+          "n_abandoned": 6,
+          "n_restarted": 11,
+          "n_pending_frames": 29,
+          "arm": "consensus_2f",
+          "label": "two consecutive consistent proposals",
+          "mechanism": "vote 2 frames",
+          "sequence": "dancetrack0010",
+          "target_id_forced": 5,
+          "summary_path": "results\\consensus_sweep\\runs\\consensus_2f\\dancetrack0010\\summary.json",
+          "log": "results\\consensus_sweep\\logs\\consensus_2f__dancetrack0010.log",
+          "from_cache": true
+        }
+      ],
+      "included": [
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "consensus_2f",
+          "overrides": {
+            "cost.commit_consensus": true,
+            "cost.consensus_frames": 2
+          },
+          "tsr": 0.25735294117647056,
+          "far": 0.42,
+          "id_consistency": 0.32978723404255317,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 194,
+          "false_acquisition_frames": 126,
+          "target_switch_count": 17,
+          "ms_per_frame": 150.23877266833247,
+          "target_id": 5,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 51.54,
+          "n_events": -1,
+          "available": true,
+          "challenge_enabled": true,
+          "n_opened": 29,
+          "n_committed": 11,
+          "n_abandoned": 6,
+          "n_restarted": 11,
+          "n_pending_frames": 29,
+          "arm": "consensus_2f",
+          "label": "two consecutive consistent proposals",
+          "mechanism": "vote 2 frames",
+          "sequence": "dancetrack0010",
+          "target_id_forced": 5,
+          "summary_path": "results\\consensus_sweep\\runs\\consensus_2f\\dancetrack0010\\summary.json",
+          "log": "results\\consensus_sweep\\logs\\consensus_2f__dancetrack0010.log",
+          "from_cache": true
+        }
+      ],
+      "excluded": [],
+      "pooled": {
+        "total_report_frames": 300,
+        "n_included": 1,
+        "n_excluded": 0,
+        "estimator": "frame-weighted pooled mean over included sequences",
+        "tsr": 0.257353,
+        "tsr_mean": 0.257353,
+        "tsr_median": 0.257353,
+        "tsr_min": 0.257353,
+        "tsr_max": 0.257353,
+        "far": 0.42,
+        "far_mean": 0.42,
+        "far_median": 0.42,
+        "far_min": 0.42,
+        "far_max": 0.42,
+        "id_consistency": 0.329787,
+        "id_consistency_mean": 0.329787,
+        "id_consistency_median": 0.329787,
+        "id_consistency_min": 0.329787,
+        "id_consistency_max": 0.329787,
+        "ms_per_frame": 150.238773,
+        "ms_per_frame_mean": 150.238773,
+        "ms_per_frame_median": 150.238773,
+        "ms_per_frame_min": 150.238773,
+        "ms_per_frame_max": 150.238773
+      },
+      "bootstrap": {
+        "tsr": {
+          "reps": 2000,
+          "n_sequences": 1,
+          "seed": 0,
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 0.257353,
+          "p50": 0.257353,
+          "p97.5": 0.257353,
+          "mean": 0.257353
+        },
+        "far": {
+          "reps": 2000,
+          "n_sequences": 1,
+          "seed": 0,
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 0.42,
+          "p50": 0.42,
+          "p97.5": 0.42,
+          "mean": 0.42
+        },
+        "id_consistency": {
+          "reps": 2000,
+          "n_sequences": 1,
+          "seed": 0,
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 0.329787,
+          "p50": 0.329787,
+          "p97.5": 0.329787,
+          "mean": 0.329787
+        },
+        "ms_per_frame": {
+          "reps": 2000,
+          "n_sequences": 1,
+          "seed": 0,
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 150.238773,
+          "p50": 150.238773,
+          "p97.5": 150.238773,
+          "mean": 150.238773
+        }
+      },
+      "engagement": {
+        "n_opened": 29,
+        "n_committed": 11,
+        "n_abandoned": 6,
+        "n_restarted": 11,
+        "n_pending_frames": 29,
+        "n_sequences_with_any_challenge": 1,
+        "n_sequences_with_a_commit": 1,
+        "available": true
+      },
+      "frame_counts": {
+        "n_sequences": 1,
+        "n_report_frames": 300,
+        "n_frames": 300
+      },
+      "paired": {
+        "tsr": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 1,
+          "unpaired_sequences": [],
+          "delta_mean": -0.025735294,
+          "p2.5": -0.025735294,
+          "p50": -0.025735294,
+          "p97.5": -0.025735294,
+          "sequences_up": 0,
+          "sequences_down": 1,
+          "sequences_flat": 0,
+          "excludes_zero": true,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": -0.025735294,
+              "arm_value": 0.257352941,
+              "reference_value": 0.283088235,
+              "delta_pp": -2.574
+            }
+          ]
+        },
+        "far": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 1,
+          "unpaired_sequences": [],
+          "delta_mean": -0.26,
+          "p2.5": -0.26,
+          "p50": -0.26,
+          "p97.5": -0.26,
+          "sequences_up": 0,
+          "sequences_down": 1,
+          "sequences_flat": 0,
+          "excludes_zero": true,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": -0.26,
+              "arm_value": 0.42,
+              "reference_value": 0.68,
+              "delta_pp": -26.0
+            }
+          ]
+        },
+        "id_consistency": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 1,
+          "unpaired_sequences": [],
+          "delta_mean": 0.077039981,
+          "p2.5": 0.077039981,
+          "p50": 0.077039981,
+          "p97.5": 0.077039981,
+          "sequences_up": 1,
+          "sequences_down": 0,
+          "sequences_flat": 0,
+          "excludes_zero": true,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": 0.077039981,
+              "arm_value": 0.329787234,
+              "reference_value": 0.252747253,
+              "delta_pp": 7.704
+            }
+          ]
+        },
+        "ms_per_frame": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 1,
+          "unpaired_sequences": [],
+          "delta_mean": 3.030508002,
+          "p2.5": 3.030508002,
+          "p50": 3.030508002,
+          "p97.5": 3.030508002,
+          "sequences_up": 1,
+          "sequences_down": 0,
+          "sequences_flat": 0,
+          "excludes_zero": true,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": 3.030508002,
+              "arm_value": 150.238772668,
+              "reference_value": 147.208264666,
+              "delta_pp": 303.051
+            }
+          ]
+        }
+      },
+      "verdict": {
+        "arm": "consensus_2f",
+        "rule": "SHIP iff pooled dTSR >= +3.0 pp AND paired-dTSR 95% CI excludes 0 AND paired-dFAR 95% CI upper bound < +3.0 pp; KILL if pooled dTSR <= 0",
+        "verdict": "KILL",
+        "text": "KILL: pooled TSR does not rise (-2.57 pp).",
+        "pooled_dtsr_pp": -2.574,
+        "pooled_dfar_pp": -26.0,
+        "pooled_did_consistency_pp": 7.704,
+        "pooled_dms_per_frame": 3.031,
+        "paired_dtsr_mean_pp": -2.574,
+        "paired_dtsr_ci_pp": [
+          -2.574,
+          -2.574
+        ],
+        "paired_dfar_mean_pp": -26.0,
+        "paired_dfar_ci_pp": [
+          -26.0,
+          -26.0
+        ],
+        "paired_dtsr_excludes_zero": true,
+        "paired_dfar_excludes_zero": true,
+        "tsr_magnitude_ok": false,
+        "tsr_ci_ok": false,
+        "far_ci_ok": true,
+        "mechanism_inert": false,
+        "sequences_up": 0,
+        "sequences_down": 1,
+        "sequences_flat": 0
+      }
+    }
+  },
+  "target_ids": {
+    "dancetrack0010": 5
+  },
+  "wall_seconds": 0.0,
+  "wall_seconds_pair_sum": 0.0,
+  "code_state": {}
+}

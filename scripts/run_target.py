@@ -146,6 +146,7 @@ GROUPS = (
     "trail",
     "tube_velocity",
     "audit",
+    "consensus",
 )
 
 DEFAULT_MARGINS = (0.0, 0.06, 0.12)
@@ -261,8 +262,11 @@ def build_variants(
     """The ablation grid: ``baseline`` plus every selected group's variants.
 
     ``groups`` accepts ``None``/``"all"`` or a comma-separated string / sequence
-    of group names.  Unknown group names raise ``ValueError`` (a typo must not
-    silently drop a claim from the table).
+    of group names.  A token may also narrow its group to specific variants with
+    ``group:variant`` (several via ``group:v1/v2``) -- which is what a single-arm
+    run needs, and what a habit of typing ``--ablate consensus:consensus_3f``
+    expects.  Unknown group names raise ``ValueError`` (a typo must not silently
+    drop a claim from the table), and so do unknown variant names.
     """
     if groups is None:
         selected = list(GROUPS)
@@ -272,12 +276,19 @@ def build_variants(
         ]
     else:
         selected = [str(g) for g in groups]
+    specs: list[tuple[str, list[str] | None]] = []
+    for token in selected:
+        name, _, tail = token.partition(":")
+        keep = [v.strip() for v in tail.split("/") if v.strip()] if tail else []
+        specs.append((name.strip(), keep or None))
+    selected = [name for name, _ in specs]
     unknown = [g for g in selected if g not in GROUPS]
     if unknown:
         raise ValueError(f"unknown ablation group(s) {unknown}; known: {list(GROUPS)}")
 
     out: list[Variant] = [Variant("baseline", "baseline", {}, "shipped default config")]
-    for g in selected:
+    for g, only in specs:
+        first = len(out)
         if g == "part_matching":
             out.append(Variant("part_matching_off", g, {"cost.part_matching": False}, "no part-aware matching"))
         elif g == "part_aware":
@@ -652,6 +663,58 @@ def build_variants(
                     "grow the radius from the decaying coasted speed",
                 )
             )
+        elif g == "consensus":
+            # E071: temporal consensus on the handback (docs/E071_PLAN.md).
+            # `consensus_off` is the reference arm and repeats the shipped value
+            # explicitly, so a reader of the table can see what the other arms
+            # are compared against without going to config.py.
+            out.append(
+                Variant(
+                    "consensus_off",
+                    g,
+                    {"cost.commit_consensus": False},
+                    "reference: no vote, pre-E071 handback rule",
+                )
+            )
+            out.append(
+                Variant(
+                    "consensus_2f",
+                    g,
+                    {"cost.commit_consensus": True, "cost.consensus_frames": 2},
+                    "two consecutive consistent proposals before a handover",
+                )
+            )
+            out.append(
+                Variant(
+                    "consensus_3f",
+                    g,
+                    {"cost.commit_consensus": True, "cost.consensus_frames": 3},
+                    "three consecutive consistent proposals before a handover",
+                )
+            )
+            out.append(
+                Variant(
+                    "consensus_2f_pool",
+                    g,
+                    {
+                        "cost.commit_consensus": True,
+                        "cost.consensus_frames": 2,
+                        "cost.consensus_pool": True,
+                    },
+                    "2 frames + pooled chain descriptor exposed in the diag",
+                )
+            )
+        if only is not None:
+            def _hit(name: str) -> bool:
+                return any(name == o or name.startswith(o) for o in only)
+
+            made = out[first:]
+            missing = [o for o in only if not any(_hit(v.name) for v in made)]
+            if missing:
+                raise ValueError(
+                    f"unknown variant(s) {missing} in group {g!r}; known: {[v.name for v in made]}"
+                )
+            out[first:] = [v for v in made if _hit(v.name)]
     return out
 
 
