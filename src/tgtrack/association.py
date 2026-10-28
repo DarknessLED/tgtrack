@@ -119,6 +119,16 @@ class CostBreakdown:
     winning_parts: list[tuple[str, str] | None] = field(default_factory=list)
     #: Why a candidate was excluded, per index ("" when admissible).
     excluded: list[str] = field(default_factory=list)
+    #: E077 -- height-normalised centre distance ``|det_c - pred_c| / gate_radius``
+    #: (the same normalisation ``motion_cost`` applies to its distance term).
+    #: ``+inf`` when the motion prediction carries no information this frame
+    #: (``apply_motion`` False: the global-search path and every blind state), so
+    #: the geometry channel can never carry a decision where geometry is not
+    #: evidence -- that would be E022's latch, re-opened.
+    norm_centre: np.ndarray | None = None
+    #: E077 -- ``log(det_h / pred_h)`` per candidate. ``+inf`` under the same
+    #: condition as ``norm_centre``.
+    log_h_ratio: np.ndarray | None = None
 
     def __len__(self) -> int:
         return int(self.total.shape[0])
@@ -134,6 +144,10 @@ class MatchResult:
     reason: str
     margin: float = 0.0
     diag: dict[str, Any] = field(default_factory=dict)
+    #: E077 -- which conclusive channel admitted this candidate on the OR-branch:
+    #: ``""`` (the additive bound was satisfied, i.e. no new behaviour), or
+    #: ``"geometry"`` / ``"appearance"``.
+    channel: str = ""
 
 
 # --------------------------------------------------------------------------- #
@@ -510,6 +524,46 @@ def compute_costs(
     total = w_m * m_cost + w_a * a_cost + w_d * d_cost + w_s * s_cost
     total = total + cfg.hard_negative_penalty * hn
 
+    # --- E077: the two channel costs the OR-branch of acceptance reads --------
+    # Computed from the same prediction and the same radius that gate this frame,
+    # and NEVER folded into `total`: the ranking score is exactly what it was.
+    #
+    # They are ``+inf`` only when there IS no prediction (no motion model yet).
+    # Deliberately NOT also gated on `apply_motion`: the whole point of the arm is
+    # the frame where the tracker refuses a candidate that sits exactly where it
+    # predicted, and on this tracker those frames are the `lost_short` ones, where
+    # `apply_motion` is False.  Neutering the channel there would make the arm
+    # structurally inert (measured: byte-identical to the reference on
+    # dancetrack0097).  What keeps it honest is the bar itself -- with
+    # `channel_geom_tau` at the correct-frame median (0.0278) the candidate must
+    # sit within ~3 % of the current gate RADIUS of the prediction, i.e. about
+    # 6-12 px on these sequences, which is a far tighter claim than the loose
+    # spatial latch E022 removed -- plus the refusal rules that still run on top
+    # (search needs readable appearance, search margin, ambiguous margin).
+    if pred_xyxy is None:
+        norm_centre = np.full((n,), np.inf, dtype=np.float32)
+        log_h_ratio = np.full((n,), np.inf, dtype=np.float32)
+    else:
+        rad = gate_radius_override or gate_radius(
+            velocity, cfg.gate_base, cfg.gate_speed_gain, frame_diag
+        )
+        p4 = np.asarray(pred_xyxy, dtype=np.float32).reshape(4)
+        ph = max(abs(float(p4[3] - p4[1])), 1e-6)
+        pc = np.array([(p4[0] + p4[2]) / 2.0, (p4[1] + p4[3]) / 2.0], dtype=np.float32)
+        if n:
+            dc = np.stack(
+                [(boxes[:, 0] + boxes[:, 2]) / 2.0, (boxes[:, 1] + boxes[:, 3]) / 2.0], axis=1
+            )
+            dist = np.linalg.norm(dc - pc[None, :], axis=1)
+            norm_centre = (dist / max(float(rad), 1e-6)).astype(np.float32)
+            dh = np.maximum(boxes[:, 3] - boxes[:, 1], 1e-6)
+            log_h_ratio = np.log(dh / ph).astype(np.float32)
+            norm_centre = np.nan_to_num(norm_centre, nan=np.inf, posinf=np.inf, neginf=np.inf)
+            log_h_ratio = np.nan_to_num(log_h_ratio, nan=np.inf, posinf=np.inf, neginf=np.inf)
+        else:
+            norm_centre = np.zeros((0,), np.float32)
+            log_h_ratio = np.zeros((0,), np.float32)
+
     maha = np.full((n,), np.inf, dtype=np.float32)
     if motion is not None and n:
         try:
@@ -548,6 +602,8 @@ def compute_costs(
         hard_negative=hn,
         winning_parts=pairs,
         excluded=reasons,
+        norm_centre=norm_centre,
+        log_h_ratio=log_h_ratio,
     )
 
 
@@ -609,20 +665,39 @@ def select_candidate(
     best = int(order[0])
     best_cost = float(total[best])
 
-    if best_cost > thr:
-        return MatchResult(
-            best,
-            best_cost,
-            False,
-            f"cost {best_cost:.3f} > accept {thr:.3f}",
-            diag=_diag(breakdown, best),
-        )
-
     margin = float("inf")
     if len(order) > 1:
         second = int(order[1])
         if np.isfinite(total[second]):
             margin = float(total[second] - best_cost)
+
+    # ------------------------------------------------------------------ #
+    # E077 arm B -- the additive bound gets an OR-branch.
+    #
+    # `total` remains the RANKING score above (argsort untouched) and the bound
+    # below is untouched too; what changes is only what happens when it fails.
+    # A candidate whose ADDITIVE sum is too high may still be admitted when a
+    # single channel is individually conclusive: geometry (it is exactly where we
+    # predicted, at the predicted height) or appearance (it is at the median
+    # distance of a genuine same-person pair AND it still beats the runner-up).
+    # Both legs are only reachable when the channel is informative at all
+    # (`norm_centre`/`log_h_ratio` are +inf while searching, so geometry cannot
+    # carry a rebind), and every refusal BELOW still runs: ambiguous margin,
+    # lone-candidate bound, and the caller's search-needs-appearance rule.
+    # ------------------------------------------------------------------ #
+    channel = ""
+    if best_cost > thr:
+        channel = _conclusive_channel(breakdown, best, cfg, margin=margin,
+                                      require_margin=require_margin, lost=lost)
+        if not channel:
+            return MatchResult(
+                best,
+                best_cost,
+                False,
+                f"cost {best_cost:.3f} > accept {thr:.3f}",
+                margin=margin,
+                diag=_diag(breakdown, best),
+            )
 
     # While the motion prior is dead the gate is off, so appearance is the only
     # evidence left and the discriminative requirement goes UP even though
@@ -675,7 +750,59 @@ def select_candidate(
                 diag=_diag(breakdown, best),
             )
 
-    return MatchResult(best, best_cost, True, "ok", margin=margin, diag=_diag(breakdown, best))
+    return MatchResult(best, best_cost, True, "ok", margin=margin, diag=_diag(breakdown, best),
+                       channel=channel)
+
+
+def _conclusive_channel(
+    b: CostBreakdown,
+    i: int,
+    cfg: CostCfg,
+    *,
+    margin: float,
+    require_margin: bool,
+    lost: bool,
+) -> str:
+    """E077 arm B: is channel ``i`` individually conclusive enough to carry the frame?
+
+    Returns ``"geometry"``, ``"appearance"`` or ``""``.  Inert unless
+    ``CostCfg.channel_accept`` is set, so the shipped decision is unchanged.
+
+    geometry   ``norm_centre <= channel_geom_tau AND |log h_ratio| <= 0.25``
+    appearance ``app_cost <= channel_app_tau AND margin >= distractor_margin``
+
+    The 0.25 on the height ratio is a physical bound (a person's height does not
+    change by more than ~28 % between two frames of the same shot), not a tuned
+    weight; the plan fixes it in code.  ``appearance`` additionally requires that
+    the appearance was actually READABLE (``appearance_valid``): the constant
+    placeholder charged for an unreadable crop is not evidence, which is the same
+    argument that keeps the lone-candidate bound conditional on it.
+    """
+    if not bool(getattr(cfg, "channel_accept", False)):
+        return ""
+
+    g_tau = float(getattr(cfg, "channel_geom_tau", 0.0) or 0.0)
+    nc = getattr(b, "norm_centre", None)
+    lh = getattr(b, "log_h_ratio", None)
+    if g_tau > 0.0 and nc is not None and lh is not None and i < len(nc) and i < len(lh):
+        nc_i = float(np.asarray(nc)[i])
+        lh_i = float(np.asarray(lh)[i])
+        if np.isfinite(nc_i) and np.isfinite(lh_i) and nc_i <= g_tau and abs(lh_i) <= 0.25:
+            return "geometry"
+
+    a_tau = float(getattr(cfg, "channel_app_tau", 0.0) or 0.0)
+    if a_tau > 0.0:
+        valid = bool(np.asarray(b.appearance_valid)[i])
+        a_cost = float(np.asarray(b.appearance)[i])
+        margin_thr = float(cfg.distractor_margin)
+        if lost:
+            override = float(getattr(cfg, "distractor_margin_lost", 0.0) or 0.0)
+            if override > 0:
+                margin_thr = override
+        margin_ok = (not require_margin) or (margin >= margin_thr)
+        if valid and np.isfinite(a_cost) and a_cost <= a_tau and margin_ok:
+            return "appearance"
+    return ""
 
 
 def _diag(b: CostBreakdown, i: int) -> dict[str, Any]:
@@ -692,6 +819,14 @@ def _diag(b: CostBreakdown, i: int) -> dict[str, Any]:
         d["maha"] = float(b.maha[i])
     if i < len(b.winning_parts):
         d["parts"] = b.winning_parts[i]
+    # E077: the two channel costs, so a run can show WHY the branch did or did not
+    # fire (the E032b failure mode is a branch that never runs).
+    nc = getattr(b, "norm_centre", None)
+    if nc is not None and i < len(nc):
+        d["norm_centre"] = float(np.asarray(nc)[i])
+    lh = getattr(b, "log_h_ratio", None)
+    if lh is not None and i < len(lh):
+        d["log_h_ratio"] = float(np.asarray(lh)[i])
     return d
 
 

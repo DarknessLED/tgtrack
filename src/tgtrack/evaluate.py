@@ -850,6 +850,24 @@ def target_frame_table(
         # status recorded at all makes no claim about who is being followed.
         locked = state is not None and state not in _BLIND_STATE_SET
 
+        # E077: the per-frame CHANNEL costs of the candidate the tracker selected
+        # (whether or not it was accepted), plus which conclusive channel carried
+        # an otherwise-refused acceptance.  They are what makes the two arms
+        # auditable after the fact: the pre-registered engagement check is the
+        # `blind AND gt_present` share, and the arm-C mechanism is only visible in
+        # the box geometry, which this dump carries.  Absent diag keys become
+        # empty CSV fields, so a dump from a build without E077 still parses.
+        dg = dict(getattr(st, "diag", {}) or {}) if st is not None else {}
+
+        def _num(key: str) -> float | None:
+            v = dg.get(key)
+            if v is None:
+                return None
+            try:
+                return float(v)
+            except (TypeError, ValueError):
+                return None
+
         rows.append({
             "frame": int(f),
             "gt_present": bool(gt_arr is not None),
@@ -867,6 +885,22 @@ def target_frame_table(
             "false_acquisition": bool(fa),
             "followed_id": followed_id,
             "followed_id_from_diag": diag_id is not None,
+            "ch_norm_centre": _num("ch_norm_centre"),
+            "ch_log_h_ratio": _num("ch_log_h_ratio"),
+            "ch_app_cost": _num("ch_app_cost"),
+            "ch_app_valid": None if "ch_app_valid" not in dg else bool(dg.get("ch_app_valid")),
+            "accept_channel": "" if dg.get("accept_channel") is None else str(dg.get("accept_channel")),
+            "refuse_reason": "" if dg.get("refuse_reason") is None else str(dg.get("refuse_reason")),
+            # E079: the E029 band actually used this frame, whether it was pinned at
+            # its ceiling, and what the reference vote did -- so the `blind AND present`
+            # share can be attributed to the veto rather than only counted.
+            "anchor_band": _num("anchor_band"),
+            "anchor_band_sat": None if "anchor_band_sat" not in dg else bool(dg.get("anchor_band_sat")),
+            "vote_n": _num("vote_n"),
+            "vote_r2": _num("vote_r2"),
+            "vote_r3": _num("vote_r3"),
+            "vote_rescued": _num("vote_rescued"),
+            "vote_rescued_accepted": _num("vote_rescued_accepted"),
             "reacquired": bool(st.reacquired) if st is not None else False,
             "frames_since_update": int(st.frames_since_update) if st is not None else -1,
             "age": int(st.age) if st is not None else -1,
@@ -882,6 +916,10 @@ def write_frame_csv(path: str | Path, rows: Sequence[dict[str, Any]]) -> Path:
         "frame", "gt_present", "gt_xyxy", "target_person_id", "target_person_id_iou",
         "reported", "state", "locked", "pred_xyxy", "iou_target", "best_gt_id", "best_gt_iou",
         "correct", "false_acquisition", "followed_id", "followed_id_from_diag",
+        "ch_norm_centre", "ch_log_h_ratio", "ch_app_cost", "ch_app_valid", "accept_channel",
+        "refuse_reason",
+        "anchor_band", "anchor_band_sat",
+        "vote_n", "vote_r2", "vote_r3", "vote_rescued", "vote_rescued_accepted",
         "reacquired", "frames_since_update", "age",
     ]
     with path.open("w", newline="", encoding="utf-8") as fh:

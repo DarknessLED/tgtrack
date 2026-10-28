@@ -45,3 +45,17 @@ Sweep the search-side gate **on the 22 held-out sequences only** (never on dance
   would show low coverage, but coverage is 84.4 %.
 - New identity evidence: both admissible families are closed by measurement (points 4-5).
 - More knobs in the same family: E032b showed the family is bit-identical at its own end state.
+
+## Update 2026-10-28 (round 27) — E081 closed KILL; the gate is measured, the hypothesis is dead
+
+- `anchor_vote` stays **"off"**. E081's distress gate fails its own ship rule (best paired
+  dTSR +2.63 pp, CI [-0.37, +6.34]) and, more importantly, falsifies the hypothesis behind it:
+  the gate keeps 85-102 % of the FAR benefit but only 7-45 % of the TSR benefit, so the useful
+  rescues happen in frames where the tracker is confident, not distressed.
+- The gate's plumbing is *proven* correct on real data: the `tau = 1.00` null arm is
+  bit-identical to `vote_off` on all 22 held-out sequences (0.00 pp, CI [0.0, 0.0]).
+- `vote_adaptive_0.20` pooled FAR **0.1896** is the first sub-0.20 FAR in the campaign with TSR
+  above the reference. Criterion 2's FAR half is reachable; its TSR half (>= 0.55) is not.
+- Next experiment is pre-registered in `docs/E082_PLAN.md`: replace "when is the tracker
+  uncertain" with "when is the click crop the wrong reference", via a contrast requirement
+  `d_R1 - min(d_R2, d_R3) >= delta` (delta = 0 must reproduce E079's blanket arm bit-for-bit).

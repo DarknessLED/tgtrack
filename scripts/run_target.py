@@ -147,6 +147,9 @@ GROUPS = (
     "tube_velocity",
     "audit",
     "consensus",
+    "channel",
+    "absorb",
+    "vote",
 )
 
 DEFAULT_MARGINS = (0.0, 0.06, 0.12)
@@ -702,6 +705,156 @@ def build_variants(
                         "cost.consensus_pool": True,
                     },
                     "2 frames + pooled chain descriptor exposed in the diag",
+                )
+            )
+        elif g == "channel":
+            # E077 (docs/E077_PLAN.md): two independent fixes for the two defects
+            # E076 isolated, plus the conjunction.  Both switches default to False,
+            # so `channel_off` is the shipped behaviour spelled out explicitly and
+            # the three candidates differ from it in EXACTLY one or two booleans --
+            # the two thresholds (`cost.channel_geom_tau`, `cost.channel_app_tau`)
+            # are NOT swept here, they were derived once from the dev split
+            # (results/e077_calib/thresholds.json) and are identical in every arm.
+            out.append(
+                Variant(
+                    "channel_off",
+                    g,
+                    {"cost.channel_accept": False, "motion.aspect_clamp_coast": False},
+                    "reference: both E077 arms off (the shipped behaviour)",
+                )
+            )
+            out.append(
+                Variant(
+                    "channel_fusion",
+                    g,
+                    {"cost.channel_accept": True},
+                    "B: channel-conditional acceptance -- geometry OR appearance may carry the frame",
+                )
+            )
+            out.append(
+                Variant(
+                    "channel_aspect",
+                    g,
+                    {"motion.aspect_clamp_coast": True},
+                    "C: bounded-aspect coasting -- clamp the coasted aspect to the last observed band",
+                )
+            )
+            out.append(
+                Variant(
+                    "channel_both",
+                    g,
+                    {"cost.channel_accept": True, "motion.aspect_clamp_coast": True},
+                    "D: B + C",
+                )
+            )
+        elif g == "absorb":
+            # E078 (docs/EXPERIMENTS.md): gate long-term gallery admission on the
+            # distance to the frozen click anchor.  E077-PREP measured that 52.5 % of
+            # `tracking`-reported frames are wrong and that 88.6 % of those sit on a
+            # DIFFERENT real person at IoU >= 0.5 (median area ratio 1.03): the gallery
+            # absorbs the impostor and every later frame confirms him.  The ratios are
+            # derived from data (results/absorb_sweep/ratio_derivation.json), not tuned:
+            # 0.90 is the Youden-optimal cut of the measured correct-vs-wrong ratio
+            # distribution, 1.09 its correct-frame p99.  `absorb_off` spells out the
+            # shipped behaviour, which is what the default (False) does anyway.
+            out.append(
+                Variant(
+                    "absorb_off",
+                    g,
+                    {
+                        "memory.ltm_absorb_anchor_only": False,
+                        "memory.ltm_absorb_anchor_ratio": 1.25,
+                    },
+                    "reference: gallery absorbs every accepted crop (shipped behaviour)",
+                )
+            )
+            out.append(
+                Variant(
+                    "absorb_tight",
+                    g,
+                    {
+                        "memory.ltm_absorb_anchor_only": True,
+                        "memory.ltm_absorb_anchor_ratio": 0.90,
+                    },
+                    "absorb only inside 0.90 x the click-anchor band (Youden-optimal cut)",
+                )
+            )
+            out.append(
+                Variant(
+                    "absorb_loose",
+                    g,
+                    {
+                        "memory.ltm_absorb_anchor_only": True,
+                        "memory.ltm_absorb_anchor_ratio": 1.09,
+                    },
+                    "absorb only inside 1.09 x the click-anchor band (correct-frame p99)",
+                )
+            )
+        elif g == "vote":
+            # E079 (docs/E079_PLAN.md): the anchor veto is a one-reference test against
+            # the frozen click crop, and E077 showed it is where the blindness lives
+            # (`all_gated:anchor_ceiling`).  This group adds a refreshed anchor (R2) and
+            # the long-term gallery (R3) and lets a vetoed candidate in when it passes
+            # k of the 3 references, each measured against the SAME E029 band -- no new
+            # constant.  `vote_off` spells out the shipped behaviour; `vote_unanimous`
+            # (k = 3) is the null control, because a candidate only reaches the vote
+            # after R1 already rejected it, so k = 3 can never admit anything.
+            out.append(
+                Variant(
+                    "vote_off",
+                    g,
+                    {"cost.anchor_vote": "off", "cost.anchor_vote_alpha": 0.1},
+                    "reference: the click-crop veto, one reference (shipped behaviour)",
+                )
+            )
+            out.append(
+                Variant(
+                    "vote_majority",
+                    g,
+                    {"cost.anchor_vote": "majority", "cost.anchor_vote_alpha": 0.1},
+                    "admit an anchor-vetoed candidate when >= 2 of R1/R2/R3 pass it",
+                )
+            )
+            out.append(
+                Variant(
+                    "vote_unanimous",
+                    g,
+                    {"cost.anchor_vote": "unanimous", "cost.anchor_vote_alpha": 0.1},
+                    "k = 3 control: unreachable for a vetoed candidate -> identical to vote_off",
+                )
+            )
+            # E081 (docs/E081_PLAN.md): E079 cleared the FAR bar by 13.4 pp and missed
+            # the TSR bar by 0.12 pp.  The pre-registered follow-up is to spend the
+            # remaining freedom on WHEN the vote may run, not on another reference:
+            # arm it only while the tracker is in a distressed regime (share of the
+            # trailing 50 frames spent blind).  tau = 1.0 is the null control (never
+            # distressed -> never votes -> identical to vote_off); tau < 0 disables
+            # the gate and reduces to vote_majority.
+            for _tau in (0.20, 0.35, 0.50, 0.65):
+                out.append(
+                    Variant(
+                        f"vote_adaptive_{_tau:.2f}",
+                        g,
+                        {
+                            "cost.anchor_vote": "adaptive",
+                            "cost.anchor_vote_alpha": 0.1,
+                            "cost.anchor_vote_distress_window": 50,
+                            "cost.anchor_vote_distress_tau": float(_tau),
+                        },
+                        f"k = 2 vote armed only while distress > {_tau:.2f}",
+                    )
+                )
+            out.append(
+                Variant(
+                    "vote_adaptive_1.00",
+                    g,
+                    {
+                        "cost.anchor_vote": "adaptive",
+                        "cost.anchor_vote_alpha": 0.1,
+                        "cost.anchor_vote_distress_window": 50,
+                        "cost.anchor_vote_distress_tau": 1.0,
+                    },
+                    "null control: distress never exceeds 1.0 -> the gate never opens",
                 )
             )
         if only is not None:

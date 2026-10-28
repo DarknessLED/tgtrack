@@ -669,12 +669,11 @@ def verdict(arm_entry: dict[str, Any], ref_entry: dict[str, Any]) -> dict[str, A
     if arm_entry["arm"] == ref_entry["arm"]:
         out.update(verdict="REFERENCE", text="Reference arm: the shipped handback rule.")
         return out
-    if not arm_entry.get("pooled") or not ref_entry.get("pooled"):
+    pooled = arm_entry.get("paired_pooled") or arm_entry.get("pooled")
+    ref_pooled = ref_entry.get("paired_pooled") or ref_entry.get("pooled")
+    if not pooled or not ref_pooled:
         out.update(verdict="NO-SHIP", text="No complete pool (excluded/error runs); cannot clear the rule.")
         return out
-
-    pooled = arm_entry["pooled"]
-    ref_pooled = ref_entry["pooled"]
     d_tsr = (pooled["tsr"] - ref_pooled["tsr"]) * 100.0
     d_far = (pooled["far"] - ref_pooled["far"]) * 100.0
     d_id = (pooled["id_consistency"] - ref_pooled["id_consistency"]) * 100.0
@@ -801,15 +800,21 @@ def write_markdown(payload: dict[str, Any]) -> str:
     a("")
     a("## What was actually run")
     a("")
-    a("- pairs run: **%d** (%d arms x %d sequences); pairs included: **%d**, excluded: **%d**, errors: **%d**"
+    a("- pairs run: **%d** (%d arms x %d sequences); pairs included: **%d**, excluded: **%d**, errors: **%d**, "
+      "not run: **%d**"
       % (payload["n_pairs_run"], len(order), len(payload["sequences_run"]),
-         payload["n_pairs_included"], payload["n_pairs_excluded"], payload["n_pairs_errors"]))
-    a("- sequences: **%d** of %d held-out; frames per arm (sum of `n_report_frames`): %s"
-      % (len(payload["sequences_run"]), len(payload["heldout_sequences"]),
-         ", ".join("`%s`=%d" % (k, (arms[k]["frame_counts"] or {}).get("n_report_frames") or 0) for k in order)))
-    a("- total wall: **%.1f s** (%.1f min); summed per-pair wall %.1f min"
+         payload["n_pairs_included"], payload["n_pairs_excluded"], payload["n_pairs_errors"],
+         payload.get("n_pairs_not_run", 0)))
+    a("- coverage per arm (sequences included / %d): %s"
+      % (len(payload["sequences_run"]),
+         ", ".join("`%s`=%d" % (k, (arms[k]["frame_counts"] or {}).get("n_sequences") or 0) for k in order)))
+    a("- frames per arm (sum of `n_report_frames`): %s"
+      % ", ".join("`%s`=%d" % (k, (arms[k]["frame_counts"] or {}).get("n_report_frames") or 0) for k in order))
+    a("- total wall: **%.1f s** (%.1f min); summed per-pair wall %.1f min%s"
       % (payload["wall_seconds"], payload["wall_seconds"] / 60.0,
-         (payload.get("wall_seconds_pair_sum") or 0.0) / 60.0))
+         (payload.get("wall_seconds_pair_sum") or 0.0) / 60.0,
+         " (--finalize-only: no child was started, so this is the collected pair time)"
+         if payload.get("finalize_only") else ""))
     a("- exact command: `%s`" % payload["cli"]["command"])
     a("")
     a("## Results per arm")
@@ -827,6 +832,26 @@ def write_markdown(payload: dict[str, Any]) -> str:
           % (arm_id, p["total_report_frames"],
              _fmt_ci(p["tsr"], b["tsr"]), _fmt_ci(p["far"], b["far"]),
              _fmt_ci(p["id_consistency"], b["id_consistency"]), p["ms_per_frame"], p["n_included"]))
+    a("")
+    paired_seqs = arms[REFERENCE_ARM].get("paired_sequences") or []
+    a("## Pool restricted to the paired sequences (the numbers the rule reads)")
+    a("")
+    a("Coverage is not equal across arms in this run, so the verdict is computed on the **%d** sequences every "
+      "arm completed, not on each arm's own coverage. The full-coverage table above is context only." % len(paired_seqs))
+    a("")
+    a("| arm | frames (paired) | TSR [95% CI] | FAR [95% CI] | id_consistency [95% CI] | ms/frame |")
+    a("|---|---|---|---|---|---|")
+    for arm_id in order:
+        e = arms[arm_id]
+        p = e.get("paired_pooled")
+        if not p:
+            a("| `%s` | 0 | -- | -- | -- | -- |" % arm_id)
+            continue
+        b = e.get("paired_bootstrap") or {}
+        a("| `%s` | %d | %s | %s | %s | %.2f |"
+          % (arm_id, p["total_report_frames"],
+             _fmt_ci(p["tsr"], b.get("tsr")), _fmt_ci(p["far"], b.get("far")),
+             _fmt_ci(p["id_consistency"], b.get("id_consistency")), p["ms_per_frame"]))
     a("")
     a("## Paired deltas vs `%s`" % REFERENCE_ARM)
     a("")
@@ -907,10 +932,27 @@ def write_markdown(payload: dict[str, Any]) -> str:
     if n_bad:
         for arm_id in order:
             for r in arms[arm_id]["excluded"]:
+                if r.get("status") not in ("EXCLUDED", "ERROR"):
+                    continue
                 a("- `%s` @ `%s`: %s -- %s" % (r["sequence"], arm_id, r["reason"], r.get("harness_message") or ""))
     else:
-        a("None: every (sequence, arm) pair produced an observable target; the denominators are %d in every pool."
-          % len(payload["sequences_run"]))
+        a("None: every (sequence, arm) pair that ran produced an observable target.")
+    a("")
+    not_run = [r for arm_id in order for r in arms[arm_id]["rows"] if r.get("status") == "NOT_RUN"]
+    a("## Pairs that did not run")
+    a("")
+    if not_run:
+        a("The sweep was stopped before these pairs (machine throughput, not a harness failure). Every pair "
+          "below is resumable: `python scripts/consensus_sweep.py --arms <arm>` reuses the finished ones and "
+          "runs only what is missing.")
+        a("")
+        for arm_id in order:
+            seqs = [r["sequence"] for r in not_run if r["arm"] == arm_id]
+            if seqs:
+                a("- `%s`: %d of %d sequences not run -- %s"
+                  % (arm_id, len(seqs), len(payload["sequences_run"]), ", ".join("`%s`" % s for s in seqs)))
+    else:
+        a("None: every planned pair ran.")
     a("")
     a("## Provenance")
     a("")
@@ -981,6 +1023,34 @@ def acquire_single_instance_lock() -> bool:
     return True
 
 
+def _saved_pair(arm_id: str, seq: str) -> dict[str, Any] | None:
+    """The record a finished pair left in ``summaries/<arm>/<seq>.json``.
+
+    Used by ``--finalize-only``: the sweep can be stopped and the report rebuilt
+    from the pairs that actually finished, without either re-running them or
+    pretending the missing ones ran.  A pair that errored is not a pair that ran.
+    """
+    p = OUT_ROOT / "summaries" / arm_id / ("%s.json" % seq)
+    if not p.is_file():
+        return None
+    try:
+        rec = json.loads(p.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
+    if rec.get("status") != "INCLUDED":
+        return None
+    # The saved record can be older than the harness it describes (a cached pair
+    # is not rewritten), so the mechanism counters are re-read from the run dir.
+    run_dir = OUT_ROOT / "runs" / arm_id / seq
+    fresh = _parse_summary(run_dir / "summary.json", seq, rec.get("target_id_forced"),
+                           run_dir / "specs.json")
+    if fresh.get("status") == "INCLUDED":
+        for key, val in fresh.items():
+            if key.startswith("n_") or key in ("available", "challenge_enabled"):
+                rec[key] = val
+    return rec
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     if os.environ.get(CHILD_ENV):
         return _run_child()
@@ -993,6 +1063,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     p.add_argument("--limit-seqs", type=int, default=None, help="debug: only the first N held-out sequences")
     p.add_argument("--force", action="store_true", help="re-run pairs that already have a summary")
     p.add_argument("--run-only", default=None, help="debug: restrict to one sequence name")
+    p.add_argument("--finalize-only", action="store_true",
+                   help="never start a child: rebuild summary.json/REPORT.md from the pairs already on disk")
     args = p.parse_args(list(argv) if argv is not None else None)
 
     print("[consensus_sweep] FROZEN DEV SPLIT (selection set -- NEVER swept, never reported):", flush=True)
@@ -1056,7 +1128,20 @@ def main(argv: Sequence[str] | None = None) -> int:
             if not spec["reference"] and tid is None:
                 raise SystemExit("[consensus_sweep] no reference target id for %s; run the reference arm first" % seq)
             ts = time.perf_counter()
-            rec = run_pair(arm_id, seq, target_id=tid, force=bool(args.force), log_dir=log_dir)
+            if args.finalize_only:
+                rec = _saved_pair(arm_id, seq)
+                if rec is None:
+                    rec = {
+                        "arm": arm_id, "sequence": seq, "status": "NOT_RUN",
+                        "reason": "not run: the sweep was stopped before this pair (resumable)",
+                        "variant": spec["variant"], "overrides": spec["overrides"],
+                        "label": spec["label"], "mechanism": spec["mechanism"],
+                        "target_id_forced": tid, "wall_seconds": 0.0,
+                    }
+                else:
+                    rec["from_cache"] = True
+            else:
+                rec = run_pair(arm_id, seq, target_id=tid, force=bool(args.force), log_dir=log_dir)
             rows.append(rec)
             if spec["reference"] and rec.get("status") == "INCLUDED":
                 target_ids[seq] = int(rec["target_id"])
@@ -1094,6 +1179,22 @@ def main(argv: Sequence[str] | None = None) -> int:
     if ref_entry is None:
         raise SystemExit("[consensus_sweep] reference arm missing from this run; cannot apply the rule")
 
+    # The rule must compare like with like.  An arm whose coverage is smaller than
+    # the reference's cannot be judged on its own pool -- that would mix "the arm
+    # is worse" with "the arm ran on a different set of sequences".  So every arm
+    # also gets a pool restricted to the sequences ALL arms completed; that is the
+    # pool the verdict is computed from, and the full pool is kept as coverage
+    # context in the report.
+    inc_sets = [set(r["sequence"] for r in entry["included"]) for entry in arms_payload.values()]
+    common_seq: set[str] = set.intersection(*inc_sets) if inc_sets else set()
+    for arm_id in arms:
+        entry = arms_payload[arm_id]
+        sub = [r for r in entry["included"] if r["sequence"] in common_seq]
+        sub_pool = pool_arm(sub)
+        entry["paired_sequences"] = sorted(common_seq)
+        entry["paired_pooled"] = sub_pool["pooled"]
+        entry["paired_bootstrap"] = sub_pool["bootstrap"]
+
     for arm_id in arms:
         entry = arms_payload[arm_id]
         entry["paired"] = {key: paired_bootstrap(entry["rows"], ref_entry["rows"], key=key)
@@ -1101,6 +1202,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         entry["verdict"] = verdict(entry, ref_entry)
 
     n_included = sum(1 for r in rows if r.get("status") == "INCLUDED")
+    pair_sum = round(sum(float(r.get("wall_seconds") or 0.0) for r in rows), 1)
     payload: dict[str, Any] = {
         "generated_by": "scripts/consensus_sweep.py",
         "experiment": "E071",
@@ -1108,10 +1210,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         "heldout_sequences": all_seqs,
         "sequences_run": seqs,
         "partial": bool(partial),
+        "finalize_only": bool(args.finalize_only),
         "n_pairs_run": len(rows),
         "n_pairs_included": n_included,
         "n_pairs_excluded": sum(1 for r in rows if r.get("status") == "EXCLUDED"),
         "n_pairs_errors": sum(1 for r in rows if r.get("status") == "ERROR"),
+        "n_pairs_not_run": sum(1 for r in rows if r.get("status") == "NOT_RUN"),
         "protocol": dict(PROTOCOL),
         "acceptance_rule": {
             "source": "task statement / docs/E071_PLAN.md",
@@ -1123,15 +1227,18 @@ def main(argv: Sequence[str] | None = None) -> int:
         },
         "bootstrap": {"reps": BOOTSTRAP_REPS, "seed": BOOTSTRAP_SEED, "unit": "sequence"},
         "cli": {"arms": args.arms, "force": bool(args.force), "limit_seqs": args.limit_seqs,
-                "run_only": args.run_only,
-                "command": "python scripts/consensus_sweep.py --arms %s%s%s"
+                "run_only": args.run_only, "finalize_only": bool(args.finalize_only),
+                "command": "python scripts/consensus_sweep.py --arms %s%s%s%s"
                            % (args.arms, " --run-only %s" % args.run_only if args.run_only else "",
-                              " --limit-seqs %d" % args.limit_seqs if args.limit_seqs else "")},
+                              " --limit-seqs %d" % args.limit_seqs if args.limit_seqs else "",
+                              " --finalize-only" if args.finalize_only else "")},
         "order": arms,
         "arms": arms_payload,
         "target_ids": target_ids,
-        "wall_seconds": round(wall, 1),
-        "wall_seconds_pair_sum": round(sum(float(r.get("wall_seconds") or 0.0) for r in rows), 1),
+        # In `--finalize-only` mode nothing runs here, so the honest number for
+        # "how long did collecting these pairs take" is the sum of the pair walls.
+        "wall_seconds": pair_sum if args.finalize_only else round(wall, 1),
+        "wall_seconds_pair_sum": pair_sum,
         "code_state": code_state_snapshot(),
     }
     REPORT_JSON.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")

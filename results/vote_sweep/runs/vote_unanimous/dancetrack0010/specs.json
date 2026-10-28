@@ -1,0 +1,12 @@
+[
+  {
+    "seq_name": "dancetrack0010",
+    "variant": "vote_unanimous",
+    "overrides": {
+      "cost.anchor_vote": "unanimous",
+      "cost.anchor_vote_alpha": 0.1
+    },
+    "mask": "none",
+    "target_id": 5
+  }
+]

@@ -159,6 +159,11 @@ class TargetTracker:
         #: ``_last_diag`` (which `initialize` replaces), so an encoder that dies
         #: mid-run can never look like a healthy geometry-only tracker.
         self._encode_errors: int = 0
+        #: E078: cumulative outcome of the absorb guard. Monotonic, like
+        #: ``_encode_errors`` and for the same reason -- "blocked 40 crops" and
+        #: "never ran" must stay distinguishable in the run record (``stats()``).
+        self._absorb_anchor_gated: int = 0
+        self._absorb_anchor_blocked: int = 0
         #: Per-part exponential averages of accepted crops. These are the query
         #: side of part matching: they answer "what does the target's upper body
         #: look like *right now*" the way `stm` answers it for the whole body.
@@ -210,6 +215,56 @@ class TargetTracker:
         #: vector.  Updated by `_on_match`, so it always describes the person
         #: whose box we hand to the operator.
         self._consensus_feat: np.ndarray | None = None
+        #: E077 -- how often the channel-conditional acceptance branch admitted a
+        #: candidate the additive bound would have refused, split by which channel
+        #: carried it.  Zero in every shipped run (the switch is off), which is
+        #: itself the evidence that the branch is inert by default.
+        self._channel_counts: dict[str, int] = {"geometry": 0, "appearance": 0}
+        #: E079 -- the reference vote over the anchor veto (docs/E079_PLAN.md).
+        #: ``_vote_k`` is 0 when the mechanism is off, and every hook below is then
+        #: a return-on-zero: the veto block computes exactly the same ``total`` array
+        #: it computed before E079, which is what keeps the shipped path identical.
+        self._vote_mode: str = str(getattr(cfg.cost, "anchor_vote", "off") or "off").strip().lower()
+        if self._vote_mode not in ("off", "majority", "unanimous", "adaptive"):
+            raise ValueError(
+                f"unknown cost.anchor_vote {self._vote_mode!r}; "
+                "expected 'off', 'majority', 'unanimous' or 'adaptive'"
+            )
+        self._vote_k: int = {"majority": 2, "unanimous": 3, "adaptive": 2}.get(self._vote_mode, 0)
+        self._vote_alpha: float = float(getattr(cfg.cost, "anchor_vote_alpha", 0.1))
+        #: E081 -- distress gate.  Sampled once per frame from the state the frame
+        #: ENTERED in, i.e. strictly trailing and causal.  A plain list is used
+        #: instead of a deque to keep this module's imports untouched.
+        self._vote_dw: int = max(1, int(getattr(cfg.cost, "anchor_vote_distress_window", 50) or 50))
+        self._vote_tau: float = float(getattr(cfg.cost, "anchor_vote_distress_tau", 0.35))
+        self._vote_hist: list[int] = []
+        #: Frames on which the distress gate suppressed the vote.  Distinguishes
+        #: "the gate is doing work" from "the gate is never reached", which is the
+        #: distinction E081's pre-registered kill criterion depends on.
+        self._vote_gated: int = 0
+        #: R2, the refreshed anchor. ``None`` while the vote is off; seeded from the
+        #: click crop in ``initialize`` and otherwise moved only by
+        #: ``_vote_update_r2``, which requires R1 and R3 to agree first.
+        self._vote_r2: np.ndarray | None = None
+        #: Engagement evidence, monotonic for the same reason as the E078 counters:
+        #: "the vote never rescued anything" and "the vote never ran" must not look
+        #: like each other in the run record.
+        self._vote_frames: int = 0
+        self._vote_n: int = 0
+        self._vote_r1_pass: int = 0
+        self._vote_r2_pass: int = 0
+        self._vote_r3_pass: int = 0
+        self._vote_rescued: int = 0
+        self._vote_rescued_accepted: int = 0
+        self._vote_r2_updates: int = 0
+        #: Per-frame indices of the candidates the vote admitted (used to report
+        #: whether the res admitted on this frame was one of them).
+        self._vote_rescued_idx: set[int] = set()
+        #: E079 measurement of the E029 band: how often ``_anchor_limit`` is pinned
+        #: at its ceiling, i.e. how often the "adaptive" band is really an absolute
+        #: distance cut.  Independent of the vote, so both arms report it.
+        self._band_frames: int = 0
+        self._band_saturated: int = 0
         if bool(getattr(cfg.cost, "commit_consensus", False)):
             self._challenge = ChallengeTracker(
                 frames_required=int(getattr(cfg.cost, "consensus_frames", 2)),
@@ -296,6 +351,17 @@ class TargetTracker:
             "ltm_parts": {p: sum(1 for e in self.ltm.entries() if e.part == p) for p in self.ltm.parts()},
             "hard_negatives": self.ltm.num_hard_negatives,
             "events": len(self.events),
+            # E078: mechanism evidence, on the same principle as the E067/E071 counters
+            # below -- a guard that never fires is a no-op, so "gated 0" and "blocked 0
+            # because nothing was ever out of band" must not look alike.
+            "absorb_anchor_only": bool(
+                getattr(self.cfg.memory, "ltm_absorb_anchor_only", False)
+            ),
+            "absorb_anchor_ratio": float(
+                getattr(self.cfg.memory, "ltm_absorb_anchor_ratio", 1.25)
+            ),
+            "absorb_anchor_gated": int(self._absorb_anchor_gated),
+            "absorb_anchor_blocked": int(self._absorb_anchor_blocked),
             # E067: a broken encoder silently degraded the tracker to
             # geometry-only, which is how the first profile read "encoder = 2%".
             "encoder_errors": int(self._encode_errors),
@@ -307,6 +373,41 @@ class TargetTracker:
             # (all zeros then, which is itself the proof that it was off).
             "challenge_enabled": self._challenge is not None,
             **self._challenge_stats(),
+            # E077: mechanism evidence for the two arms.  ``channel_accept_*`` count
+            # frames the OR-branch admitted that the additive bound would have
+            # refused; ``aspect_clamp_*`` count coast steps that clipped an
+            # extrapolated aspect.  All zero in the shipped configuration.
+            "channel_accept_enabled": bool(getattr(self.cfg.cost, "channel_accept", False)),
+            "channel_accept_geometry": int(self._channel_counts.get("geometry", 0)),
+            "channel_accept_appearance": int(self._channel_counts.get("appearance", 0)),
+            "aspect_clamp_enabled": bool(getattr(self.cfg.motion, "aspect_clamp_coast", False)),
+            "aspect_clamp_steps": int(getattr(self.motion, "aspect_clamp_steps", 0)),
+            "aspect_clamp_calls": int(getattr(self.motion, "aspect_clamp_calls", 0)),
+            # E079: mechanism evidence for the reference vote, plus the E029 band
+            # saturation share it is a vote about.  All of it is monotonic and
+            # reported in both arms, so "the vote never fired" and "the vote fired
+            # and rescued nothing" stay distinguishable, and the control arm can be
+            # read against the reference's own band behaviour.
+            "anchor_vote": self._vote_mode,
+            "anchor_vote_alpha": float(self._vote_alpha),
+            "vote_frames": int(self._vote_frames),
+            "vote_n": int(self._vote_n),
+            "vote_r1": int(self._vote_r1_pass),
+            "vote_r2": int(self._vote_r2_pass),
+            "vote_r3": int(self._vote_r3_pass),
+            "vote_rescued": int(self._vote_rescued),
+            "vote_rescued_accepted": int(self._vote_rescued_accepted),
+            "vote_r2_updates": int(self._vote_r2_updates),
+            # E081 -- the distress gate's own bookkeeping, so "the gate never ran"
+            # cannot be mistaken for "the gate never helped".
+            "vote_distress": float(self._vote_distress()),
+            "vote_gated": int(self._vote_gated),
+            "anchor_band_frames": int(self._band_frames),
+            "anchor_band_saturated": int(self._band_saturated),
+            "anchor_band_saturation": (
+                float(self._band_saturated) / float(self._band_frames)
+                if self._band_frames else None
+            ),
         }
 
     def _challenge_stats(self) -> dict[str, Any]:
@@ -502,6 +603,15 @@ class TargetTracker:
         # E058: the anchor starts as the click crop and can be re-estimated from the first
         # few confidently matched crops (`memory.anchor_bootstrap_frames`).
         self._anchor_seed = None if self._anchor_feat is None else np.array(self._anchor_feat, np.float32, copy=True)
+        #: E079: R2 starts where R1 starts -- the click crop -- so the two references
+        #: are not correlated by construction only later; R2 can only drift away from
+        #: R1 through ``_vote_update_r2``, i.e. through frames on which R1 and R3
+        #: already agreed.
+        self._vote_r2 = (
+            None
+            if (self._anchor_feat is None or self._vote_k <= 0)
+            else np.array(self._anchor_feat, np.float32, copy=True)
+        )
         self._bootstrap_feats = []
         self._bootstrap_left = max(0, int(getattr(self.cfg.cost, "anchor_bootstrap_frames", 0) or 0))
         self._last_diag = {"init": True, "seed_parts": sorted(self._part_ema)}
@@ -528,6 +638,175 @@ class TargetTracker:
             return
         self._anchor_feat = (mean / norm).astype(np.float32)
         self._last_diag["anchor_bootstrap"] = len(self._bootstrap_feats)
+
+    # ------------------------------------------------------------------ #
+    # E079 -- the reference vote over the anchor veto
+    # ------------------------------------------------------------------ #
+    def _vote_sample(self) -> None:
+        """E081 -- record whether the frame the tracker is ENTERING was blind.
+
+        Sampled in :meth:`step` before association, so the window never contains
+        information from the frame being decided.  Sampling after the state update
+        would let one ambiguous frame both raise distress and benefit from the vote
+        it enables, i.e. the gate would see the future.
+        """
+        if self._vote_k <= 0:
+            return
+        self._vote_hist.append(1 if self.is_blind else 0)
+        if len(self._vote_hist) > self._vote_dw:
+            del self._vote_hist[0]
+
+    def _vote_distress(self) -> float:
+        """Share of the trailing window spent blind; 0.0 before any sample."""
+        n = len(self._vote_hist)
+        if n == 0:
+            return 0.0
+        return float(sum(self._vote_hist)) / float(n)
+
+    def _vote_gallery_distances(self, feats: np.ndarray) -> np.ndarray:
+        """R3: cosine distance from each candidate to the nearest gallery entry.
+
+        One batched product per frame instead of one ``LongTermGallery.best`` call
+        per candidate.  The single-query path re-stacks the whole bank on every
+        call, which dominates the frame budget once the veto fires on every
+        detection (measured 0.5-1 ms per candidate against ~200 entries, i.e. a
+        ~5x slowdown of the whole run).  The result is the same quantity the
+        gallery answers with ``part=None, touch=False``: same candidate entries
+        (``entries()`` == ``_candidates(None)``), same cosine, same minimum.  A
+        candidate the gallery cannot score stays ``+inf``, exactly like ``best``.
+        """
+        f = np.asarray(feats, dtype=np.float32)
+        if f.ndim == 1:
+            f = f[None, :]
+        n = int(f.shape[0]) if f.ndim == 2 else 0
+        out = np.full(n, np.inf, dtype=np.float32)
+        entries = self.ltm.entries() if self.ltm is not None else []
+        if n == 0 or not entries:
+            return out
+        dim = self.ltm.dim
+        if dim is not None and int(f.shape[1]) != int(dim):
+            return out
+        usable = np.all(np.isfinite(f), axis=1) & (np.linalg.norm(f, axis=1) > 1e-12)
+        if not bool(np.any(usable)):
+            return out
+        bank = np.stack([np.asarray(e.feat, dtype=np.float32).reshape(-1) for e in entries], axis=0)
+        dists = cosine_distance_matrix(f[usable], bank).min(axis=1)
+        out[usable] = np.asarray(dists, dtype=np.float32)
+        return out
+
+    def _vote_admit(
+        self,
+        feats: np.ndarray,
+        dist_r1: np.ndarray,
+        over: np.ndarray,
+        limit: float,
+    ) -> np.ndarray:
+        """Which anchor-vetoed candidates the k-of-3 vote lets through.
+
+        ``feats`` / ``dist_r1`` / ``over`` are the (n, D) descriptor stack, the
+        distance of each candidate to the frozen click crop (R1) and the boolean
+        mask of candidates R1 refused.  Returns a boolean mask of the SAME length
+        in which ``True`` means "the vote admits this candidate"; every entry
+        outside ``over`` is ``False`` because those candidates were never vetoed
+        in the first place.
+
+        R1 is recomputed from ``dist_r1`` rather than assumed ``False`` so the
+        arithmetic is testable on its own: for a candidate that reaches this
+        method R1 has already rejected it, which is exactly why ``unanimous``
+        (k = 3) admits nothing and is the mechanism's null control.
+        """
+        admitted = np.zeros(int(over.size), dtype=bool)
+        if self._vote_k <= 0 or not bool(np.any(over)):
+            return admitted
+        # E081 -- the distress gate.  Only 'adaptive' consults it; tau < 0 disables
+        # it entirely, which is what makes 'adaptive' with tau < 0 bit-identical to
+        # 'majority' and tau = 1.0 (never distressed) identical to 'off'.  Those two
+        # end points are the experiment's controls and are pinned by tests.
+        if self._vote_mode == "adaptive" and self._vote_tau >= 0.0:
+            distress = self._vote_distress()
+            self._last_diag["vote_distress"] = float(distress)
+            if distress <= float(self._vote_tau):
+                self._vote_gated += 1
+                self._last_diag["vote_gated"] = 1
+                return admitted
+        idx = np.flatnonzero(over)
+        self._vote_frames += 1
+        self._vote_n += int(idx.size)
+
+        r1 = np.asarray(dist_r1, np.float64)[idx] <= float(limit)
+        r2 = np.zeros(idx.size, dtype=bool)
+        if self._vote_r2 is not None:
+            d2 = cosine_distance_matrix(feats[idx], self._vote_r2).ravel()
+            r2 = np.asarray(d2, np.float64) <= float(limit)
+        d3 = self._vote_gallery_distances(feats[idx])
+        r3 = np.isfinite(d3) & (np.asarray(d3, np.float64) <= float(limit))
+
+        passes = r1.astype(np.int8) + r2.astype(np.int8) + r3.astype(np.int8)
+        ok = passes >= int(self._vote_k)
+        self._vote_r1_pass += int(np.count_nonzero(r1))
+        self._vote_r2_pass += int(np.count_nonzero(r2))
+        self._vote_r3_pass += int(np.count_nonzero(r3))
+        self._vote_rescued += int(np.count_nonzero(ok))
+        admitted[idx] = ok
+        self._vote_rescued_idx = {int(k) for k in idx[ok]}
+
+        self._last_diag["vote_n"] = int(idx.size)
+        self._last_diag["vote_r1"] = int(np.count_nonzero(r1))
+        self._last_diag["vote_r2"] = int(np.count_nonzero(r2))
+        self._last_diag["vote_r3"] = int(np.count_nonzero(r3))
+        self._last_diag["vote_rescued"] = int(np.count_nonzero(ok))
+        return admitted
+
+    def _vote_update_r2(self, cfg: Any, feat: np.ndarray | None) -> None:
+        """Move the refreshed anchor R2 towards an accepted crop -- if R1 and R3 agree.
+
+        The conjunction is the anti-poisoning rule and it is the load-bearing part
+        of the design: the only frames allowed to teach R2 are frames on which the
+        unpoisonable click crop (R1) AND the gallery (R3) both already call this the
+        target, so a drift the gallery absorbed cannot also train the reference
+        that will later admit candidates.  A frame where either disagrees is simply
+        not evidence about the target's current look.
+        """
+        if self._vote_k <= 0 or self._vote_r2 is None or feat is None:
+            return
+        limit = self._anchor_limit(cfg)
+        if limit is None:
+            return
+        vec = np.asarray(feat, np.float32).ravel().reshape(1, -1)
+        if not bool(np.all(np.isfinite(vec))):
+            return
+        d1 = float(cosine_distance_matrix(vec, self._anchor_feat)[0, 0])
+        if not (np.isfinite(d1) and d1 <= float(limit)):
+            return
+        d3, _entry = self.ltm.best(vec[0])
+        if not (np.isfinite(d3) and float(d3) <= float(limit)):
+            return
+        alpha = float(self._vote_alpha)
+        new = (1.0 - alpha) * self._vote_r2 + alpha * vec[0]
+        norm = float(np.linalg.norm(new))
+        if not np.isfinite(norm) or norm <= 1e-8:
+            return
+        self._vote_r2 = (new / norm).astype(np.float32)
+        self._vote_r2_updates += 1
+
+    def _vote_note_band(self, cfg: Any, limit: float) -> None:
+        """Count frames on which the E029 band is pinned at its ceiling.
+
+        E078 measured a ~75 % saturation share; the same number decides what the
+        vote is actually voting on, so it is part of the run record for BOTH arms
+        (the vote does not change the band).
+        """
+        try:
+            hi = float(getattr(cfg, "anchor_adaptive_ceil", 0.75))
+            adaptive = bool(getattr(cfg, "anchor_adaptive", True))
+        except (TypeError, ValueError):
+            return
+        sat = bool(adaptive and float(limit) >= hi - 1e-9)
+        self._band_frames += 1
+        if sat:
+            self._band_saturated += 1
+        self._last_diag["anchor_band"] = float(limit)
+        self._last_diag["anchor_band_sat"] = sat
 
     # ------------------------------------------------------------------ #
     # the per-frame entry point
@@ -582,6 +861,8 @@ class TargetTracker:
         else:
             self._trail_desc = None
         prev_state = self.state
+        # E081: sample distress from the state this frame enters in (trailing).
+        self._vote_sample()
 
         result, breakdown, chosen = self._associate(frame_bgr, dets, h, w)
 
@@ -640,6 +921,13 @@ class TargetTracker:
         survivors pay for a ReID forward pass.
         """
         cfg: CostCfg = self.cfg.cost
+
+        # E079: per-frame diagnostics must not leak into the next frame (``_last_diag``
+        # is copied forward in ``step``), and the rescued-candidate set is per frame.
+        for _k in ("vote_n", "vote_r1", "vote_r2", "vote_r3", "vote_rescued",
+                   "vote_rescued_accepted", "anchor_band", "anchor_band_sat"):
+            self._last_diag.pop(_k, None)
+        self._vote_rescued_idx = set()
 
         # E031: a truncated view gives a systematically biased box (half the height,
         # centre offset by h/4), so its geometry deserves less weight than its
@@ -762,6 +1050,8 @@ class TargetTracker:
         # never make an unreadable candidate look admissible.
         limit = self._anchor_limit(cfg)
         search_only = bool(getattr(cfg, "anchor_ceiling_search_only", False))
+        if limit is not None:
+            self._vote_note_band(cfg, float(limit))
         if limit is not None and (searching or not search_only) and self._anchor_feat is not None and len(sub):
             feats = [d.feat for d in sub]
             if all(f is not None for f in feats):
@@ -769,18 +1059,23 @@ class TargetTracker:
                 # (N, 1) mask broadcast against the (N,) cost array silently
                 # produces an (N, N) cost matrix -> "only length-1 arrays can be
                 # converted to Python scalars" deep inside select_candidate.
-                dist = cosine_distance_matrix(
-                    np.asarray(feats, np.float32), self._anchor_feat
-                ).ravel()
+                feat_arr = np.asarray(feats, np.float32)
+                dist = cosine_distance_matrix(feat_arr, self._anchor_feat).ravel()
                 over = dist > float(limit)
-                if over.any():
-                    full.total = np.where(over, np.inf, full.total)
+                # E079: a candidate the click crop rejects is admitted iff at
+                # least k of the three references pass it.  ``admitted`` is all
+                # False while the vote is off, so ``veto`` is then exactly the
+                # pre-E079 ``over`` mask and the assignment below is unchanged.
+                admitted = self._vote_admit(feat_arr, dist, over, float(limit))
+                veto = over & ~admitted
+                if veto.any():
+                    full.total = np.where(veto, np.inf, full.total)
                     full.excluded = [
                         (full.excluded[i] if i < len(full.excluded) else "")
-                        or ("anchor_ceiling" if over[i] else "")
-                        for i in range(len(over))
+                        or ("anchor_ceiling" if veto[i] else "")
+                        for i in range(len(veto))
                     ]
-                    self._last_diag["anchor_rejected"] = int(over.sum())
+                    self._last_diag["anchor_rejected"] = int(veto.sum())
         # E032: adaptive motion band, applied as a veto exactly like the appearance
         # band.  ``maha`` is inf when no motion model exists, so it is naturally inert
         # before the filter has started.
@@ -807,6 +1102,24 @@ class TargetTracker:
                 self._last_diag["motion_band_rejected"] = int(over_m.sum())
         res = select_candidate(full, cfg, lost=self.is_blind)
         self._last_breakdown = full
+        # E077: record which channel (if any) carried the frame.  The channel is
+        # only counted when the acceptance actually stands, which is decided after
+        # the search-margin / search-needs-appearance rules below -- so the count
+        # is taken at the end of the method, from the survivor.
+        if res.channel in self._channel_counts:
+            self._last_diag["accept_channel"] = res.channel
+        else:
+            self._last_diag.pop("accept_channel", None)
+        for _k in ("norm_centre", "log_h_ratio"):
+            _v = (res.diag or {}).get(_k)
+            if _v is None:
+                self._last_diag.pop("ch_" + _k, None)
+            else:
+                self._last_diag["ch_" + _k] = float(_v)
+        _app = (res.diag or {}).get("appearance")
+        if _app is not None:
+            self._last_diag["ch_app_cost"] = float(_app)
+            self._last_diag["ch_app_valid"] = bool((res.diag or {}).get("appearance_valid", False))
         if res.accepted and not searching and self._anchor_feat is not None and len(sub):
             feat = sub[int(res.index)].feat
             if feat is not None:
@@ -878,6 +1191,37 @@ class TargetTracker:
                 # dies here, and that abandonment is the "we refused a tie"
                 # event the campaign wants to count.
                 self._last_diag.update(self._challenge.tick(self.frame_idx).as_diag())
+        # E077: count the channel only now, when `accepted` is final -- a candidate
+        # the OR-branch admitted and the search/consensus rules then refused is not
+        # an engagement of the mechanism.
+        if res.accepted and res.channel in self._channel_counts:
+            self._channel_counts[res.channel] += 1
+            self._last_diag["accept_channel"] = res.channel
+        elif not res.accepted:
+            self._last_diag.pop("accept_channel", None)
+        if res.accepted and res.index is not None:
+            # E079: did the vote actually carry THIS frame?  A rescued candidate that
+            # some later rule (search margin, appearance requirement, consensus)
+            # refuses is not an engagement of the mechanism, so the count is taken
+            # from the survivor, exactly like the E077 channel count above.
+            if int(res.index) in self._vote_rescued_idx:
+                self._vote_rescued_accepted += 1
+                self._last_diag["vote_rescued_accepted"] = 1
+            # E079: R2 may move only on a frame whose final accepted box ALREADY
+            # passes both the frozen click crop and the gallery.  Placed here, after
+            # every veto, so a candidate that was admitted and then refused cannot
+            # teach the reference.
+            if not searching and self._vote_k > 0:
+                self._vote_update_r2(cfg, sub[int(res.index)].feat)
+        # E077 evidence: WHY the frame was refused.  The OR-branch only ever
+        # bypasses the "cost > bound" test, so a refusal that arrives as
+        # `all_gated:` (every candidate vetoed upstream, `total = inf`) is proof
+        # that the arm could not have engaged there -- a distinction the metrics
+        # alone cannot make.
+        if not res.accepted:
+            self._last_diag["refuse_reason"] = str(res.reason)[:160]
+        else:
+            self._last_diag.pop("refuse_reason", None)
         if res.index is not None:
             return res, full, sub[int(res.index)]
         return res, full, None
@@ -1612,16 +1956,84 @@ class TargetTracker:
         if not feats:
             return
         full = feats.get("full")
+        # E078 -- absorb-ratio guard.  One decision per accepted crop, taken on the
+        # full-body descriptor: that is the only space the click anchor lives in, and the
+        # same descriptor the E027/E029 veto measures.  Short-term memory and the part EMA
+        # are deliberately NOT gated -- they are how a legitimately changed look is still
+        # re-acquirable.  Only the long-term gallery, the memory that is supposed to still
+        # remember who was clicked, is protected from absorbing a drift.
+        absorb_ok = self._absorb_allowed(full, force=force)
         if full is not None:
             self.stm.update(full, quality=quality, frame_idx=self.frame_idx)
-            if force or quality >= float(self.cfg.memory.ltm_min_quality):
+            if absorb_ok and (force or quality >= float(self.cfg.memory.ltm_min_quality)):
                 self.ltm.add(full, part="full", quality=quality, frame_idx=self.frame_idx)
         for part, f in feats.items():
             if f is None:
                 continue
             if part != "full":
-                self.ltm.add(f, part=part, quality=quality, frame_idx=self.frame_idx)
+                if absorb_ok:
+                    self.ltm.add(f, part=part, quality=quality, frame_idx=self.frame_idx)
             self._ema_part(part, f, quality)
+
+    def _absorb_band(self) -> float | None:
+        """The ceiling the E078 absorb guard compares an anchor distance against.
+
+        Reuses the E029 self-calibrating band (``_anchor_limit``) so the guard is a ratio
+        against something the tracker already calibrates on the target itself, instead of a
+        second absolute constant nobody can defend.  ``_anchor_limit`` returns ``None``
+        while the band is not observable (no anchor, adaptive band still in bootstrap, or
+        no band configured); the guard then falls back to the configured ceiling
+        (``anchor_adaptive_ceil`` / ``anchor_max_dist``) so it keeps the same meaning it
+        has once the band exists, and admits everything when neither is set at all -- no
+        band, no evidence, no veto.
+        """
+        limit = self._anchor_limit(self.cfg.cost)
+        if limit is not None:
+            return float(limit)
+        cost = self.cfg.cost
+        if bool(getattr(cost, "anchor_adaptive", False)):
+            ceil = getattr(cost, "anchor_adaptive_ceil", None)
+            return None if ceil is None else float(ceil)
+        fixed = getattr(cost, "anchor_max_dist", None)
+        return None if fixed is None else float(fixed)
+
+    def _absorb_allowed(self, feat: np.ndarray | None, *, force: bool = False) -> bool:
+        """E078: may this crop be appended to the long-term gallery?
+
+        Always ``True`` unless ``memory.ltm_absorb_anchor_only`` is on.  With the guard on,
+        the click crop itself (``force=True`` from ``initialize``) is always recorded -- it
+        IS the anchor -- and any other crop is admitted only while
+
+            cos_dist(crop, anchor) <= ``ltm_absorb_anchor_ratio`` * ``_absorb_band()``
+
+        Hard negatives never come through here (they use ``ltm.add_hard_negative``), so an
+        impostor is still remembered as a *negative*: the guard stops the gallery from
+        calling him the target, it does not mute the half of the memory that makes a swap
+        detectable.
+        """
+        mem = self.cfg.memory
+        if force or not bool(getattr(mem, "ltm_absorb_anchor_only", False)):
+            return True
+        if feat is None or self._anchor_feat is None:
+            return True
+        band = self._absorb_band()
+        if band is None:
+            return True
+        ratio = float(getattr(mem, "ltm_absorb_anchor_ratio", 1.25))
+        limit = ratio * float(band)
+        dist = float(
+            cosine_distance_matrix(
+                np.asarray(feat, np.float32).reshape(1, -1), self._anchor_feat
+            )[0, 0]
+        )
+        allowed = bool(np.isfinite(dist) and dist <= limit)
+        self._absorb_anchor_gated += 1
+        if not allowed:
+            self._absorb_anchor_blocked += 1
+        self._last_diag["absorb_anchor_dist"] = dist
+        self._last_diag["absorb_anchor_limit"] = limit
+        self._last_diag["absorb_anchor_blocked"] = self._absorb_anchor_blocked
+        return allowed
 
     def _features_for(
         self,

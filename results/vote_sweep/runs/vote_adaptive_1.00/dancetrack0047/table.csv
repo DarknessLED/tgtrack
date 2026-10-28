@@ -1,0 +1,2 @@
+group,variant,mask,seqs,frames,visible,TSR,prec,loss,loss_lock,recq_rate,recq_lat,recq_p90,recq_max,FAR,FAR_lock,FA_ev,FA_ev_lock,id_cons,switches,frag,longest,coast_ok,worst_id,detect,ms/frame
+vote_sweep,vote_adaptive_1.00,none,1,300,260,0.1462,0.1118,0.8538,0.4115,0.0000,,,,0.47000,0.75824,10,10,0.1943,27,1,36,,,,133.62

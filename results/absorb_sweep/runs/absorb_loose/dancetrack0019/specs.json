@@ -1,0 +1,12 @@
+[
+  {
+    "seq_name": "dancetrack0019",
+    "variant": "absorb_loose",
+    "overrides": {
+      "memory.ltm_absorb_anchor_only": true,
+      "memory.ltm_absorb_anchor_ratio": 1.09
+    },
+    "mask": "none",
+    "target_id": 6
+  }
+]

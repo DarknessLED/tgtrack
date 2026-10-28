@@ -1,0 +1,11 @@
+[
+  {
+    "seq_name": "dancetrack0030",
+    "variant": "channel_aspect",
+    "overrides": {
+      "motion.aspect_clamp_coast": true
+    },
+    "mask": "none",
+    "target_id": 0
+  }
+]

@@ -184,8 +184,20 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
 
     stage = REPO / args.out
+    # The staging directory is ALSO the published git repository, so a wholesale rmtree would
+    # destroy .git and fail on read-only git objects (WinError 5). Purge everything except .git,
+    # tolerate locked files, and prune stale entries after the copy.
     if stage.exists():
-        shutil.rmtree(stage)
+        for child in stage.iterdir():
+            if child.name == ".git":
+                continue
+            if child.is_dir():
+                shutil.rmtree(child, ignore_errors=True)
+            else:
+                try:
+                    child.unlink()
+                except OSError:
+                    pass
     stage.mkdir(parents=True, exist_ok=True)
 
     copied: list[Path] = []
@@ -202,6 +214,20 @@ def main(argv: list[str] | None = None) -> int:
         shutil.copy2(handoff_src, stage / "docs" / "HANDOFF.md")
         copied.append(handoff_src)
     (stage / "MANIFEST.md").write_text(build_manifest(stage, copied), encoding="utf-8")
+
+    # prune anything that is no longer on the allow-list (keeps the package exactly reproducible)
+    wanted = {f.relative_to(REPO) for f in copied} | {Path("MANIFEST.md")}
+    for f in sorted(stage.rglob("*"), reverse=True):
+        if not f.is_file():
+            continue
+        rel = f.relative_to(stage)
+        if rel.parts and rel.parts[0] == ".git":
+            continue
+        if rel not in wanted:
+            try:
+                f.unlink()
+            except OSError:
+                pass
 
     total = sum(f.stat().st_size for f in copied)
     print(f"[handoff] {len(copied)} files, {total / 1e6:.2f} MB -> {stage}")

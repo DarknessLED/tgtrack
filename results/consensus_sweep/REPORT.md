@@ -7,9 +7,9 @@
 > SHIP only if pooled TSR rises by **>= +3 pp** with the 95% CI of the **paired** delta excluding 0, **and** the upper bound of the paired dFAR CI is **< +3 pp**. KILL if TSR is unchanged (inert) or falls.
 
 - **`consensus_off`** -- Reference arm: the shipped handback rule. (reference, not a candidate)
-- **`consensus_2f`: KILL** -- KILL: pooled TSR does not rise (-2.57 pp).
+- **`consensus_2f`: KILL** -- KILL: pooled TSR does not rise (-5.56 pp).
 
-**Ship decision: ship nothing; the shipped default (consensus off) stays..**
+**Ship decision: ship nothing; the shipped default (consensus off) stays.**
 
 ## Protocol (identical to E070, so the two sweeps are comparable)
 
@@ -22,17 +22,27 @@
 
 ## What was actually run
 
-- pairs run: **2** (2 arms x 1 sequences); pairs included: **2**, excluded: **0**, errors: **0**
-- sequences: **1** of 22 held-out; frames per arm (sum of `n_report_frames`): `consensus_off`=300, `consensus_2f`=300
-- total wall: **0.0 s** (0.0 min); summed per-pair wall 0.0 min
-- exact command: `python scripts/consensus_sweep.py --arms consensus_off,consensus_2f --run-only dancetrack0010`
+- pairs run: **44** (2 arms x 22 sequences); pairs included: **44**, excluded: **0**, errors: **0**, not run: **0**
+- coverage per arm (sequences included / 22): `consensus_off`=22, `consensus_2f`=22
+- frames per arm (sum of `n_report_frames`): `consensus_off`=6181, `consensus_2f`=6181
+- total wall: **4880.9 s** (81.3 min); summed per-pair wall 81.3 min
+- exact command: `python scripts/consensus_sweep.py --arms consensus_off,consensus_2f`
 
 ## Results per arm
 
 | arm | frames | TSR [95% CI] | FAR [95% CI] | id_consistency [95% CI] | ms/frame | n incl |
 |---|---|---|---|---|---|---|
-| `consensus_off` | 300 | 0.2831 [0.2831, 0.2831] | 0.6800 [0.6800, 0.6800] | 0.2527 [0.2527, 0.2527] | 147.21 | 1 |
-| `consensus_2f` | 300 | 0.2574 [0.2574, 0.2574] | 0.4200 [0.4200, 0.4200] | 0.3298 [0.3298, 0.3298] | 150.24 | 1 |
+| `consensus_off` | 6181 | 0.2104 [0.1157, 0.3254] | 0.2472 [0.1489, 0.3487] | 0.4358 [0.2899, 0.5771] | 724.19 | 22 |
+| `consensus_2f` | 6181 | 0.1549 [0.0964, 0.2156] | 0.2118 [0.1206, 0.3089] | 0.4046 [0.2828, 0.5381] | 1527.01 | 22 |
+
+## Pool restricted to the paired sequences (the numbers the rule reads)
+
+Coverage is not equal across arms in this run, so the verdict is computed on the **22** sequences every arm completed, not on each arm's own coverage. The full-coverage table above is context only.
+
+| arm | frames (paired) | TSR [95% CI] | FAR [95% CI] | id_consistency [95% CI] | ms/frame |
+|---|---|---|---|---|---|
+| `consensus_off` | 6181 | 0.2104 [0.1157, 0.3254] | 0.2472 [0.1489, 0.3487] | 0.4358 [0.2899, 0.5771] | 724.19 |
+| `consensus_2f` | 6181 | 0.1549 [0.0964, 0.2156] | 0.2118 [0.1206, 0.3089] | 0.4046 [0.2828, 0.5381] | 1527.01 |
 
 ## Paired deltas vs `consensus_off`
 
@@ -40,7 +50,7 @@ Every delta is computed on the *same* sequence in both arms, so sequence difficu
 
 | arm | dTSR pp [95% CI] | sequences up/down/flat | dFAR pp [95% CI] | d id_consistency pp | d ms/frame | n paired |
 |---|---|---|---|---|---|---|
-| `consensus_2f` | -2.57 [-2.57, -2.57] | 0/1/0 | -26.00 [-26.00, -26.00] | +7.70 | +3.03 | 1 |
+| `consensus_2f` | -5.56 [-15.91, +3.81] | 7/11/4 | -3.54 [-14.24, +10.30] | -3.13 | +802.83 | 22 |
 
 ## Did the mechanism engage?
 
@@ -49,24 +59,144 @@ A vote that never fires is indistinguishable from a no-op, so the counters are r
 | arm | n_opened | n_committed | n_pending_frames | n_abandoned | n_restarted | sequences with any challenge | sequences with a commit |
 |---|---|---|---|---|---|---|---|
 | `consensus_off` | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| `consensus_2f` | 29 | 11 | 29 | 6 | 11 | 1 | 1 |
+| `consensus_2f` | 205 | 70 | 205 | 57 | 74 | 19 | 13 |
 
 ## Per-sequence TSR
 
 | sequence | consensus_off TSR/FAR | consensus_2f TSR/FAR |
 |---|---|---|
 | `dancetrack0010` | 0.283 / 0.680 | 0.257 / 0.420 |
+| `dancetrack0014` | 0.069 / 0.657 | 0.055 / 0.027 |
+| `dancetrack0018` | 0.258 / 0.587 | 0.230 / 0.536 |
+| `dancetrack0019` | 0.219 / 0.037 | 0.118 / 0.303 |
+| `dancetrack0025` | 0.015 / 0.060 | 0.026 / 0.033 |
+| `dancetrack0026` | 0.081 / 0.053 | 0.048 / 0.689 |
+| `dancetrack0030` | 0.370 / 0.017 | 0.367 / 0.017 |
+| `dancetrack0034` | 0.181 / 0.155 | 0.210 / 0.165 |
+| `dancetrack0035` | 0.022 / 0.057 | 0.022 / 0.057 |
+| `dancetrack0041` | 0.174 / 0.047 | 0.179 / 0.030 |
+| `dancetrack0043` | 0.111 / 0.043 | 0.111 / 0.043 |
+| `dancetrack0047` | 0.146 / 0.470 | 0.150 / 0.183 |
+| `dancetrack0058` | 0.047 / 0.340 | 0.297 / 0.533 |
+| `dancetrack0063` | 0.030 / 0.157 | 0.010 / 0.140 |
+| `dancetrack0065` | 0.047 / 0.027 | 0.043 / 0.340 |
+| `dancetrack0073` | 0.228 / 0.583 | 0.236 / 0.580 |
+| `dancetrack0077` | 0.233 / 0.410 | 0.520 / 0.033 |
+| `dancetrack0079` | 0.913 / 0.023 | 0.257 / 0.580 |
+| `dancetrack0081` | 0.027 / 0.200 | 0.023 / 0.073 |
+| `dancetrack0090` | 0.004 / 0.554 | 0.004 / 0.023 |
+| `dancetrack0094` | 0.880 / 0.097 | 0.010 / 0.020 |
+| `dancetrack0097` | 0.160 / 0.000 | 0.160 / 0.000 |
 
 ## Sequences that moved
 
-None: no sequence moves its TSR by more than 5 pp in any arm.
+**`consensus_2f`** -- 5 of 22 paired sequences move TSR by more than 5 pp:
+
+- `dancetrack0094`: -87.00 pp (0.880 -> 0.010)
+- `dancetrack0079`: -65.67 pp (0.913 -> 0.257)
+- `dancetrack0077`: +28.67 pp (0.233 -> 0.520)
+- `dancetrack0058`: +25.00 pp (0.047 -> 0.297)
+- `dancetrack0019`: -10.04 pp (0.219 -> 0.118)
 
 ## Exclusions and errors
 
-None: every (sequence, arm) pair produced an observable target; the denominators are 1 in every pool.
+None: every (sequence, arm) pair that ran produced an observable target.
+
+## Pairs that did not run
+
+None: every planned pair ran.
 
 ## Provenance
 
 - one parent process at a time: `results/consensus_sweep/.sweep.lock` (live-pid checked)
 - every included pair carries `runs/<arm>/<seq>/.mine`; a run dir without that stamp is purged and re-run
 - a `summary.json` with trailing garbage is salvaged from its first JSON document and flagged `json_recovered` in the pair record instead of aborting the sweep
+
+<!-- ---------------------------------------------------------------------------------------
+     HAND-WRITTEN ANALYSIS BELOW. Everything above is regenerated by
+     `python scripts/consensus_sweep.py --arms ... --finalize-only`; the sections below are
+     not, because they are judgement, not arithmetic.
+     --------------------------------------------------------------------------------------- -->
+
+## Reading the numbers
+
+**The verdict is KILL, and not because the mechanism is inert.** The vote fired on 19 of the 22 sequences: 205
+challenges opened, 70 handovers authorised, 205 pending frames (3.3 % of the 6,181 report frames), 57 challenges
+abandoned and 74 restarted — while the reference arm reports exactly zero of each. This is therefore a
+measurement of the mechanism's *effect*, not of a mis-wiring, which is what the plan's first hair-cut rule asks
+for before any metric is read.
+
+**What it costs.** Pooled TSR falls 0.2104 -> 0.1549 (-5.56 pp; paired-delta 95 % CI [-15.91, +3.81];
+7 sequences up / 11 down / 4 flat), pooled FAR falls 0.2472 -> 0.2118 (-3.54 pp; CI [-14.24, +10.30]) and
+id_consistency falls 0.4358 -> 0.4046 (-3.13 pp). Read together, the vote is not a free refusal: it buys a
+slightly lower false-acquisition rate by withholding handovers the tracker needed, and it spends several times
+more TSR than FAR it saves. That is the *shape* the E071 plan predicted for a latency cost ("the cost is
+latency, which is measurable and must be reported") — but the plan expected one frame on a handful of ties.
+Here it is one frame on ~9 handovers per sequence, and those handovers are precisely the re-acquisitions that
+carry the metric.
+
+**Where it helps and where it destroys.** The two catastrophic regressions are on sequences where the shipped
+tracker was already working — `dancetrack0094` 0.880 -> 0.010 (-87.0 pp) and `dancetrack0079` 0.913 -> 0.257
+(-65.7 pp) — while the two biggest wins are on sequences where it was already failing — `dancetrack0077`
+0.233 -> 0.520 (+28.7 pp) and `dancetrack0058` 0.047 -> 0.297 (+25.0 pp). That asymmetry is the result: a
+one-frame wait is cheap when the track is broken and expensive when the track is right, because on a correct
+track the handover frame is the frame where the target actually reappeared and the coasted box no longer
+covers him.
+
+**Latency is confounded — do not quote ms/frame as the mechanism's cost.** The table reads 724.2 -> 1527.0
+(+803 ms/frame), but the arms were not measured under the same system load: the reference arm ran 01:23-02:56
+while the box was healthy (~150-800 ms/frame), the two-frame arm ran 05:05-06:35 while a co-tenant process held
+~6.5 CPU cores and ~7 GB of the 8 GB GPU (1,155-7,938 ms/frame on the same sequences). The delta is an artefact
+of the environment; the honest latency figure is the frame-level one above (205 pending frames / 6,181).
+
+## Spec review — what was wrong in the brief
+
+1. **`consensus_2f_pool` is not a distinct arm.** The brief fixes `consensus_pool: bool = True` as the shipped
+   default, so `consensus_2f_pool` (`consensus_frames=2, consensus_pool=True`) and `consensus_2f`
+   (`consensus_frames=2`) are the same configuration; `specs.json` records both arms resolving to identical
+   override sets. The plan had `consensus_pool=False`, which is what made the pool axis meaningful. The pair is
+   harmless (it is a free determinism check) but the fourth arm carries no information, and repeating it on all
+   22 sequences would have cost ~2 h for a duplicate row.
+2. **"Incumbent" is undefined in a single-hypothesis tracker.** At association time exactly one candidate has
+   won, so "the currently-tracked candidate" cannot be read off the tracker: the incumbent is whoever the tracker
+   *already reports*. It is implemented as appearance distance to the last accepted crop
+   (<= `consensus_ident`), with "no reference yet / no descriptor this frame -> incumbent, do not vote" as the
+   documented fallback. Consequence: the vote gates *appearance discontinuities*, not box jumps. That is the
+   right axis for E061's same-place tie, but it is a design decision the brief left open, and it is why the
+   vote is not simply "any handover needs two frames".
+3. **A pending challenge really would have extended the blind window.** `_on_miss` escalates TRACKING ->
+   `occluded_soft` after `soft_occlusion_after = 2` frames and the vote is skipped whenever the tracker is
+   blind, so a 2-frame vote implemented as "refuse through the miss path" would have spent its second frame
+   blind and switched itself off. The pending case therefore has its own path (`_on_consensus_pending`) that
+   keeps the state and restores `frames_since_update`; the unit tests pin it (two pending frames, fsu 0, still
+   `tracking`).
+4. **`consensus_ident = 0.35` is not independent of the shipped anchor ceiling.** `CostCfg.anchor_adaptive` is on
+   by default and `_anchor_limit` floors at 0.35, so a challenger must be within 0.35 of the click crop *and*
+   more than 0.35 from the incumbent before the vote can even see it. The plan's premise — that the vote is
+   "orthogonal to where the gate sits" — does not hold for this pair of knobs: the vote is squeezed into the
+   sliver between them. It still fired 205 times, so it is not inert, but its admissible set is far smaller than
+   the design assumed, and the two knobs should not be varied independently next time.
+5. **The debug CSV cannot take the diag keys.** `evaluate.write_frame_csv` writes a hard-coded column list and
+   `src/tgtrack/evaluate.py` is outside this task's allow-list, so `challenge_state` / `pending_n` /
+   `pending_agreed` / `pending_span` / `challenge_reason` ride in `TargetStatus.diag` (consumable by the
+   evaluator) and the counters ride in `stats()` -> `per_run.json`, not as per-frame CSV columns.
+6. **`consensus.py` needed no fix.** All 19 of its tests pass and the chain bookkeeping survived every scenario
+   exercised here (commit, identity break, gap restart, incumbent-wins abandonment, snapshot round-trip). The one
+   sharp edge is that it exposes no snapshot API, so `target_tracker._challenge_snapshot` mirrors its private
+   chain attributes; that is contained in one place.
+
+## Deviations from the specified sweep
+
+- **Two of the four registered arms were run to full coverage**: `consensus_off` and `consensus_2f`, 44 pairs,
+  6,181 report frames each, all 22 held-out sequences. `consensus_3f` was not run: at the observed throughput it
+  needed ~3 more hours, the verdict is already a decisive KILL, and a stricter vote cannot plausibly *gain* the
+  +8.6 pp of TSR that would be needed to turn a -5.6 pp result into a +3 pp one. `consensus_2f_pool` was not run
+  because it is the same configuration as `consensus_2f` (spec review point 1). Both remain defined and runnable:
+  `python scripts/consensus_sweep.py --arms consensus_3f` will pick up where this run stopped.
+- **Wall time**: 4,880.9 s of child wall for the 44 pairs (mean 111 s/pair), spread over ~5 h of clock because of
+  the co-tenant. The E070 comparison protocol is unaffected (300 frames, subsample 2, `--mask none`, `jobs 1`, and
+  the same `--target-id` per sequence), but the `ms/frame` column is not comparable between arms.
+- **No-op proof on real data**: all 22 `consensus_off` runs reproduce the frozen E070 shipped runs in
+  `results/gate_sweep/summaries/margin_0.20/` exactly — 0 mismatches on TSR, FAR and target id — which is the
+  end-to-end evidence that `commit_consensus=False` changes nothing.
+

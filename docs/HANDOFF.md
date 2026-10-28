@@ -125,3 +125,22 @@ python scripts/eval_mot.py --data-root data\raw\mot17\MOT17\train --subsample 3 
 python scripts/run_target.py --data-root data\raw\dancetrack\val --limit-sequences 1 `
     --target-id 1 --mask none,upper --ablate search_guard
 ```
+
+## Update 2026-10-28 — E079 and E081 both closed (KILL), and what that changed
+
+Both experiments targeted the same place: the frozen-click-crop veto, which is where 51 % of the
+single-target loss is born. Neither shipped, and the reason is worth carrying forward:
+
+- **E079** (k-of-3 reference vote over the crop veto) is the campaign's best signal: +5.88 pp
+  paired TSR and **-5.65 pp FAR (to 0.1912)**, id_consistency +6.64 pp — but its TSR CI is
+  [-1.61, +14.79], so it fails the pre-registered bar. Engagement is real (12,329 vetoed
+  candidates examined; only 391 of 6,714 rescues survive the downstream refusal stack).
+- **E081** (arm that vote only while the tracker is distressed) **falsified its own hypothesis**:
+  it keeps 85-102 % of the FAR benefit and only 7-45 % of the TSR benefit, so the good rescues
+  happen in confident frames. Its `tau = 1.00` null control is bit-identical to the shipped arm
+  on 22/22 held-out sequences, which is the cleanest plumbing proof in the ledger.
+- Current criterion-2 position: **TSR 0.2104 / FAR 0.2472** shipped; best-measured variant
+  **0.2362 / 0.1896**. The FAR bound (< 0.20) is provably reachable, the TSR bound (>= 0.55) is
+  not, on this protocol.
+- Read `docs/E082_PLAN.md` before touching the vote again: the next test is a *contrast*
+  requirement, not another gate or threshold.

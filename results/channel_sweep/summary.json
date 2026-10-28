@@ -1,0 +1,5776 @@
+{
+  "generated_by": "_x/e077_probe/aggregate_from_summaries.py (replays scripts/channel_sweep.py estimators)",
+  "experiment": "E077",
+  "assembled_at": "2026-10-27T08:59:21",
+  "partial": true,
+  "partial_note": "assembled from the per-pair records on disk: 7 of 22 held-out sequences have a complete 4-arm block",
+  "dev_sequences": [
+    "dancetrack0004",
+    "dancetrack0005",
+    "dancetrack0007"
+  ],
+  "heldout_sequences": [
+    "dancetrack0010",
+    "dancetrack0014",
+    "dancetrack0018",
+    "dancetrack0019",
+    "dancetrack0025",
+    "dancetrack0026",
+    "dancetrack0030",
+    "dancetrack0034",
+    "dancetrack0035",
+    "dancetrack0041",
+    "dancetrack0043",
+    "dancetrack0047",
+    "dancetrack0058",
+    "dancetrack0063",
+    "dancetrack0065",
+    "dancetrack0073",
+    "dancetrack0077",
+    "dancetrack0079",
+    "dancetrack0081",
+    "dancetrack0090",
+    "dancetrack0094",
+    "dancetrack0097"
+  ],
+  "sequences_run": [
+    "dancetrack0010",
+    "dancetrack0014",
+    "dancetrack0018",
+    "dancetrack0019",
+    "dancetrack0025",
+    "dancetrack0026",
+    "dancetrack0030"
+  ],
+  "n_pairs_run": 28,
+  "n_pairs_included": 28,
+  "n_pairs_excluded": 0,
+  "n_pairs_errors": 0,
+  "protocol": {
+    "max_frames": 300,
+    "subsample": 2,
+    "mask": "none",
+    "jobs": 1,
+    "detector": "yolo (shipped default)",
+    "target_strategy": "stressed (shipped default)",
+    "debug_csv": true
+  },
+  "thresholds": {
+    "channel_geom_tau": 0.0278,
+    "channel_app_tau": 0.1345,
+    "correct_frame_median_abs_log_h_ratio": 0.0124,
+    "note": "geom_tau = median over correct frames of |det_c - pred_c| / gate_radius; app_tau = median over correct frames of the appearance cost of the selected candidate. The |log h| leg is the plan's fixed 0.25, and the correct-frame median is reported only to show it sits inside that bound."
+  },
+  "acceptance_rule": {
+    "source": "docs/E077_PLAN.md (ship rule written before the run; not edited)",
+    "text": "SHIP only if pooled TSR rises by >= +3 pp with the 95 % CI of the paired delta excluding 0, and the upper bound of the paired dFAR CI is < +3 pp, and the blind-AND-present share falls. KILL if bit-identical (inert) or TSR falls.",
+    "tsr_ship_pp": 3.0,
+    "far_max_pp": 3.0
+  },
+  "bootstrap": {
+    "reps": 2000,
+    "seed": 0,
+    "unit": "sequence"
+  },
+  "cli": {
+    "arms": "channel_off,channel_fusion,channel_aspect,channel_both",
+    "command": "python _x/e077_probe/aggregate_from_summaries.py"
+  },
+  "order": [
+    "channel_off",
+    "channel_fusion",
+    "channel_aspect",
+    "channel_both"
+  ],
+  "arms": {
+    "channel_off": {
+      "arm": "channel_off",
+      "variant": "channel_off",
+      "overrides": {
+        "cost.channel_accept": false,
+        "motion.aspect_clamp_coast": false
+      },
+      "label": "reference: both E077 arms off (shipped behaviour)",
+      "mechanism": "none",
+      "is_reference": true,
+      "rows": [
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_off",
+          "overrides": {
+            "cost.channel_accept": false,
+            "motion.aspect_clamp_coast": false
+          },
+          "tsr": 0.28308823529411764,
+          "far": 0.68,
+          "id_consistency": 0.25274725274725274,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 271,
+          "false_acquisition_frames": 204,
+          "target_switch_count": 5,
+          "ms_per_frame": 786.3608723300664,
+          "target_id": 5,
+          "target_reason": "observable",
+          "guard_passed": true,
+          "harness_wall_seconds": 266.53,
+          "n_events": -1,
+          "blind_present_share": 0.091912,
+          "blind_share": 0.096667,
+          "n_blind_present": 25,
+          "n_gt_present": 272,
+          "n_blind": 29,
+          "states": {
+            "lost_short": 6,
+            "occluded_soft": 23,
+            "reacquiring": 11,
+            "tracking": 260
+          },
+          "refuse_reasons": {
+            "cost>bound (the acceptance bound)": 36,
+            "all_gated (hard veto upstream: total=+inf)": 11,
+            "search_margin": 4,
+            "ambiguous (margin)": 3
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "7b10402e6a6a4269",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 280.1,
+          "arm": "channel_off",
+          "label": "reference: both E077 arms off (shipped behaviour)",
+          "mechanism": "none",
+          "sequence": "dancetrack0010",
+          "target_id_forced": null,
+          "summary_path": "results\\channel_sweep\\runs\\channel_off\\dancetrack0010\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_off__dancetrack0010.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 280.1
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_off",
+          "overrides": {
+            "cost.channel_accept": false,
+            "motion.aspect_clamp_coast": false
+          },
+          "tsr": 0.06912442396313365,
+          "far": 0.6566666666666666,
+          "id_consistency": 0.05741626794258373,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 209,
+          "false_acquisition_frames": 197,
+          "target_switch_count": 18,
+          "ms_per_frame": 1217.456838666306,
+          "target_id": 3,
+          "target_reason": "observable",
+          "guard_passed": true,
+          "harness_wall_seconds": 409.9,
+          "n_events": -1,
+          "blind_present_share": 0.253456,
+          "blind_share": 0.303333,
+          "n_blind_present": 55,
+          "n_gt_present": 217,
+          "n_blind": 91,
+          "states": {
+            "lost_short": 38,
+            "occluded_soft": 52,
+            "out_of_frame": 1,
+            "reacquiring": 11,
+            "tracking": 198
+          },
+          "refuse_reasons": {
+            "cost>bound (the acceptance bound)": 58,
+            "ambiguous (margin)": 34,
+            "search_margin": 13
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "db8168d50e47a92a",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 424.6,
+          "arm": "channel_off",
+          "label": "reference: both E077 arms off (shipped behaviour)",
+          "mechanism": "none",
+          "sequence": "dancetrack0014",
+          "target_id_forced": null,
+          "summary_path": "results\\channel_sweep\\runs\\channel_off\\dancetrack0014\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_off__dancetrack0014.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 424.6
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_off",
+          "overrides": {
+            "cost.channel_accept": false,
+            "motion.aspect_clamp_coast": false
+          },
+          "tsr": 0.25793650793650796,
+          "far": 0.5873015873015873,
+          "id_consistency": 0.3051643192488263,
+          "n_report_frames": 252,
+          "n_frames": 252,
+          "n_locked_frames": 160,
+          "false_acquisition_frames": 148,
+          "target_switch_count": 4,
+          "ms_per_frame": 795.921989682404,
+          "target_id": 0,
+          "target_reason": "observable",
+          "guard_passed": true,
+          "harness_wall_seconds": 233.89,
+          "n_events": -1,
+          "blind_present_share": 0.365079,
+          "blind_share": 0.365079,
+          "n_blind_present": 92,
+          "n_gt_present": 252,
+          "n_blind": 92,
+          "states": {
+            "lost_short": 8,
+            "occluded_soft": 82,
+            "out_of_frame": 2,
+            "reacquiring": 21,
+            "tracking": 139
+          },
+          "refuse_reasons": {
+            "all_gated (hard veto upstream: total=+inf)": 80,
+            "cost>bound (the acceptance bound)": 33,
+            "search_margin": 2,
+            "ambiguous (margin)": 1
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "78ebfa3088a2db6f",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 246.6,
+          "arm": "channel_off",
+          "label": "reference: both E077 arms off (shipped behaviour)",
+          "mechanism": "none",
+          "sequence": "dancetrack0018",
+          "target_id_forced": null,
+          "summary_path": "results\\channel_sweep\\runs\\channel_off\\dancetrack0018\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_off__dancetrack0018.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 246.6
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_off",
+          "overrides": {
+            "cost.channel_accept": false,
+            "motion.aspect_clamp_coast": false
+          },
+          "tsr": 0.21863799283154123,
+          "far": 0.03666666666666667,
+          "id_consistency": 0.8472222222222222,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 75,
+          "false_acquisition_frames": 11,
+          "target_switch_count": 8,
+          "ms_per_frame": 938.370655332304,
+          "target_id": 6,
+          "target_reason": "observable",
+          "guard_passed": true,
+          "harness_wall_seconds": 313.79,
+          "n_events": -1,
+          "blind_present_share": 0.738351,
+          "blind_share": 0.75,
+          "n_blind_present": 206,
+          "n_gt_present": 279,
+          "n_blind": 225,
+          "states": {
+            "lost_long": 67,
+            "lost_short": 113,
+            "occluded_soft": 43,
+            "out_of_frame": 2,
+            "reacquiring": 6,
+            "tracking": 69
+          },
+          "refuse_reasons": {
+            "ambiguous (margin)": 124,
+            "search_margin": 71,
+            "cost>bound (the acceptance bound)": 33,
+            "all_gated (hard veto upstream: total=+inf)": 4
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "b2996f32fbf07c2c",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 327.2,
+          "arm": "channel_off",
+          "label": "reference: both E077 arms off (shipped behaviour)",
+          "mechanism": "none",
+          "sequence": "dancetrack0019",
+          "target_id_forced": null,
+          "summary_path": "results\\channel_sweep\\runs\\channel_off\\dancetrack0019\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_off__dancetrack0019.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 327.2
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_off",
+          "overrides": {
+            "cost.channel_accept": false,
+            "motion.aspect_clamp_coast": false
+          },
+          "tsr": 0.015037593984962405,
+          "far": 0.06,
+          "id_consistency": 0.18181818181818182,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 30,
+          "false_acquisition_frames": 18,
+          "target_switch_count": 11,
+          "ms_per_frame": 1143.2404749984078,
+          "target_id": 6,
+          "target_reason": "observable",
+          "guard_passed": true,
+          "harness_wall_seconds": 383.83,
+          "n_events": -1,
+          "blind_present_share": 0.887218,
+          "blind_share": 0.9,
+          "n_blind_present": 236,
+          "n_gt_present": 266,
+          "n_blind": 270,
+          "states": {
+            "lost_long": 197,
+            "lost_short": 48,
+            "occluded_soft": 24,
+            "out_of_frame": 1,
+            "reacquiring": 6,
+            "tracking": 24
+          },
+          "refuse_reasons": {
+            "ambiguous (margin)": 183,
+            "search_margin": 71,
+            "cost>bound (the acceptance bound)": 23,
+            "all_gated (hard veto upstream: total=+inf)": 1
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "2e691f0bace4da77",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 395.8,
+          "arm": "channel_off",
+          "label": "reference: both E077 arms off (shipped behaviour)",
+          "mechanism": "none",
+          "sequence": "dancetrack0025",
+          "target_id_forced": null,
+          "summary_path": "results\\channel_sweep\\runs\\channel_off\\dancetrack0025\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_off__dancetrack0025.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 395.8
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_off",
+          "overrides": {
+            "cost.channel_accept": false,
+            "motion.aspect_clamp_coast": false
+          },
+          "tsr": 0.08064516129032258,
+          "far": 0.052980132450331126,
+          "id_consistency": 0.5294117647058824,
+          "n_report_frames": 151,
+          "n_frames": 151,
+          "n_locked_frames": 24,
+          "false_acquisition_frames": 8,
+          "target_switch_count": 10,
+          "ms_per_frame": 1364.3494761658412,
+          "target_id": 9,
+          "target_reason": "observable",
+          "guard_passed": true,
+          "harness_wall_seconds": 235.58,
+          "n_events": -1,
+          "blind_present_share": 0.814516,
+          "blind_share": 0.84106,
+          "n_blind_present": 101,
+          "n_gt_present": 124,
+          "n_blind": 127,
+          "states": {
+            "lost_long": 40,
+            "lost_short": 59,
+            "occluded_soft": 26,
+            "out_of_frame": 2,
+            "reacquiring": 5,
+            "tracking": 19
+          },
+          "refuse_reasons": {
+            "search_margin": 57,
+            "ambiguous (margin)": 55,
+            "cost>bound (the acceptance bound)": 23
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "ae4d38eb756231e2",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 244.9,
+          "arm": "channel_off",
+          "label": "reference: both E077 arms off (shipped behaviour)",
+          "mechanism": "none",
+          "sequence": "dancetrack0026",
+          "target_id_forced": null,
+          "summary_path": "results\\channel_sweep\\runs\\channel_off\\dancetrack0026\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_off__dancetrack0026.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 244.9
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_off",
+          "overrides": {
+            "cost.channel_accept": false,
+            "motion.aspect_clamp_coast": false
+          },
+          "tsr": 0.37,
+          "far": 0.016666666666666666,
+          "id_consistency": 0.9565217391304348,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 120,
+          "false_acquisition_frames": 5,
+          "target_switch_count": 5,
+          "ms_per_frame": 1009.7361390036531,
+          "target_id": 0,
+          "target_reason": "observable",
+          "guard_passed": true,
+          "harness_wall_seconds": 332.81,
+          "n_events": -1,
+          "blind_present_share": 0.6,
+          "blind_share": 0.6,
+          "n_blind_present": 180,
+          "n_gt_present": 300,
+          "n_blind": 180,
+          "states": {
+            "lost_long": 114,
+            "lost_short": 47,
+            "occluded_soft": 18,
+            "out_of_frame": 1,
+            "reacquiring": 4,
+            "tracking": 116
+          },
+          "refuse_reasons": {
+            "ambiguous (margin)": 103,
+            "search_margin": 61,
+            "cost>bound (the acceptance bound)": 22
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "38119bbddcb9cc46",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 345.2,
+          "arm": "channel_off",
+          "label": "reference: both E077 arms off (shipped behaviour)",
+          "mechanism": "none",
+          "sequence": "dancetrack0030",
+          "target_id_forced": null,
+          "summary_path": "results\\channel_sweep\\runs\\channel_off\\dancetrack0030\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_off__dancetrack0030.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 345.2
+            }
+          ],
+          "from_cache": false
+        }
+      ],
+      "included": [
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_off",
+          "overrides": {
+            "cost.channel_accept": false,
+            "motion.aspect_clamp_coast": false
+          },
+          "tsr": 0.28308823529411764,
+          "far": 0.68,
+          "id_consistency": 0.25274725274725274,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 271,
+          "false_acquisition_frames": 204,
+          "target_switch_count": 5,
+          "ms_per_frame": 786.3608723300664,
+          "target_id": 5,
+          "target_reason": "observable",
+          "guard_passed": true,
+          "harness_wall_seconds": 266.53,
+          "n_events": -1,
+          "blind_present_share": 0.091912,
+          "blind_share": 0.096667,
+          "n_blind_present": 25,
+          "n_gt_present": 272,
+          "n_blind": 29,
+          "states": {
+            "lost_short": 6,
+            "occluded_soft": 23,
+            "reacquiring": 11,
+            "tracking": 260
+          },
+          "refuse_reasons": {
+            "cost>bound (the acceptance bound)": 36,
+            "all_gated (hard veto upstream: total=+inf)": 11,
+            "search_margin": 4,
+            "ambiguous (margin)": 3
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "7b10402e6a6a4269",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 280.1,
+          "arm": "channel_off",
+          "label": "reference: both E077 arms off (shipped behaviour)",
+          "mechanism": "none",
+          "sequence": "dancetrack0010",
+          "target_id_forced": null,
+          "summary_path": "results\\channel_sweep\\runs\\channel_off\\dancetrack0010\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_off__dancetrack0010.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 280.1
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_off",
+          "overrides": {
+            "cost.channel_accept": false,
+            "motion.aspect_clamp_coast": false
+          },
+          "tsr": 0.06912442396313365,
+          "far": 0.6566666666666666,
+          "id_consistency": 0.05741626794258373,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 209,
+          "false_acquisition_frames": 197,
+          "target_switch_count": 18,
+          "ms_per_frame": 1217.456838666306,
+          "target_id": 3,
+          "target_reason": "observable",
+          "guard_passed": true,
+          "harness_wall_seconds": 409.9,
+          "n_events": -1,
+          "blind_present_share": 0.253456,
+          "blind_share": 0.303333,
+          "n_blind_present": 55,
+          "n_gt_present": 217,
+          "n_blind": 91,
+          "states": {
+            "lost_short": 38,
+            "occluded_soft": 52,
+            "out_of_frame": 1,
+            "reacquiring": 11,
+            "tracking": 198
+          },
+          "refuse_reasons": {
+            "cost>bound (the acceptance bound)": 58,
+            "ambiguous (margin)": 34,
+            "search_margin": 13
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "db8168d50e47a92a",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 424.6,
+          "arm": "channel_off",
+          "label": "reference: both E077 arms off (shipped behaviour)",
+          "mechanism": "none",
+          "sequence": "dancetrack0014",
+          "target_id_forced": null,
+          "summary_path": "results\\channel_sweep\\runs\\channel_off\\dancetrack0014\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_off__dancetrack0014.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 424.6
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_off",
+          "overrides": {
+            "cost.channel_accept": false,
+            "motion.aspect_clamp_coast": false
+          },
+          "tsr": 0.25793650793650796,
+          "far": 0.5873015873015873,
+          "id_consistency": 0.3051643192488263,
+          "n_report_frames": 252,
+          "n_frames": 252,
+          "n_locked_frames": 160,
+          "false_acquisition_frames": 148,
+          "target_switch_count": 4,
+          "ms_per_frame": 795.921989682404,
+          "target_id": 0,
+          "target_reason": "observable",
+          "guard_passed": true,
+          "harness_wall_seconds": 233.89,
+          "n_events": -1,
+          "blind_present_share": 0.365079,
+          "blind_share": 0.365079,
+          "n_blind_present": 92,
+          "n_gt_present": 252,
+          "n_blind": 92,
+          "states": {
+            "lost_short": 8,
+            "occluded_soft": 82,
+            "out_of_frame": 2,
+            "reacquiring": 21,
+            "tracking": 139
+          },
+          "refuse_reasons": {
+            "all_gated (hard veto upstream: total=+inf)": 80,
+            "cost>bound (the acceptance bound)": 33,
+            "search_margin": 2,
+            "ambiguous (margin)": 1
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "78ebfa3088a2db6f",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 246.6,
+          "arm": "channel_off",
+          "label": "reference: both E077 arms off (shipped behaviour)",
+          "mechanism": "none",
+          "sequence": "dancetrack0018",
+          "target_id_forced": null,
+          "summary_path": "results\\channel_sweep\\runs\\channel_off\\dancetrack0018\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_off__dancetrack0018.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 246.6
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_off",
+          "overrides": {
+            "cost.channel_accept": false,
+            "motion.aspect_clamp_coast": false
+          },
+          "tsr": 0.21863799283154123,
+          "far": 0.03666666666666667,
+          "id_consistency": 0.8472222222222222,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 75,
+          "false_acquisition_frames": 11,
+          "target_switch_count": 8,
+          "ms_per_frame": 938.370655332304,
+          "target_id": 6,
+          "target_reason": "observable",
+          "guard_passed": true,
+          "harness_wall_seconds": 313.79,
+          "n_events": -1,
+          "blind_present_share": 0.738351,
+          "blind_share": 0.75,
+          "n_blind_present": 206,
+          "n_gt_present": 279,
+          "n_blind": 225,
+          "states": {
+            "lost_long": 67,
+            "lost_short": 113,
+            "occluded_soft": 43,
+            "out_of_frame": 2,
+            "reacquiring": 6,
+            "tracking": 69
+          },
+          "refuse_reasons": {
+            "ambiguous (margin)": 124,
+            "search_margin": 71,
+            "cost>bound (the acceptance bound)": 33,
+            "all_gated (hard veto upstream: total=+inf)": 4
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "b2996f32fbf07c2c",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 327.2,
+          "arm": "channel_off",
+          "label": "reference: both E077 arms off (shipped behaviour)",
+          "mechanism": "none",
+          "sequence": "dancetrack0019",
+          "target_id_forced": null,
+          "summary_path": "results\\channel_sweep\\runs\\channel_off\\dancetrack0019\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_off__dancetrack0019.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 327.2
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_off",
+          "overrides": {
+            "cost.channel_accept": false,
+            "motion.aspect_clamp_coast": false
+          },
+          "tsr": 0.015037593984962405,
+          "far": 0.06,
+          "id_consistency": 0.18181818181818182,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 30,
+          "false_acquisition_frames": 18,
+          "target_switch_count": 11,
+          "ms_per_frame": 1143.2404749984078,
+          "target_id": 6,
+          "target_reason": "observable",
+          "guard_passed": true,
+          "harness_wall_seconds": 383.83,
+          "n_events": -1,
+          "blind_present_share": 0.887218,
+          "blind_share": 0.9,
+          "n_blind_present": 236,
+          "n_gt_present": 266,
+          "n_blind": 270,
+          "states": {
+            "lost_long": 197,
+            "lost_short": 48,
+            "occluded_soft": 24,
+            "out_of_frame": 1,
+            "reacquiring": 6,
+            "tracking": 24
+          },
+          "refuse_reasons": {
+            "ambiguous (margin)": 183,
+            "search_margin": 71,
+            "cost>bound (the acceptance bound)": 23,
+            "all_gated (hard veto upstream: total=+inf)": 1
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "2e691f0bace4da77",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 395.8,
+          "arm": "channel_off",
+          "label": "reference: both E077 arms off (shipped behaviour)",
+          "mechanism": "none",
+          "sequence": "dancetrack0025",
+          "target_id_forced": null,
+          "summary_path": "results\\channel_sweep\\runs\\channel_off\\dancetrack0025\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_off__dancetrack0025.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 395.8
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_off",
+          "overrides": {
+            "cost.channel_accept": false,
+            "motion.aspect_clamp_coast": false
+          },
+          "tsr": 0.08064516129032258,
+          "far": 0.052980132450331126,
+          "id_consistency": 0.5294117647058824,
+          "n_report_frames": 151,
+          "n_frames": 151,
+          "n_locked_frames": 24,
+          "false_acquisition_frames": 8,
+          "target_switch_count": 10,
+          "ms_per_frame": 1364.3494761658412,
+          "target_id": 9,
+          "target_reason": "observable",
+          "guard_passed": true,
+          "harness_wall_seconds": 235.58,
+          "n_events": -1,
+          "blind_present_share": 0.814516,
+          "blind_share": 0.84106,
+          "n_blind_present": 101,
+          "n_gt_present": 124,
+          "n_blind": 127,
+          "states": {
+            "lost_long": 40,
+            "lost_short": 59,
+            "occluded_soft": 26,
+            "out_of_frame": 2,
+            "reacquiring": 5,
+            "tracking": 19
+          },
+          "refuse_reasons": {
+            "search_margin": 57,
+            "ambiguous (margin)": 55,
+            "cost>bound (the acceptance bound)": 23
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "ae4d38eb756231e2",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 244.9,
+          "arm": "channel_off",
+          "label": "reference: both E077 arms off (shipped behaviour)",
+          "mechanism": "none",
+          "sequence": "dancetrack0026",
+          "target_id_forced": null,
+          "summary_path": "results\\channel_sweep\\runs\\channel_off\\dancetrack0026\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_off__dancetrack0026.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 244.9
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_off",
+          "overrides": {
+            "cost.channel_accept": false,
+            "motion.aspect_clamp_coast": false
+          },
+          "tsr": 0.37,
+          "far": 0.016666666666666666,
+          "id_consistency": 0.9565217391304348,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 120,
+          "false_acquisition_frames": 5,
+          "target_switch_count": 5,
+          "ms_per_frame": 1009.7361390036531,
+          "target_id": 0,
+          "target_reason": "observable",
+          "guard_passed": true,
+          "harness_wall_seconds": 332.81,
+          "n_events": -1,
+          "blind_present_share": 0.6,
+          "blind_share": 0.6,
+          "n_blind_present": 180,
+          "n_gt_present": 300,
+          "n_blind": 180,
+          "states": {
+            "lost_long": 114,
+            "lost_short": 47,
+            "occluded_soft": 18,
+            "out_of_frame": 1,
+            "reacquiring": 4,
+            "tracking": 116
+          },
+          "refuse_reasons": {
+            "ambiguous (margin)": 103,
+            "search_margin": 61,
+            "cost>bound (the acceptance bound)": 22
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "38119bbddcb9cc46",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 345.2,
+          "arm": "channel_off",
+          "label": "reference: both E077 arms off (shipped behaviour)",
+          "mechanism": "none",
+          "sequence": "dancetrack0030",
+          "target_id_forced": null,
+          "summary_path": "results\\channel_sweep\\runs\\channel_off\\dancetrack0030\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_off__dancetrack0030.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 345.2
+            }
+          ],
+          "from_cache": false
+        }
+      ],
+      "excluded": [],
+      "pooled": {
+        "total_report_frames": 1903,
+        "n_included": 7,
+        "n_excluded": 0,
+        "estimator": "frame-weighted pooled mean over included sequences",
+        "tsr": 0.191247,
+        "tsr_mean": 0.184924,
+        "tsr_median": 0.218638,
+        "tsr_min": 0.015038,
+        "tsr_max": 0.37,
+        "far": 0.310562,
+        "far_mean": 0.298612,
+        "far_median": 0.06,
+        "far_min": 0.016667,
+        "far_max": 0.68,
+        "id_consistency": 0.44433,
+        "id_consistency_mean": 0.447186,
+        "id_consistency_median": 0.305164,
+        "id_consistency_min": 0.057416,
+        "id_consistency_max": 0.956522,
+        "ms_per_frame": 1016.88839,
+        "ms_per_frame_mean": 1036.490921,
+        "ms_per_frame_median": 1009.736139,
+        "ms_per_frame_min": 786.360872,
+        "ms_per_frame_max": 1364.349476,
+        "blind_present_share": 0.518273,
+        "blind_present_share_mean": 0.53579,
+        "blind_present_share_median": 0.6,
+        "blind_present_share_min": 0.091912,
+        "blind_present_share_max": 0.887218,
+        "blind_present_share_gtweighted": 0.523392,
+        "n_blind_present": 895,
+        "n_gt_present": 1710
+      },
+      "bootstrap": {
+        "tsr": {
+          "reps": 2000,
+          "n_sequences": 7,
+          "seed": 0,
+          "weight_key": "n_report_frames",
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 0.100957,
+          "p50": 0.191247,
+          "p97.5": 0.285285,
+          "mean": 0.191623
+        },
+        "far": {
+          "reps": 2000,
+          "n_sequences": 7,
+          "seed": 0,
+          "weight_key": "n_report_frames",
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 0.10825,
+          "p50": 0.309524,
+          "p97.5": 0.541922,
+          "mean": 0.310889
+        },
+        "id_consistency": {
+          "reps": 2000,
+          "n_sequences": 7,
+          "seed": 0,
+          "weight_key": "n_report_frames",
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 0.210458,
+          "p50": 0.436852,
+          "p97.5": 0.714157,
+          "mean": 0.44571
+        },
+        "ms_per_frame": {
+          "reps": 2000,
+          "n_sequences": 7,
+          "seed": 0,
+          "weight_key": "n_report_frames",
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 887.678409,
+          "p50": 1016.376751,
+          "p97.5": 1148.674709,
+          "mean": 1017.825406
+        },
+        "blind_present_share": {
+          "reps": 2000,
+          "n_sequences": 7,
+          "seed": 0,
+          "weight_key": "n_gt_present",
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 0.313389,
+          "p50": 0.525996,
+          "p97.5": 0.723684,
+          "mean": 0.522327
+        }
+      },
+      "engagement": {
+        "n_blind_present": 895,
+        "n_gt_present": 1710,
+        "n_blind": 1014,
+        "blind_present_share": 0.523392,
+        "channel_accept_geometry": 0,
+        "channel_accept_appearance": 0,
+        "aspect_clamp_steps": 0,
+        "aspect_clamp_calls": 0,
+        "n_sequences_with_channel_accept": 0,
+        "n_sequences_with_aspect_clamp": 0,
+        "refuse_reasons": {
+          "ambiguous (margin)": 503,
+          "search_margin": 279,
+          "cost>bound (the acceptance bound)": 228,
+          "all_gated (hard veto upstream: total=+inf)": 96
+        },
+        "accept_channels": {},
+        "states": {
+          "tracking": 825,
+          "lost_long": 418,
+          "lost_short": 319,
+          "occluded_soft": 268,
+          "reacquiring": 64,
+          "out_of_frame": 9
+        }
+      },
+      "frame_counts": {
+        "n_sequences": 7,
+        "n_report_frames": 1903,
+        "n_frames": 1903
+      },
+      "paired": {
+        "tsr": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 7,
+          "unpaired_sequences": [],
+          "delta_mean": 0.0,
+          "p2.5": 0.0,
+          "p50": 0.0,
+          "p97.5": 0.0,
+          "sequences_up": 0,
+          "sequences_down": 0,
+          "sequences_flat": 7,
+          "excludes_zero": false,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": 0.0,
+              "arm_value": 0.283088235,
+              "reference_value": 0.283088235,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0014",
+              "delta": 0.0,
+              "arm_value": 0.069124424,
+              "reference_value": 0.069124424,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0018",
+              "delta": 0.0,
+              "arm_value": 0.257936508,
+              "reference_value": 0.257936508,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0019",
+              "delta": 0.0,
+              "arm_value": 0.218637993,
+              "reference_value": 0.218637993,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0025",
+              "delta": 0.0,
+              "arm_value": 0.015037594,
+              "reference_value": 0.015037594,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0026",
+              "delta": 0.0,
+              "arm_value": 0.080645161,
+              "reference_value": 0.080645161,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0030",
+              "delta": 0.0,
+              "arm_value": 0.37,
+              "reference_value": 0.37,
+              "delta_pp": 0.0
+            }
+          ]
+        },
+        "far": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 7,
+          "unpaired_sequences": [],
+          "delta_mean": 0.0,
+          "p2.5": 0.0,
+          "p50": 0.0,
+          "p97.5": 0.0,
+          "sequences_up": 0,
+          "sequences_down": 0,
+          "sequences_flat": 7,
+          "excludes_zero": false,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": 0.0,
+              "arm_value": 0.68,
+              "reference_value": 0.68,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0014",
+              "delta": 0.0,
+              "arm_value": 0.656666667,
+              "reference_value": 0.656666667,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0018",
+              "delta": 0.0,
+              "arm_value": 0.587301587,
+              "reference_value": 0.587301587,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0019",
+              "delta": 0.0,
+              "arm_value": 0.036666667,
+              "reference_value": 0.036666667,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0025",
+              "delta": 0.0,
+              "arm_value": 0.06,
+              "reference_value": 0.06,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0026",
+              "delta": 0.0,
+              "arm_value": 0.052980132,
+              "reference_value": 0.052980132,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0030",
+              "delta": 0.0,
+              "arm_value": 0.016666667,
+              "reference_value": 0.016666667,
+              "delta_pp": 0.0
+            }
+          ]
+        },
+        "id_consistency": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 7,
+          "unpaired_sequences": [],
+          "delta_mean": 0.0,
+          "p2.5": 0.0,
+          "p50": 0.0,
+          "p97.5": 0.0,
+          "sequences_up": 0,
+          "sequences_down": 0,
+          "sequences_flat": 7,
+          "excludes_zero": false,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": 0.0,
+              "arm_value": 0.252747253,
+              "reference_value": 0.252747253,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0014",
+              "delta": 0.0,
+              "arm_value": 0.057416268,
+              "reference_value": 0.057416268,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0018",
+              "delta": 0.0,
+              "arm_value": 0.305164319,
+              "reference_value": 0.305164319,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0019",
+              "delta": 0.0,
+              "arm_value": 0.847222222,
+              "reference_value": 0.847222222,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0025",
+              "delta": 0.0,
+              "arm_value": 0.181818182,
+              "reference_value": 0.181818182,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0026",
+              "delta": 0.0,
+              "arm_value": 0.529411765,
+              "reference_value": 0.529411765,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0030",
+              "delta": 0.0,
+              "arm_value": 0.956521739,
+              "reference_value": 0.956521739,
+              "delta_pp": 0.0
+            }
+          ]
+        },
+        "ms_per_frame": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 7,
+          "unpaired_sequences": [],
+          "delta_mean": 0.0,
+          "p2.5": 0.0,
+          "p50": 0.0,
+          "p97.5": 0.0,
+          "sequences_up": 0,
+          "sequences_down": 0,
+          "sequences_flat": 7,
+          "excludes_zero": false,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": 0.0,
+              "arm_value": 786.36087233,
+              "reference_value": 786.36087233,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0014",
+              "delta": 0.0,
+              "arm_value": 1217.456838666,
+              "reference_value": 1217.456838666,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0018",
+              "delta": 0.0,
+              "arm_value": 795.921989682,
+              "reference_value": 795.921989682,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0019",
+              "delta": 0.0,
+              "arm_value": 938.370655332,
+              "reference_value": 938.370655332,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0025",
+              "delta": 0.0,
+              "arm_value": 1143.240474998,
+              "reference_value": 1143.240474998,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0026",
+              "delta": 0.0,
+              "arm_value": 1364.349476166,
+              "reference_value": 1364.349476166,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0030",
+              "delta": 0.0,
+              "arm_value": 1009.736139004,
+              "reference_value": 1009.736139004,
+              "delta_pp": 0.0
+            }
+          ]
+        },
+        "blind_present_share": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 7,
+          "unpaired_sequences": [],
+          "delta_mean": 0.0,
+          "p2.5": 0.0,
+          "p50": 0.0,
+          "p97.5": 0.0,
+          "sequences_up": 0,
+          "sequences_down": 0,
+          "sequences_flat": 7,
+          "excludes_zero": false,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": 0.0,
+              "arm_value": 0.091912,
+              "reference_value": 0.091912,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0014",
+              "delta": 0.0,
+              "arm_value": 0.253456,
+              "reference_value": 0.253456,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0018",
+              "delta": 0.0,
+              "arm_value": 0.365079,
+              "reference_value": 0.365079,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0019",
+              "delta": 0.0,
+              "arm_value": 0.738351,
+              "reference_value": 0.738351,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0025",
+              "delta": 0.0,
+              "arm_value": 0.887218,
+              "reference_value": 0.887218,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0026",
+              "delta": 0.0,
+              "arm_value": 0.814516,
+              "reference_value": 0.814516,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0030",
+              "delta": 0.0,
+              "arm_value": 0.6,
+              "reference_value": 0.6,
+              "delta_pp": 0.0
+            }
+          ]
+        }
+      },
+      "verdict": {
+        "arm": "channel_off",
+        "rule": "SHIP iff pooled dTSR >= +3.0 pp AND paired-dTSR 95% CI excludes 0 AND paired-dFAR 95% CI upper bound < +3.0 pp AND blind-AND-present share falls; KILL if bit-identical (inert) or dTSR < 0",
+        "verdict": "REFERENCE",
+        "text": "Reference arm: both E077 arms off (shipped behaviour)."
+      }
+    },
+    "channel_fusion": {
+      "arm": "channel_fusion",
+      "variant": "channel_fusion",
+      "overrides": {
+        "cost.channel_accept": true
+      },
+      "label": "arm B: channel-conditional acceptance (OR-branch on the bound)",
+      "mechanism": "geometry OR appearance may carry acceptance",
+      "is_reference": false,
+      "rows": [
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_fusion",
+          "overrides": {
+            "cost.channel_accept": true
+          },
+          "tsr": 0.28308823529411764,
+          "far": 0.68,
+          "id_consistency": 0.25274725274725274,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 271,
+          "false_acquisition_frames": 204,
+          "target_switch_count": 5,
+          "ms_per_frame": 835.0128776657706,
+          "target_id": 5,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 290.74,
+          "n_events": -1,
+          "blind_present_share": 0.091912,
+          "blind_share": 0.096667,
+          "n_blind_present": 25,
+          "n_gt_present": 272,
+          "n_blind": 29,
+          "states": {
+            "lost_short": 6,
+            "occluded_soft": 23,
+            "reacquiring": 11,
+            "tracking": 260
+          },
+          "refuse_reasons": {
+            "cost>bound (the acceptance bound)": 36,
+            "all_gated (hard veto upstream: total=+inf)": 11,
+            "search_margin": 4,
+            "ambiguous (margin)": 3
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "7b10402e6a6a4269",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 308.2,
+          "arm": "channel_fusion",
+          "label": "arm B: channel-conditional acceptance (OR-branch on the bound)",
+          "mechanism": "geometry OR appearance may carry acceptance",
+          "sequence": "dancetrack0010",
+          "target_id_forced": 5,
+          "summary_path": "results\\channel_sweep\\runs\\channel_fusion\\dancetrack0010\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_fusion__dancetrack0010.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 308.2
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_fusion",
+          "overrides": {
+            "cost.channel_accept": true
+          },
+          "tsr": 0.06912442396313365,
+          "far": 0.6566666666666666,
+          "id_consistency": 0.05741626794258373,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 209,
+          "false_acquisition_frames": 197,
+          "target_switch_count": 18,
+          "ms_per_frame": 1189.863398676971,
+          "target_id": 3,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 396.02,
+          "n_events": -1,
+          "blind_present_share": 0.253456,
+          "blind_share": 0.303333,
+          "n_blind_present": 55,
+          "n_gt_present": 217,
+          "n_blind": 91,
+          "states": {
+            "lost_short": 38,
+            "occluded_soft": 52,
+            "out_of_frame": 1,
+            "reacquiring": 11,
+            "tracking": 198
+          },
+          "refuse_reasons": {
+            "cost>bound (the acceptance bound)": 58,
+            "ambiguous (margin)": 34,
+            "search_margin": 13
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "db8168d50e47a92a",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 409.4,
+          "arm": "channel_fusion",
+          "label": "arm B: channel-conditional acceptance (OR-branch on the bound)",
+          "mechanism": "geometry OR appearance may carry acceptance",
+          "sequence": "dancetrack0014",
+          "target_id_forced": 3,
+          "summary_path": "results\\channel_sweep\\runs\\channel_fusion\\dancetrack0014\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_fusion__dancetrack0014.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 409.4
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_fusion",
+          "overrides": {
+            "cost.channel_accept": true
+          },
+          "tsr": 0.25793650793650796,
+          "far": 0.5873015873015873,
+          "id_consistency": 0.3051643192488263,
+          "n_report_frames": 252,
+          "n_frames": 252,
+          "n_locked_frames": 160,
+          "false_acquisition_frames": 148,
+          "target_switch_count": 4,
+          "ms_per_frame": 805.498709129299,
+          "target_id": 0,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 244.35,
+          "n_events": -1,
+          "blind_present_share": 0.365079,
+          "blind_share": 0.365079,
+          "n_blind_present": 92,
+          "n_gt_present": 252,
+          "n_blind": 92,
+          "states": {
+            "lost_short": 8,
+            "occluded_soft": 82,
+            "out_of_frame": 2,
+            "reacquiring": 21,
+            "tracking": 139
+          },
+          "refuse_reasons": {
+            "all_gated (hard veto upstream: total=+inf)": 80,
+            "cost>bound (the acceptance bound)": 33,
+            "search_margin": 2,
+            "ambiguous (margin)": 1
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "78ebfa3088a2db6f",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 257.4,
+          "arm": "channel_fusion",
+          "label": "arm B: channel-conditional acceptance (OR-branch on the bound)",
+          "mechanism": "geometry OR appearance may carry acceptance",
+          "sequence": "dancetrack0018",
+          "target_id_forced": 0,
+          "summary_path": "results\\channel_sweep\\runs\\channel_fusion\\dancetrack0018\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_fusion__dancetrack0018.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 257.4
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_fusion",
+          "overrides": {
+            "cost.channel_accept": true
+          },
+          "tsr": 0.21863799283154123,
+          "far": 0.03666666666666667,
+          "id_consistency": 0.8472222222222222,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 75,
+          "false_acquisition_frames": 11,
+          "target_switch_count": 8,
+          "ms_per_frame": 936.3977266688986,
+          "target_id": 6,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 312.53,
+          "n_events": -1,
+          "blind_present_share": 0.738351,
+          "blind_share": 0.75,
+          "n_blind_present": 206,
+          "n_gt_present": 279,
+          "n_blind": 225,
+          "states": {
+            "lost_long": 67,
+            "lost_short": 113,
+            "occluded_soft": 43,
+            "out_of_frame": 2,
+            "reacquiring": 6,
+            "tracking": 69
+          },
+          "refuse_reasons": {
+            "ambiguous (margin)": 124,
+            "search_margin": 71,
+            "cost>bound (the acceptance bound)": 33,
+            "all_gated (hard veto upstream: total=+inf)": 4
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "b2996f32fbf07c2c",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 324.3,
+          "arm": "channel_fusion",
+          "label": "arm B: channel-conditional acceptance (OR-branch on the bound)",
+          "mechanism": "geometry OR appearance may carry acceptance",
+          "sequence": "dancetrack0019",
+          "target_id_forced": 6,
+          "summary_path": "results\\channel_sweep\\runs\\channel_fusion\\dancetrack0019\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_fusion__dancetrack0019.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 324.3
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_fusion",
+          "overrides": {
+            "cost.channel_accept": true
+          },
+          "tsr": 0.022556390977443608,
+          "far": 0.8366666666666667,
+          "id_consistency": 0.023346303501945526,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 269,
+          "false_acquisition_frames": 251,
+          "target_switch_count": 21,
+          "ms_per_frame": 868.5728203346176,
+          "target_id": 6,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 291.05,
+          "n_events": -1,
+          "blind_present_share": 0.112782,
+          "blind_share": 0.103333,
+          "n_blind_present": 30,
+          "n_gt_present": 266,
+          "n_blind": 31,
+          "states": {
+            "occluded_soft": 31,
+            "reacquiring": 9,
+            "tracking": 260
+          },
+          "refuse_reasons": {
+            "cost>bound (the acceptance bound)": 43,
+            "ambiguous (margin)": 4,
+            "all_gated (hard veto upstream: total=+inf)": 1
+          },
+          "accept_channels": {
+            "geometry": 1
+          },
+          "csv_sha256_16": "32d1f4cd951ac3ed",
+          "channel_accept_geometry": 1,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 304.2,
+          "arm": "channel_fusion",
+          "label": "arm B: channel-conditional acceptance (OR-branch on the bound)",
+          "mechanism": "geometry OR appearance may carry acceptance",
+          "sequence": "dancetrack0025",
+          "target_id_forced": 6,
+          "summary_path": "results\\channel_sweep\\runs\\channel_fusion\\dancetrack0025\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_fusion__dancetrack0025.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 304.2
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_fusion",
+          "overrides": {
+            "cost.channel_accept": true
+          },
+          "tsr": 0.08064516129032258,
+          "far": 0.052980132450331126,
+          "id_consistency": 0.5294117647058824,
+          "n_report_frames": 151,
+          "n_frames": 151,
+          "n_locked_frames": 24,
+          "false_acquisition_frames": 8,
+          "target_switch_count": 10,
+          "ms_per_frame": 1417.9315437078599,
+          "target_id": 9,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 243.74,
+          "n_events": -1,
+          "blind_present_share": 0.814516,
+          "blind_share": 0.84106,
+          "n_blind_present": 101,
+          "n_gt_present": 124,
+          "n_blind": 127,
+          "states": {
+            "lost_long": 40,
+            "lost_short": 59,
+            "occluded_soft": 26,
+            "out_of_frame": 2,
+            "reacquiring": 5,
+            "tracking": 19
+          },
+          "refuse_reasons": {
+            "search_margin": 57,
+            "ambiguous (margin)": 55,
+            "cost>bound (the acceptance bound)": 23
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "ae4d38eb756231e2",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 256.4,
+          "arm": "channel_fusion",
+          "label": "arm B: channel-conditional acceptance (OR-branch on the bound)",
+          "mechanism": "geometry OR appearance may carry acceptance",
+          "sequence": "dancetrack0026",
+          "target_id_forced": 9,
+          "summary_path": "results\\channel_sweep\\runs\\channel_fusion\\dancetrack0026\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_fusion__dancetrack0026.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 256.4
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_fusion",
+          "overrides": {
+            "cost.channel_accept": true
+          },
+          "tsr": 0.37,
+          "far": 0.016666666666666666,
+          "id_consistency": 0.9565217391304348,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 120,
+          "false_acquisition_frames": 5,
+          "target_switch_count": 5,
+          "ms_per_frame": 1009.6172163398782,
+          "target_id": 0,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 332.52,
+          "n_events": -1,
+          "blind_present_share": 0.6,
+          "blind_share": 0.6,
+          "n_blind_present": 180,
+          "n_gt_present": 300,
+          "n_blind": 180,
+          "states": {
+            "lost_long": 114,
+            "lost_short": 47,
+            "occluded_soft": 18,
+            "out_of_frame": 1,
+            "reacquiring": 4,
+            "tracking": 116
+          },
+          "refuse_reasons": {
+            "ambiguous (margin)": 103,
+            "search_margin": 61,
+            "cost>bound (the acceptance bound)": 22
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "38119bbddcb9cc46",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 347.6,
+          "arm": "channel_fusion",
+          "label": "arm B: channel-conditional acceptance (OR-branch on the bound)",
+          "mechanism": "geometry OR appearance may carry acceptance",
+          "sequence": "dancetrack0030",
+          "target_id_forced": 0,
+          "summary_path": "results\\channel_sweep\\runs\\channel_fusion\\dancetrack0030\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_fusion__dancetrack0030.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 347.6
+            }
+          ],
+          "from_cache": false
+        }
+      ],
+      "included": [
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_fusion",
+          "overrides": {
+            "cost.channel_accept": true
+          },
+          "tsr": 0.28308823529411764,
+          "far": 0.68,
+          "id_consistency": 0.25274725274725274,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 271,
+          "false_acquisition_frames": 204,
+          "target_switch_count": 5,
+          "ms_per_frame": 835.0128776657706,
+          "target_id": 5,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 290.74,
+          "n_events": -1,
+          "blind_present_share": 0.091912,
+          "blind_share": 0.096667,
+          "n_blind_present": 25,
+          "n_gt_present": 272,
+          "n_blind": 29,
+          "states": {
+            "lost_short": 6,
+            "occluded_soft": 23,
+            "reacquiring": 11,
+            "tracking": 260
+          },
+          "refuse_reasons": {
+            "cost>bound (the acceptance bound)": 36,
+            "all_gated (hard veto upstream: total=+inf)": 11,
+            "search_margin": 4,
+            "ambiguous (margin)": 3
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "7b10402e6a6a4269",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 308.2,
+          "arm": "channel_fusion",
+          "label": "arm B: channel-conditional acceptance (OR-branch on the bound)",
+          "mechanism": "geometry OR appearance may carry acceptance",
+          "sequence": "dancetrack0010",
+          "target_id_forced": 5,
+          "summary_path": "results\\channel_sweep\\runs\\channel_fusion\\dancetrack0010\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_fusion__dancetrack0010.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 308.2
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_fusion",
+          "overrides": {
+            "cost.channel_accept": true
+          },
+          "tsr": 0.06912442396313365,
+          "far": 0.6566666666666666,
+          "id_consistency": 0.05741626794258373,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 209,
+          "false_acquisition_frames": 197,
+          "target_switch_count": 18,
+          "ms_per_frame": 1189.863398676971,
+          "target_id": 3,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 396.02,
+          "n_events": -1,
+          "blind_present_share": 0.253456,
+          "blind_share": 0.303333,
+          "n_blind_present": 55,
+          "n_gt_present": 217,
+          "n_blind": 91,
+          "states": {
+            "lost_short": 38,
+            "occluded_soft": 52,
+            "out_of_frame": 1,
+            "reacquiring": 11,
+            "tracking": 198
+          },
+          "refuse_reasons": {
+            "cost>bound (the acceptance bound)": 58,
+            "ambiguous (margin)": 34,
+            "search_margin": 13
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "db8168d50e47a92a",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 409.4,
+          "arm": "channel_fusion",
+          "label": "arm B: channel-conditional acceptance (OR-branch on the bound)",
+          "mechanism": "geometry OR appearance may carry acceptance",
+          "sequence": "dancetrack0014",
+          "target_id_forced": 3,
+          "summary_path": "results\\channel_sweep\\runs\\channel_fusion\\dancetrack0014\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_fusion__dancetrack0014.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 409.4
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_fusion",
+          "overrides": {
+            "cost.channel_accept": true
+          },
+          "tsr": 0.25793650793650796,
+          "far": 0.5873015873015873,
+          "id_consistency": 0.3051643192488263,
+          "n_report_frames": 252,
+          "n_frames": 252,
+          "n_locked_frames": 160,
+          "false_acquisition_frames": 148,
+          "target_switch_count": 4,
+          "ms_per_frame": 805.498709129299,
+          "target_id": 0,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 244.35,
+          "n_events": -1,
+          "blind_present_share": 0.365079,
+          "blind_share": 0.365079,
+          "n_blind_present": 92,
+          "n_gt_present": 252,
+          "n_blind": 92,
+          "states": {
+            "lost_short": 8,
+            "occluded_soft": 82,
+            "out_of_frame": 2,
+            "reacquiring": 21,
+            "tracking": 139
+          },
+          "refuse_reasons": {
+            "all_gated (hard veto upstream: total=+inf)": 80,
+            "cost>bound (the acceptance bound)": 33,
+            "search_margin": 2,
+            "ambiguous (margin)": 1
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "78ebfa3088a2db6f",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 257.4,
+          "arm": "channel_fusion",
+          "label": "arm B: channel-conditional acceptance (OR-branch on the bound)",
+          "mechanism": "geometry OR appearance may carry acceptance",
+          "sequence": "dancetrack0018",
+          "target_id_forced": 0,
+          "summary_path": "results\\channel_sweep\\runs\\channel_fusion\\dancetrack0018\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_fusion__dancetrack0018.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 257.4
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_fusion",
+          "overrides": {
+            "cost.channel_accept": true
+          },
+          "tsr": 0.21863799283154123,
+          "far": 0.03666666666666667,
+          "id_consistency": 0.8472222222222222,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 75,
+          "false_acquisition_frames": 11,
+          "target_switch_count": 8,
+          "ms_per_frame": 936.3977266688986,
+          "target_id": 6,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 312.53,
+          "n_events": -1,
+          "blind_present_share": 0.738351,
+          "blind_share": 0.75,
+          "n_blind_present": 206,
+          "n_gt_present": 279,
+          "n_blind": 225,
+          "states": {
+            "lost_long": 67,
+            "lost_short": 113,
+            "occluded_soft": 43,
+            "out_of_frame": 2,
+            "reacquiring": 6,
+            "tracking": 69
+          },
+          "refuse_reasons": {
+            "ambiguous (margin)": 124,
+            "search_margin": 71,
+            "cost>bound (the acceptance bound)": 33,
+            "all_gated (hard veto upstream: total=+inf)": 4
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "b2996f32fbf07c2c",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 324.3,
+          "arm": "channel_fusion",
+          "label": "arm B: channel-conditional acceptance (OR-branch on the bound)",
+          "mechanism": "geometry OR appearance may carry acceptance",
+          "sequence": "dancetrack0019",
+          "target_id_forced": 6,
+          "summary_path": "results\\channel_sweep\\runs\\channel_fusion\\dancetrack0019\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_fusion__dancetrack0019.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 324.3
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_fusion",
+          "overrides": {
+            "cost.channel_accept": true
+          },
+          "tsr": 0.022556390977443608,
+          "far": 0.8366666666666667,
+          "id_consistency": 0.023346303501945526,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 269,
+          "false_acquisition_frames": 251,
+          "target_switch_count": 21,
+          "ms_per_frame": 868.5728203346176,
+          "target_id": 6,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 291.05,
+          "n_events": -1,
+          "blind_present_share": 0.112782,
+          "blind_share": 0.103333,
+          "n_blind_present": 30,
+          "n_gt_present": 266,
+          "n_blind": 31,
+          "states": {
+            "occluded_soft": 31,
+            "reacquiring": 9,
+            "tracking": 260
+          },
+          "refuse_reasons": {
+            "cost>bound (the acceptance bound)": 43,
+            "ambiguous (margin)": 4,
+            "all_gated (hard veto upstream: total=+inf)": 1
+          },
+          "accept_channels": {
+            "geometry": 1
+          },
+          "csv_sha256_16": "32d1f4cd951ac3ed",
+          "channel_accept_geometry": 1,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 304.2,
+          "arm": "channel_fusion",
+          "label": "arm B: channel-conditional acceptance (OR-branch on the bound)",
+          "mechanism": "geometry OR appearance may carry acceptance",
+          "sequence": "dancetrack0025",
+          "target_id_forced": 6,
+          "summary_path": "results\\channel_sweep\\runs\\channel_fusion\\dancetrack0025\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_fusion__dancetrack0025.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 304.2
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_fusion",
+          "overrides": {
+            "cost.channel_accept": true
+          },
+          "tsr": 0.08064516129032258,
+          "far": 0.052980132450331126,
+          "id_consistency": 0.5294117647058824,
+          "n_report_frames": 151,
+          "n_frames": 151,
+          "n_locked_frames": 24,
+          "false_acquisition_frames": 8,
+          "target_switch_count": 10,
+          "ms_per_frame": 1417.9315437078599,
+          "target_id": 9,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 243.74,
+          "n_events": -1,
+          "blind_present_share": 0.814516,
+          "blind_share": 0.84106,
+          "n_blind_present": 101,
+          "n_gt_present": 124,
+          "n_blind": 127,
+          "states": {
+            "lost_long": 40,
+            "lost_short": 59,
+            "occluded_soft": 26,
+            "out_of_frame": 2,
+            "reacquiring": 5,
+            "tracking": 19
+          },
+          "refuse_reasons": {
+            "search_margin": 57,
+            "ambiguous (margin)": 55,
+            "cost>bound (the acceptance bound)": 23
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "ae4d38eb756231e2",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 256.4,
+          "arm": "channel_fusion",
+          "label": "arm B: channel-conditional acceptance (OR-branch on the bound)",
+          "mechanism": "geometry OR appearance may carry acceptance",
+          "sequence": "dancetrack0026",
+          "target_id_forced": 9,
+          "summary_path": "results\\channel_sweep\\runs\\channel_fusion\\dancetrack0026\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_fusion__dancetrack0026.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 256.4
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_fusion",
+          "overrides": {
+            "cost.channel_accept": true
+          },
+          "tsr": 0.37,
+          "far": 0.016666666666666666,
+          "id_consistency": 0.9565217391304348,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 120,
+          "false_acquisition_frames": 5,
+          "target_switch_count": 5,
+          "ms_per_frame": 1009.6172163398782,
+          "target_id": 0,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 332.52,
+          "n_events": -1,
+          "blind_present_share": 0.6,
+          "blind_share": 0.6,
+          "n_blind_present": 180,
+          "n_gt_present": 300,
+          "n_blind": 180,
+          "states": {
+            "lost_long": 114,
+            "lost_short": 47,
+            "occluded_soft": 18,
+            "out_of_frame": 1,
+            "reacquiring": 4,
+            "tracking": 116
+          },
+          "refuse_reasons": {
+            "ambiguous (margin)": 103,
+            "search_margin": 61,
+            "cost>bound (the acceptance bound)": 22
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "38119bbddcb9cc46",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 0,
+          "aspect_clamp_calls": 0,
+          "exit_code": 0,
+          "wall_seconds": 347.6,
+          "arm": "channel_fusion",
+          "label": "arm B: channel-conditional acceptance (OR-branch on the bound)",
+          "mechanism": "geometry OR appearance may carry acceptance",
+          "sequence": "dancetrack0030",
+          "target_id_forced": 0,
+          "summary_path": "results\\channel_sweep\\runs\\channel_fusion\\dancetrack0030\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_fusion__dancetrack0030.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 347.6
+            }
+          ],
+          "from_cache": false
+        }
+      ],
+      "excluded": [],
+      "pooled": {
+        "total_report_frames": 1903,
+        "n_included": 7,
+        "n_excluded": 0,
+        "estimator": "frame-weighted pooled mean over included sequences",
+        "tsr": 0.192433,
+        "tsr_mean": 0.185998,
+        "tsr_median": 0.218638,
+        "tsr_min": 0.022556,
+        "tsr_max": 0.37,
+        "far": 0.433001,
+        "far_mean": 0.409564,
+        "far_median": 0.587302,
+        "far_min": 0.016667,
+        "far_max": 0.836667,
+        "id_consistency": 0.419348,
+        "id_consistency_mean": 0.424547,
+        "id_consistency_median": 0.305164,
+        "id_consistency_min": 0.023346,
+        "id_consistency_max": 0.956522,
+        "ms_per_frame": 982.098029,
+        "ms_per_frame_mean": 1008.984899,
+        "ms_per_frame_median": 936.397727,
+        "ms_per_frame_min": 805.498709,
+        "ms_per_frame_max": 1417.931544,
+        "blind_present_share": 0.396186,
+        "blind_present_share_mean": 0.425157,
+        "blind_present_share_median": 0.365079,
+        "blind_present_share_min": 0.091912,
+        "blind_present_share_max": 0.814516,
+        "blind_present_share_gtweighted": 0.402924,
+        "n_blind_present": 689,
+        "n_gt_present": 1710
+      },
+      "bootstrap": {
+        "tsr": {
+          "reps": 2000,
+          "n_sequences": 7,
+          "seed": 0,
+          "weight_key": "n_report_frames",
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 0.10391,
+          "p50": 0.192433,
+          "p97.5": 0.286332,
+          "mean": 0.192768
+        },
+        "far": {
+          "reps": 2000,
+          "n_sequences": 7,
+          "seed": 0,
+          "weight_key": "n_report_frames",
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 0.166162,
+          "p50": 0.432475,
+          "p97.5": 0.652053,
+          "mean": 0.429152
+        },
+        "id_consistency": {
+          "reps": 2000,
+          "n_sequences": 7,
+          "seed": 0,
+          "weight_key": "n_report_frames",
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 0.177552,
+          "p50": 0.413387,
+          "p97.5": 0.708199,
+          "mean": 0.421579
+        },
+        "ms_per_frame": {
+          "reps": 2000,
+          "n_sequences": 7,
+          "seed": 0,
+          "weight_key": "n_report_frames",
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 873.929843,
+          "p50": 980.607257,
+          "p97.5": 1113.705675,
+          "mean": 984.826786
+        },
+        "blind_present_share": {
+          "reps": 2000,
+          "n_sequences": 7,
+          "seed": 0,
+          "weight_key": "n_gt_present",
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 0.220804,
+          "p50": 0.407211,
+          "p97.5": 0.598706,
+          "mean": 0.405438
+        }
+      },
+      "engagement": {
+        "n_blind_present": 689,
+        "n_gt_present": 1710,
+        "n_blind": 775,
+        "blind_present_share": 0.402924,
+        "channel_accept_geometry": 1,
+        "channel_accept_appearance": 0,
+        "aspect_clamp_steps": 0,
+        "aspect_clamp_calls": 0,
+        "n_sequences_with_channel_accept": 1,
+        "n_sequences_with_aspect_clamp": 0,
+        "refuse_reasons": {
+          "ambiguous (margin)": 324,
+          "cost>bound (the acceptance bound)": 248,
+          "search_margin": 208,
+          "all_gated (hard veto upstream: total=+inf)": 96
+        },
+        "accept_channels": {
+          "geometry": 1
+        },
+        "states": {
+          "tracking": 1061,
+          "occluded_soft": 275,
+          "lost_short": 271,
+          "lost_long": 221,
+          "reacquiring": 67,
+          "out_of_frame": 8
+        }
+      },
+      "frame_counts": {
+        "n_sequences": 7,
+        "n_report_frames": 1903,
+        "n_frames": 1903
+      },
+      "paired": {
+        "tsr": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 7,
+          "unpaired_sequences": [],
+          "delta_mean": 0.001074114,
+          "p2.5": 0.0,
+          "p50": 0.001074114,
+          "p97.5": 0.003222342,
+          "sequences_up": 1,
+          "sequences_down": 0,
+          "sequences_flat": 6,
+          "excludes_zero": false,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": 0.0,
+              "arm_value": 0.283088235,
+              "reference_value": 0.283088235,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0014",
+              "delta": 0.0,
+              "arm_value": 0.069124424,
+              "reference_value": 0.069124424,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0018",
+              "delta": 0.0,
+              "arm_value": 0.257936508,
+              "reference_value": 0.257936508,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0019",
+              "delta": 0.0,
+              "arm_value": 0.218637993,
+              "reference_value": 0.218637993,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0025",
+              "delta": 0.007518797,
+              "arm_value": 0.022556391,
+              "reference_value": 0.015037594,
+              "delta_pp": 0.752
+            },
+            {
+              "sequence": "dancetrack0026",
+              "delta": 0.0,
+              "arm_value": 0.080645161,
+              "reference_value": 0.080645161,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0030",
+              "delta": 0.0,
+              "arm_value": 0.37,
+              "reference_value": 0.37,
+              "delta_pp": 0.0
+            }
+          ]
+        },
+        "far": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 7,
+          "unpaired_sequences": [],
+          "delta_mean": 0.110952381,
+          "p2.5": 0.0,
+          "p50": 0.110952381,
+          "p97.5": 0.332857143,
+          "sequences_up": 1,
+          "sequences_down": 0,
+          "sequences_flat": 6,
+          "excludes_zero": false,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": 0.0,
+              "arm_value": 0.68,
+              "reference_value": 0.68,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0014",
+              "delta": 0.0,
+              "arm_value": 0.656666667,
+              "reference_value": 0.656666667,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0018",
+              "delta": 0.0,
+              "arm_value": 0.587301587,
+              "reference_value": 0.587301587,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0019",
+              "delta": 0.0,
+              "arm_value": 0.036666667,
+              "reference_value": 0.036666667,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0025",
+              "delta": 0.776666667,
+              "arm_value": 0.836666667,
+              "reference_value": 0.06,
+              "delta_pp": 77.667
+            },
+            {
+              "sequence": "dancetrack0026",
+              "delta": 0.0,
+              "arm_value": 0.052980132,
+              "reference_value": 0.052980132,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0030",
+              "delta": 0.0,
+              "arm_value": 0.016666667,
+              "reference_value": 0.016666667,
+              "delta_pp": 0.0
+            }
+          ]
+        },
+        "id_consistency": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 7,
+          "unpaired_sequences": [],
+          "delta_mean": -0.02263884,
+          "p2.5": -0.067916519,
+          "p50": -0.02263884,
+          "p97.5": 0.0,
+          "sequences_up": 0,
+          "sequences_down": 1,
+          "sequences_flat": 6,
+          "excludes_zero": false,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": 0.0,
+              "arm_value": 0.252747253,
+              "reference_value": 0.252747253,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0014",
+              "delta": 0.0,
+              "arm_value": 0.057416268,
+              "reference_value": 0.057416268,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0018",
+              "delta": 0.0,
+              "arm_value": 0.305164319,
+              "reference_value": 0.305164319,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0019",
+              "delta": 0.0,
+              "arm_value": 0.847222222,
+              "reference_value": 0.847222222,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0025",
+              "delta": -0.158471878,
+              "arm_value": 0.023346304,
+              "reference_value": 0.181818182,
+              "delta_pp": -15.847
+            },
+            {
+              "sequence": "dancetrack0026",
+              "delta": 0.0,
+              "arm_value": 0.529411765,
+              "reference_value": 0.529411765,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0030",
+              "delta": 0.0,
+              "arm_value": 0.956521739,
+              "reference_value": 0.956521739,
+              "delta_pp": 0.0
+            }
+          ]
+        },
+        "ms_per_frame": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 7,
+          "unpaired_sequences": [],
+          "delta_mean": -27.506021951,
+          "p2.5": -114.307505417,
+          "p50": -25.203157863,
+          "p97.5": 30.718438583,
+          "sequences_up": 3,
+          "sequences_down": 4,
+          "sequences_flat": 0,
+          "excludes_zero": false,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": 48.652005336,
+              "arm_value": 835.012877666,
+              "reference_value": 786.36087233,
+              "delta_pp": 4865.201
+            },
+            {
+              "sequence": "dancetrack0014",
+              "delta": -27.593439989,
+              "arm_value": 1189.863398677,
+              "reference_value": 1217.456838666,
+              "delta_pp": -2759.344
+            },
+            {
+              "sequence": "dancetrack0018",
+              "delta": 9.576719447,
+              "arm_value": 805.498709129,
+              "reference_value": 795.921989682,
+              "delta_pp": 957.672
+            },
+            {
+              "sequence": "dancetrack0019",
+              "delta": -1.972928663,
+              "arm_value": 936.397726669,
+              "reference_value": 938.370655332,
+              "delta_pp": -197.293
+            },
+            {
+              "sequence": "dancetrack0025",
+              "delta": -274.667654664,
+              "arm_value": 868.572820335,
+              "reference_value": 1143.240474998,
+              "delta_pp": -27466.765
+            },
+            {
+              "sequence": "dancetrack0026",
+              "delta": 53.582067542,
+              "arm_value": 1417.931543708,
+              "reference_value": 1364.349476166,
+              "delta_pp": 5358.207
+            },
+            {
+              "sequence": "dancetrack0030",
+              "delta": -0.118922664,
+              "arm_value": 1009.61721634,
+              "reference_value": 1009.736139004,
+              "delta_pp": -11.892
+            }
+          ]
+        },
+        "blind_present_share": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 7,
+          "unpaired_sequences": [],
+          "delta_mean": -0.110633714,
+          "p2.5": -0.331901143,
+          "p50": -0.110633714,
+          "p97.5": 0.0,
+          "sequences_up": 0,
+          "sequences_down": 1,
+          "sequences_flat": 6,
+          "excludes_zero": false,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": 0.0,
+              "arm_value": 0.091912,
+              "reference_value": 0.091912,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0014",
+              "delta": 0.0,
+              "arm_value": 0.253456,
+              "reference_value": 0.253456,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0018",
+              "delta": 0.0,
+              "arm_value": 0.365079,
+              "reference_value": 0.365079,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0019",
+              "delta": 0.0,
+              "arm_value": 0.738351,
+              "reference_value": 0.738351,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0025",
+              "delta": -0.774436,
+              "arm_value": 0.112782,
+              "reference_value": 0.887218,
+              "delta_pp": -77.444
+            },
+            {
+              "sequence": "dancetrack0026",
+              "delta": 0.0,
+              "arm_value": 0.814516,
+              "reference_value": 0.814516,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0030",
+              "delta": 0.0,
+              "arm_value": 0.6,
+              "reference_value": 0.6,
+              "delta_pp": 0.0
+            }
+          ]
+        }
+      },
+      "verdict": {
+        "arm": "channel_fusion",
+        "rule": "SHIP iff pooled dTSR >= +3.0 pp AND paired-dTSR 95% CI excludes 0 AND paired-dFAR 95% CI upper bound < +3.0 pp AND blind-AND-present share falls; KILL if bit-identical (inert) or dTSR < 0",
+        "verdict": "NO-SHIP",
+        "text": "NO-SHIP: pooled dTSR +0.12 pp < +3.0; paired dTSR CI [+0.00, +0.32] pp includes 0; paired dFAR CI upper +33.29 pp >= +3.0.",
+        "pooled_dtsr_pp": 0.119,
+        "pooled_dfar_pp": 12.244,
+        "pooled_did_consistency_pp": -2.498,
+        "pooled_dms_per_frame": -34.79,
+        "paired_dtsr_mean_pp": 0.107,
+        "paired_dtsr_ci_pp": [
+          0.0,
+          0.322
+        ],
+        "paired_dfar_mean_pp": 11.095,
+        "paired_dfar_ci_pp": [
+          0.0,
+          33.286
+        ],
+        "paired_dtsr_excludes_zero": false,
+        "paired_dfar_excludes_zero": false,
+        "tsr_magnitude_ok": false,
+        "tsr_ci_ok": false,
+        "far_ci_ok": false,
+        "blind_present_falls": true,
+        "pooled_dblind_present_pp": -12.047,
+        "mechanism_engaged": true,
+        "bit_identical": false,
+        "n_bit_identical": 6,
+        "n_paired_sequences": 7,
+        "sequences_up": 1,
+        "sequences_down": 0,
+        "sequences_flat": 6
+      }
+    },
+    "channel_aspect": {
+      "arm": "channel_aspect",
+      "variant": "channel_aspect",
+      "overrides": {
+        "motion.aspect_clamp_coast": true
+      },
+      "label": "arm C: bounded-aspect coasting",
+      "mechanism": "coasted aspect clamped to the last observed band",
+      "is_reference": false,
+      "rows": [
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_aspect",
+          "overrides": {
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.28308823529411764,
+          "far": 0.68,
+          "id_consistency": 0.25274725274725274,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 271,
+          "false_acquisition_frames": 204,
+          "target_switch_count": 5,
+          "ms_per_frame": 880.6165376647065,
+          "target_id": 5,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 313.24,
+          "n_events": -1,
+          "blind_present_share": 0.091912,
+          "blind_share": 0.096667,
+          "n_blind_present": 25,
+          "n_gt_present": 272,
+          "n_blind": 29,
+          "states": {
+            "lost_short": 6,
+            "occluded_soft": 23,
+            "reacquiring": 11,
+            "tracking": 260
+          },
+          "refuse_reasons": {
+            "cost>bound (the acceptance bound)": 36,
+            "all_gated (hard veto upstream: total=+inf)": 11,
+            "search_margin": 4,
+            "ambiguous (margin)": 3
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "237b12566d5b1b57",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 6,
+          "aspect_clamp_calls": 4,
+          "exit_code": 0,
+          "wall_seconds": 333.3,
+          "arm": "channel_aspect",
+          "label": "arm C: bounded-aspect coasting",
+          "mechanism": "coasted aspect clamped to the last observed band",
+          "sequence": "dancetrack0010",
+          "target_id_forced": 5,
+          "summary_path": "results\\channel_sweep\\runs\\channel_aspect\\dancetrack0010\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_aspect__dancetrack0010.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 333.3
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_aspect",
+          "overrides": {
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.07373271889400922,
+          "far": 0.03666666666666667,
+          "id_consistency": 0.5217391304347826,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 24,
+          "false_acquisition_frames": 11,
+          "target_switch_count": 9,
+          "ms_per_frame": 1384.9385899992194,
+          "target_id": 3,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 448.58,
+          "n_events": -1,
+          "blind_present_share": 0.907834,
+          "blind_share": 0.92,
+          "n_blind_present": 197,
+          "n_gt_present": 217,
+          "n_blind": 276,
+          "states": {
+            "lost_long": 190,
+            "lost_short": 53,
+            "occluded_soft": 32,
+            "out_of_frame": 1,
+            "reacquiring": 4,
+            "tracking": 20
+          },
+          "refuse_reasons": {
+            "ambiguous (margin)": 167,
+            "search_margin": 84,
+            "cost>bound (the acceptance bound)": 31
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "b96f9c01ec3b2921",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 400,
+          "aspect_clamp_calls": 257,
+          "exit_code": 0,
+          "wall_seconds": 463.6,
+          "arm": "channel_aspect",
+          "label": "arm C: bounded-aspect coasting",
+          "mechanism": "coasted aspect clamped to the last observed band",
+          "sequence": "dancetrack0014",
+          "target_id_forced": 3,
+          "summary_path": "results\\channel_sweep\\runs\\channel_aspect\\dancetrack0014\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_aspect__dancetrack0014.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 463.6
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_aspect",
+          "overrides": {
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.25793650793650796,
+          "far": 0.5912698412698413,
+          "id_consistency": 0.3037383177570093,
+          "n_report_frames": 252,
+          "n_frames": 252,
+          "n_locked_frames": 160,
+          "false_acquisition_frames": 149,
+          "target_switch_count": 4,
+          "ms_per_frame": 788.9586615099919,
+          "target_id": 0,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 231.28,
+          "n_events": -1,
+          "blind_present_share": 0.365079,
+          "blind_share": 0.365079,
+          "n_blind_present": 92,
+          "n_gt_present": 252,
+          "n_blind": 92,
+          "states": {
+            "lost_short": 8,
+            "occluded_soft": 82,
+            "out_of_frame": 2,
+            "reacquiring": 21,
+            "tracking": 139
+          },
+          "refuse_reasons": {
+            "all_gated (hard veto upstream: total=+inf)": 79,
+            "cost>bound (the acceptance bound)": 33,
+            "ambiguous (margin)": 2,
+            "search_margin": 2
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "c245eed239508802",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 19,
+          "aspect_clamp_calls": 14,
+          "exit_code": 0,
+          "wall_seconds": 241.6,
+          "arm": "channel_aspect",
+          "label": "arm C: bounded-aspect coasting",
+          "mechanism": "coasted aspect clamped to the last observed band",
+          "sequence": "dancetrack0018",
+          "target_id_forced": 0,
+          "summary_path": "results\\channel_sweep\\runs\\channel_aspect\\dancetrack0018\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_aspect__dancetrack0018.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 241.6
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_aspect",
+          "overrides": {
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.21863799283154123,
+          "far": 0.03666666666666667,
+          "id_consistency": 0.8472222222222222,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 75,
+          "false_acquisition_frames": 11,
+          "target_switch_count": 8,
+          "ms_per_frame": 955.2982743375469,
+          "target_id": 6,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 320.36,
+          "n_events": -1,
+          "blind_present_share": 0.738351,
+          "blind_share": 0.75,
+          "n_blind_present": 206,
+          "n_gt_present": 279,
+          "n_blind": 225,
+          "states": {
+            "lost_long": 67,
+            "lost_short": 113,
+            "occluded_soft": 43,
+            "out_of_frame": 2,
+            "reacquiring": 6,
+            "tracking": 69
+          },
+          "refuse_reasons": {
+            "ambiguous (margin)": 124,
+            "search_margin": 71,
+            "cost>bound (the acceptance bound)": 33,
+            "all_gated (hard veto upstream: total=+inf)": 4
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "3d3f1fe6df1c3e3b",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 90,
+          "aspect_clamp_calls": 71,
+          "exit_code": 0,
+          "wall_seconds": 336.7,
+          "arm": "channel_aspect",
+          "label": "arm C: bounded-aspect coasting",
+          "mechanism": "coasted aspect clamped to the last observed band",
+          "sequence": "dancetrack0019",
+          "target_id_forced": 6,
+          "summary_path": "results\\channel_sweep\\runs\\channel_aspect\\dancetrack0019\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_aspect__dancetrack0019.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 336.7
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_aspect",
+          "overrides": {
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.015037593984962405,
+          "far": 0.06,
+          "id_consistency": 0.18181818181818182,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 30,
+          "false_acquisition_frames": 18,
+          "target_switch_count": 11,
+          "ms_per_frame": 1136.796942675331,
+          "target_id": 6,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 370.39,
+          "n_events": -1,
+          "blind_present_share": 0.887218,
+          "blind_share": 0.9,
+          "n_blind_present": 236,
+          "n_gt_present": 266,
+          "n_blind": 270,
+          "states": {
+            "lost_long": 197,
+            "lost_short": 48,
+            "occluded_soft": 24,
+            "out_of_frame": 1,
+            "reacquiring": 6,
+            "tracking": 24
+          },
+          "refuse_reasons": {
+            "ambiguous (margin)": 183,
+            "search_margin": 71,
+            "cost>bound (the acceptance bound)": 23,
+            "all_gated (hard veto upstream: total=+inf)": 1
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "a117e7ea73be4b70",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 385,
+          "aspect_clamp_calls": 248,
+          "exit_code": 0,
+          "wall_seconds": 381.3,
+          "arm": "channel_aspect",
+          "label": "arm C: bounded-aspect coasting",
+          "mechanism": "coasted aspect clamped to the last observed band",
+          "sequence": "dancetrack0025",
+          "target_id_forced": 6,
+          "summary_path": "results\\channel_sweep\\runs\\channel_aspect\\dancetrack0025\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_aspect__dancetrack0025.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 381.3
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_aspect",
+          "overrides": {
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.08064516129032258,
+          "far": 0.052980132450331126,
+          "id_consistency": 0.5294117647058824,
+          "n_report_frames": 151,
+          "n_frames": 151,
+          "n_locked_frames": 24,
+          "false_acquisition_frames": 8,
+          "target_switch_count": 10,
+          "ms_per_frame": 1412.0577033215961,
+          "target_id": 9,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 252.2,
+          "n_events": -1,
+          "blind_present_share": 0.814516,
+          "blind_share": 0.84106,
+          "n_blind_present": 101,
+          "n_gt_present": 124,
+          "n_blind": 127,
+          "states": {
+            "lost_long": 40,
+            "lost_short": 59,
+            "occluded_soft": 26,
+            "out_of_frame": 2,
+            "reacquiring": 5,
+            "tracking": 19
+          },
+          "refuse_reasons": {
+            "search_margin": 57,
+            "ambiguous (margin)": 55,
+            "cost>bound (the acceptance bound)": 23
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "c124b43b403a9c96",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 131,
+          "aspect_clamp_calls": 113,
+          "exit_code": 0,
+          "wall_seconds": 264.6,
+          "arm": "channel_aspect",
+          "label": "arm C: bounded-aspect coasting",
+          "mechanism": "coasted aspect clamped to the last observed band",
+          "sequence": "dancetrack0026",
+          "target_id_forced": 9,
+          "summary_path": "results\\channel_sweep\\runs\\channel_aspect\\dancetrack0026\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_aspect__dancetrack0026.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 264.6
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_aspect",
+          "overrides": {
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.37,
+          "far": 0.016666666666666666,
+          "id_consistency": 0.9565217391304348,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 120,
+          "false_acquisition_frames": 5,
+          "target_switch_count": 5,
+          "ms_per_frame": 1035.861393334344,
+          "target_id": 0,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 353.43,
+          "n_events": -1,
+          "blind_present_share": 0.6,
+          "blind_share": 0.6,
+          "n_blind_present": 180,
+          "n_gt_present": 300,
+          "n_blind": 180,
+          "states": {
+            "lost_long": 114,
+            "lost_short": 47,
+            "occluded_soft": 18,
+            "out_of_frame": 1,
+            "reacquiring": 4,
+            "tracking": 116
+          },
+          "refuse_reasons": {
+            "ambiguous (margin)": 103,
+            "search_margin": 61,
+            "cost>bound (the acceptance bound)": 22
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "7f4f19d5ca056fd8",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 228,
+          "aspect_clamp_calls": 164,
+          "exit_code": 0,
+          "wall_seconds": 370.1,
+          "arm": "channel_aspect",
+          "label": "arm C: bounded-aspect coasting",
+          "mechanism": "coasted aspect clamped to the last observed band",
+          "sequence": "dancetrack0030",
+          "target_id_forced": 0,
+          "summary_path": "results\\channel_sweep\\runs\\channel_aspect\\dancetrack0030\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_aspect__dancetrack0030.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 370.1
+            }
+          ],
+          "from_cache": false
+        }
+      ],
+      "included": [
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_aspect",
+          "overrides": {
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.28308823529411764,
+          "far": 0.68,
+          "id_consistency": 0.25274725274725274,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 271,
+          "false_acquisition_frames": 204,
+          "target_switch_count": 5,
+          "ms_per_frame": 880.6165376647065,
+          "target_id": 5,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 313.24,
+          "n_events": -1,
+          "blind_present_share": 0.091912,
+          "blind_share": 0.096667,
+          "n_blind_present": 25,
+          "n_gt_present": 272,
+          "n_blind": 29,
+          "states": {
+            "lost_short": 6,
+            "occluded_soft": 23,
+            "reacquiring": 11,
+            "tracking": 260
+          },
+          "refuse_reasons": {
+            "cost>bound (the acceptance bound)": 36,
+            "all_gated (hard veto upstream: total=+inf)": 11,
+            "search_margin": 4,
+            "ambiguous (margin)": 3
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "237b12566d5b1b57",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 6,
+          "aspect_clamp_calls": 4,
+          "exit_code": 0,
+          "wall_seconds": 333.3,
+          "arm": "channel_aspect",
+          "label": "arm C: bounded-aspect coasting",
+          "mechanism": "coasted aspect clamped to the last observed band",
+          "sequence": "dancetrack0010",
+          "target_id_forced": 5,
+          "summary_path": "results\\channel_sweep\\runs\\channel_aspect\\dancetrack0010\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_aspect__dancetrack0010.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 333.3
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_aspect",
+          "overrides": {
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.07373271889400922,
+          "far": 0.03666666666666667,
+          "id_consistency": 0.5217391304347826,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 24,
+          "false_acquisition_frames": 11,
+          "target_switch_count": 9,
+          "ms_per_frame": 1384.9385899992194,
+          "target_id": 3,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 448.58,
+          "n_events": -1,
+          "blind_present_share": 0.907834,
+          "blind_share": 0.92,
+          "n_blind_present": 197,
+          "n_gt_present": 217,
+          "n_blind": 276,
+          "states": {
+            "lost_long": 190,
+            "lost_short": 53,
+            "occluded_soft": 32,
+            "out_of_frame": 1,
+            "reacquiring": 4,
+            "tracking": 20
+          },
+          "refuse_reasons": {
+            "ambiguous (margin)": 167,
+            "search_margin": 84,
+            "cost>bound (the acceptance bound)": 31
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "b96f9c01ec3b2921",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 400,
+          "aspect_clamp_calls": 257,
+          "exit_code": 0,
+          "wall_seconds": 463.6,
+          "arm": "channel_aspect",
+          "label": "arm C: bounded-aspect coasting",
+          "mechanism": "coasted aspect clamped to the last observed band",
+          "sequence": "dancetrack0014",
+          "target_id_forced": 3,
+          "summary_path": "results\\channel_sweep\\runs\\channel_aspect\\dancetrack0014\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_aspect__dancetrack0014.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 463.6
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_aspect",
+          "overrides": {
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.25793650793650796,
+          "far": 0.5912698412698413,
+          "id_consistency": 0.3037383177570093,
+          "n_report_frames": 252,
+          "n_frames": 252,
+          "n_locked_frames": 160,
+          "false_acquisition_frames": 149,
+          "target_switch_count": 4,
+          "ms_per_frame": 788.9586615099919,
+          "target_id": 0,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 231.28,
+          "n_events": -1,
+          "blind_present_share": 0.365079,
+          "blind_share": 0.365079,
+          "n_blind_present": 92,
+          "n_gt_present": 252,
+          "n_blind": 92,
+          "states": {
+            "lost_short": 8,
+            "occluded_soft": 82,
+            "out_of_frame": 2,
+            "reacquiring": 21,
+            "tracking": 139
+          },
+          "refuse_reasons": {
+            "all_gated (hard veto upstream: total=+inf)": 79,
+            "cost>bound (the acceptance bound)": 33,
+            "ambiguous (margin)": 2,
+            "search_margin": 2
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "c245eed239508802",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 19,
+          "aspect_clamp_calls": 14,
+          "exit_code": 0,
+          "wall_seconds": 241.6,
+          "arm": "channel_aspect",
+          "label": "arm C: bounded-aspect coasting",
+          "mechanism": "coasted aspect clamped to the last observed band",
+          "sequence": "dancetrack0018",
+          "target_id_forced": 0,
+          "summary_path": "results\\channel_sweep\\runs\\channel_aspect\\dancetrack0018\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_aspect__dancetrack0018.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 241.6
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_aspect",
+          "overrides": {
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.21863799283154123,
+          "far": 0.03666666666666667,
+          "id_consistency": 0.8472222222222222,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 75,
+          "false_acquisition_frames": 11,
+          "target_switch_count": 8,
+          "ms_per_frame": 955.2982743375469,
+          "target_id": 6,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 320.36,
+          "n_events": -1,
+          "blind_present_share": 0.738351,
+          "blind_share": 0.75,
+          "n_blind_present": 206,
+          "n_gt_present": 279,
+          "n_blind": 225,
+          "states": {
+            "lost_long": 67,
+            "lost_short": 113,
+            "occluded_soft": 43,
+            "out_of_frame": 2,
+            "reacquiring": 6,
+            "tracking": 69
+          },
+          "refuse_reasons": {
+            "ambiguous (margin)": 124,
+            "search_margin": 71,
+            "cost>bound (the acceptance bound)": 33,
+            "all_gated (hard veto upstream: total=+inf)": 4
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "3d3f1fe6df1c3e3b",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 90,
+          "aspect_clamp_calls": 71,
+          "exit_code": 0,
+          "wall_seconds": 336.7,
+          "arm": "channel_aspect",
+          "label": "arm C: bounded-aspect coasting",
+          "mechanism": "coasted aspect clamped to the last observed band",
+          "sequence": "dancetrack0019",
+          "target_id_forced": 6,
+          "summary_path": "results\\channel_sweep\\runs\\channel_aspect\\dancetrack0019\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_aspect__dancetrack0019.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 336.7
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_aspect",
+          "overrides": {
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.015037593984962405,
+          "far": 0.06,
+          "id_consistency": 0.18181818181818182,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 30,
+          "false_acquisition_frames": 18,
+          "target_switch_count": 11,
+          "ms_per_frame": 1136.796942675331,
+          "target_id": 6,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 370.39,
+          "n_events": -1,
+          "blind_present_share": 0.887218,
+          "blind_share": 0.9,
+          "n_blind_present": 236,
+          "n_gt_present": 266,
+          "n_blind": 270,
+          "states": {
+            "lost_long": 197,
+            "lost_short": 48,
+            "occluded_soft": 24,
+            "out_of_frame": 1,
+            "reacquiring": 6,
+            "tracking": 24
+          },
+          "refuse_reasons": {
+            "ambiguous (margin)": 183,
+            "search_margin": 71,
+            "cost>bound (the acceptance bound)": 23,
+            "all_gated (hard veto upstream: total=+inf)": 1
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "a117e7ea73be4b70",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 385,
+          "aspect_clamp_calls": 248,
+          "exit_code": 0,
+          "wall_seconds": 381.3,
+          "arm": "channel_aspect",
+          "label": "arm C: bounded-aspect coasting",
+          "mechanism": "coasted aspect clamped to the last observed band",
+          "sequence": "dancetrack0025",
+          "target_id_forced": 6,
+          "summary_path": "results\\channel_sweep\\runs\\channel_aspect\\dancetrack0025\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_aspect__dancetrack0025.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 381.3
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_aspect",
+          "overrides": {
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.08064516129032258,
+          "far": 0.052980132450331126,
+          "id_consistency": 0.5294117647058824,
+          "n_report_frames": 151,
+          "n_frames": 151,
+          "n_locked_frames": 24,
+          "false_acquisition_frames": 8,
+          "target_switch_count": 10,
+          "ms_per_frame": 1412.0577033215961,
+          "target_id": 9,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 252.2,
+          "n_events": -1,
+          "blind_present_share": 0.814516,
+          "blind_share": 0.84106,
+          "n_blind_present": 101,
+          "n_gt_present": 124,
+          "n_blind": 127,
+          "states": {
+            "lost_long": 40,
+            "lost_short": 59,
+            "occluded_soft": 26,
+            "out_of_frame": 2,
+            "reacquiring": 5,
+            "tracking": 19
+          },
+          "refuse_reasons": {
+            "search_margin": 57,
+            "ambiguous (margin)": 55,
+            "cost>bound (the acceptance bound)": 23
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "c124b43b403a9c96",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 131,
+          "aspect_clamp_calls": 113,
+          "exit_code": 0,
+          "wall_seconds": 264.6,
+          "arm": "channel_aspect",
+          "label": "arm C: bounded-aspect coasting",
+          "mechanism": "coasted aspect clamped to the last observed band",
+          "sequence": "dancetrack0026",
+          "target_id_forced": 9,
+          "summary_path": "results\\channel_sweep\\runs\\channel_aspect\\dancetrack0026\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_aspect__dancetrack0026.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 264.6
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_aspect",
+          "overrides": {
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.37,
+          "far": 0.016666666666666666,
+          "id_consistency": 0.9565217391304348,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 120,
+          "false_acquisition_frames": 5,
+          "target_switch_count": 5,
+          "ms_per_frame": 1035.861393334344,
+          "target_id": 0,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 353.43,
+          "n_events": -1,
+          "blind_present_share": 0.6,
+          "blind_share": 0.6,
+          "n_blind_present": 180,
+          "n_gt_present": 300,
+          "n_blind": 180,
+          "states": {
+            "lost_long": 114,
+            "lost_short": 47,
+            "occluded_soft": 18,
+            "out_of_frame": 1,
+            "reacquiring": 4,
+            "tracking": 116
+          },
+          "refuse_reasons": {
+            "ambiguous (margin)": 103,
+            "search_margin": 61,
+            "cost>bound (the acceptance bound)": 22
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "7f4f19d5ca056fd8",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 228,
+          "aspect_clamp_calls": 164,
+          "exit_code": 0,
+          "wall_seconds": 370.1,
+          "arm": "channel_aspect",
+          "label": "arm C: bounded-aspect coasting",
+          "mechanism": "coasted aspect clamped to the last observed band",
+          "sequence": "dancetrack0030",
+          "target_id_forced": 0,
+          "summary_path": "results\\channel_sweep\\runs\\channel_aspect\\dancetrack0030\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_aspect__dancetrack0030.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 370.1
+            }
+          ],
+          "from_cache": false
+        }
+      ],
+      "excluded": [],
+      "pooled": {
+        "total_report_frames": 1903,
+        "n_included": 7,
+        "n_excluded": 0,
+        "estimator": "frame-weighted pooled mean over included sequences",
+        "tsr": 0.191974,
+        "tsr_mean": 0.185583,
+        "tsr_median": 0.218638,
+        "tsr_min": 0.015038,
+        "tsr_max": 0.37,
+        "far": 0.213347,
+        "far_mean": 0.210607,
+        "far_median": 0.05298,
+        "far_min": 0.016667,
+        "far_max": 0.68,
+        "id_consistency": 0.51734,
+        "id_consistency_mean": 0.513314,
+        "id_consistency_median": 0.521739,
+        "id_consistency_min": 0.181818,
+        "id_consistency_max": 0.956522,
+        "ms_per_frame": 1066.78498,
+        "ms_per_frame_mean": 1084.932586,
+        "ms_per_frame_median": 1035.861393,
+        "ms_per_frame_min": 788.958662,
+        "ms_per_frame_max": 1412.057703,
+        "blind_present_share": 0.621433,
+        "blind_present_share_mean": 0.629273,
+        "blind_present_share_median": 0.738351,
+        "blind_present_share_min": 0.091912,
+        "blind_present_share_max": 0.907834,
+        "blind_present_share_gtweighted": 0.606433,
+        "n_blind_present": 1037,
+        "n_gt_present": 1710
+      },
+      "bootstrap": {
+        "tsr": {
+          "reps": 2000,
+          "n_sequences": 7,
+          "seed": 0,
+          "weight_key": "n_report_frames",
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 0.101665,
+          "p50": 0.192029,
+          "p97.5": 0.285285,
+          "mean": 0.192345
+        },
+        "far": {
+          "reps": 2000,
+          "n_sequences": 7,
+          "seed": 0,
+          "weight_key": "n_report_frames",
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 0.035366,
+          "p50": 0.209932,
+          "p97.5": 0.434486,
+          "mean": 0.214255
+        },
+        "id_consistency": {
+          "reps": 2000,
+          "n_sequences": 7,
+          "seed": 0,
+          "weight_key": "n_report_frames",
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 0.314784,
+          "p50": 0.510144,
+          "p97.5": 0.74329,
+          "mean": 0.51829
+        },
+        "ms_per_frame": {
+          "reps": 2000,
+          "n_sequences": 7,
+          "seed": 0,
+          "weight_key": "n_report_frames",
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 924.060706,
+          "p50": 1065.739841,
+          "p97.5": 1222.901058,
+          "mean": 1067.704734
+        },
+        "blind_present_share": {
+          "reps": 2000,
+          "n_sequences": 7,
+          "seed": 0,
+          "weight_key": "n_gt_present",
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 0.37739,
+          "p50": 0.612126,
+          "p97.5": 0.810719,
+          "mean": 0.607465
+        }
+      },
+      "engagement": {
+        "n_blind_present": 1037,
+        "n_gt_present": 1710,
+        "n_blind": 1199,
+        "blind_present_share": 0.606433,
+        "channel_accept_geometry": 0,
+        "channel_accept_appearance": 0,
+        "aspect_clamp_steps": 1259,
+        "aspect_clamp_calls": 871,
+        "n_sequences_with_channel_accept": 0,
+        "n_sequences_with_aspect_clamp": 7,
+        "refuse_reasons": {
+          "ambiguous (margin)": 637,
+          "search_margin": 350,
+          "cost>bound (the acceptance bound)": 201,
+          "all_gated (hard veto upstream: total=+inf)": 95
+        },
+        "accept_channels": {},
+        "states": {
+          "tracking": 647,
+          "lost_long": 608,
+          "lost_short": 334,
+          "occluded_soft": 248,
+          "reacquiring": 57,
+          "out_of_frame": 9
+        }
+      },
+      "frame_counts": {
+        "n_sequences": 7,
+        "n_report_frames": 1903,
+        "n_frames": 1903
+      },
+      "paired": {
+        "tsr": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 7,
+          "unpaired_sequences": [],
+          "delta_mean": 0.000658328,
+          "p2.5": 0.0,
+          "p50": 0.000658328,
+          "p97.5": 0.001974984,
+          "sequences_up": 1,
+          "sequences_down": 0,
+          "sequences_flat": 6,
+          "excludes_zero": false,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": 0.0,
+              "arm_value": 0.283088235,
+              "reference_value": 0.283088235,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0014",
+              "delta": 0.004608295,
+              "arm_value": 0.073732719,
+              "reference_value": 0.069124424,
+              "delta_pp": 0.461
+            },
+            {
+              "sequence": "dancetrack0018",
+              "delta": 0.0,
+              "arm_value": 0.257936508,
+              "reference_value": 0.257936508,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0019",
+              "delta": 0.0,
+              "arm_value": 0.218637993,
+              "reference_value": 0.218637993,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0025",
+              "delta": 0.0,
+              "arm_value": 0.015037594,
+              "reference_value": 0.015037594,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0026",
+              "delta": 0.0,
+              "arm_value": 0.080645161,
+              "reference_value": 0.080645161,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0030",
+              "delta": 0.0,
+              "arm_value": 0.37,
+              "reference_value": 0.37,
+              "delta_pp": 0.0
+            }
+          ]
+        },
+        "far": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 7,
+          "unpaired_sequences": [],
+          "delta_mean": -0.088004535,
+          "p2.5": -0.265714286,
+          "p50": -0.088004535,
+          "p97.5": 0.00170068,
+          "sequences_up": 1,
+          "sequences_down": 1,
+          "sequences_flat": 5,
+          "excludes_zero": false,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": 0.0,
+              "arm_value": 0.68,
+              "reference_value": 0.68,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0014",
+              "delta": -0.62,
+              "arm_value": 0.036666667,
+              "reference_value": 0.656666667,
+              "delta_pp": -62.0
+            },
+            {
+              "sequence": "dancetrack0018",
+              "delta": 0.003968254,
+              "arm_value": 0.591269841,
+              "reference_value": 0.587301587,
+              "delta_pp": 0.397
+            },
+            {
+              "sequence": "dancetrack0019",
+              "delta": 0.0,
+              "arm_value": 0.036666667,
+              "reference_value": 0.036666667,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0025",
+              "delta": 0.0,
+              "arm_value": 0.06,
+              "reference_value": 0.06,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0026",
+              "delta": 0.0,
+              "arm_value": 0.052980132,
+              "reference_value": 0.052980132,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0030",
+              "delta": 0.0,
+              "arm_value": 0.016666667,
+              "reference_value": 0.016666667,
+              "delta_pp": 0.0
+            }
+          ]
+        },
+        "id_consistency": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 7,
+          "unpaired_sequences": [],
+          "delta_mean": 0.066128123,
+          "p2.5": -0.000611143,
+          "p50": 0.066128123,
+          "p97.5": 0.198995512,
+          "sequences_up": 1,
+          "sequences_down": 1,
+          "sequences_flat": 5,
+          "excludes_zero": false,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": 0.0,
+              "arm_value": 0.252747253,
+              "reference_value": 0.252747253,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0014",
+              "delta": 0.464322862,
+              "arm_value": 0.52173913,
+              "reference_value": 0.057416268,
+              "delta_pp": 46.432
+            },
+            {
+              "sequence": "dancetrack0018",
+              "delta": -0.001426001,
+              "arm_value": 0.303738318,
+              "reference_value": 0.305164319,
+              "delta_pp": -0.143
+            },
+            {
+              "sequence": "dancetrack0019",
+              "delta": 0.0,
+              "arm_value": 0.847222222,
+              "reference_value": 0.847222222,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0025",
+              "delta": 0.0,
+              "arm_value": 0.181818182,
+              "reference_value": 0.181818182,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0026",
+              "delta": 0.0,
+              "arm_value": 0.529411765,
+              "reference_value": 0.529411765,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0030",
+              "delta": 0.0,
+              "arm_value": 0.956521739,
+              "reference_value": 0.956521739,
+              "delta_pp": 0.0
+            }
+          ]
+        },
+        "ms_per_frame": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 7,
+          "unpaired_sequences": [],
+          "delta_mean": 48.441665238,
+          "p2.5": 11.202833869,
+          "p50": 47.420299681,
+          "p97.5": 94.797723935,
+          "sequences_up": 5,
+          "sequences_down": 2,
+          "sequences_flat": 0,
+          "excludes_zero": true,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": 94.255665335,
+              "arm_value": 880.616537665,
+              "reference_value": 786.36087233,
+              "delta_pp": 9425.567
+            },
+            {
+              "sequence": "dancetrack0014",
+              "delta": 167.481751333,
+              "arm_value": 1384.938589999,
+              "reference_value": 1217.456838666,
+              "delta_pp": 16748.175
+            },
+            {
+              "sequence": "dancetrack0018",
+              "delta": -6.963328172,
+              "arm_value": 788.95866151,
+              "reference_value": 795.921989682,
+              "delta_pp": -696.333
+            },
+            {
+              "sequence": "dancetrack0019",
+              "delta": 16.927619005,
+              "arm_value": 955.298274338,
+              "reference_value": 938.370655332,
+              "delta_pp": 1692.762
+            },
+            {
+              "sequence": "dancetrack0025",
+              "delta": -6.443532323,
+              "arm_value": 1136.796942675,
+              "reference_value": 1143.240474998,
+              "delta_pp": -644.353
+            },
+            {
+              "sequence": "dancetrack0026",
+              "delta": 47.708227156,
+              "arm_value": 1412.057703322,
+              "reference_value": 1364.349476166,
+              "delta_pp": 4770.823
+            },
+            {
+              "sequence": "dancetrack0030",
+              "delta": 26.125254331,
+              "arm_value": 1035.861393334,
+              "reference_value": 1009.736139004,
+              "delta_pp": 2612.525
+            }
+          ]
+        },
+        "blind_present_share": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 7,
+          "unpaired_sequences": [],
+          "delta_mean": 0.093482571,
+          "p2.5": 0.0,
+          "p50": 0.093482571,
+          "p97.5": 0.280447714,
+          "sequences_up": 1,
+          "sequences_down": 0,
+          "sequences_flat": 6,
+          "excludes_zero": false,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": 0.0,
+              "arm_value": 0.091912,
+              "reference_value": 0.091912,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0014",
+              "delta": 0.654378,
+              "arm_value": 0.907834,
+              "reference_value": 0.253456,
+              "delta_pp": 65.438
+            },
+            {
+              "sequence": "dancetrack0018",
+              "delta": 0.0,
+              "arm_value": 0.365079,
+              "reference_value": 0.365079,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0019",
+              "delta": 0.0,
+              "arm_value": 0.738351,
+              "reference_value": 0.738351,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0025",
+              "delta": 0.0,
+              "arm_value": 0.887218,
+              "reference_value": 0.887218,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0026",
+              "delta": 0.0,
+              "arm_value": 0.814516,
+              "reference_value": 0.814516,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0030",
+              "delta": 0.0,
+              "arm_value": 0.6,
+              "reference_value": 0.6,
+              "delta_pp": 0.0
+            }
+          ]
+        }
+      },
+      "verdict": {
+        "arm": "channel_aspect",
+        "rule": "SHIP iff pooled dTSR >= +3.0 pp AND paired-dTSR 95% CI excludes 0 AND paired-dFAR 95% CI upper bound < +3.0 pp AND blind-AND-present share falls; KILL if bit-identical (inert) or dTSR < 0",
+        "verdict": "NO-SHIP",
+        "text": "NO-SHIP: pooled dTSR +0.07 pp < +3.0; paired dTSR CI [+0.00, +0.20] pp includes 0; blind-AND-present share does not fall (+8.30 pp).",
+        "pooled_dtsr_pp": 0.073,
+        "pooled_dfar_pp": -9.721,
+        "pooled_did_consistency_pp": 7.301,
+        "pooled_dms_per_frame": 49.897,
+        "paired_dtsr_mean_pp": 0.066,
+        "paired_dtsr_ci_pp": [
+          0.0,
+          0.197
+        ],
+        "paired_dfar_mean_pp": -8.8,
+        "paired_dfar_ci_pp": [
+          -26.571,
+          0.17
+        ],
+        "paired_dtsr_excludes_zero": false,
+        "paired_dfar_excludes_zero": false,
+        "tsr_magnitude_ok": false,
+        "tsr_ci_ok": false,
+        "far_ci_ok": true,
+        "blind_present_falls": false,
+        "pooled_dblind_present_pp": 8.304,
+        "mechanism_engaged": true,
+        "bit_identical": false,
+        "n_bit_identical": 0,
+        "n_paired_sequences": 7,
+        "sequences_up": 1,
+        "sequences_down": 0,
+        "sequences_flat": 6
+      }
+    },
+    "channel_both": {
+      "arm": "channel_both",
+      "variant": "channel_both",
+      "overrides": {
+        "cost.channel_accept": true,
+        "motion.aspect_clamp_coast": true
+      },
+      "label": "arm D: B + C",
+      "mechanism": "both",
+      "is_reference": false,
+      "rows": [
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_both",
+          "overrides": {
+            "cost.channel_accept": true,
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.28308823529411764,
+          "far": 0.68,
+          "id_consistency": 0.25274725274725274,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 271,
+          "false_acquisition_frames": 204,
+          "target_switch_count": 5,
+          "ms_per_frame": 774.4337810044332,
+          "target_id": 5,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 262.3,
+          "n_events": -1,
+          "blind_present_share": 0.091912,
+          "blind_share": 0.096667,
+          "n_blind_present": 25,
+          "n_gt_present": 272,
+          "n_blind": 29,
+          "states": {
+            "lost_short": 6,
+            "occluded_soft": 23,
+            "reacquiring": 11,
+            "tracking": 260
+          },
+          "refuse_reasons": {
+            "cost>bound (the acceptance bound)": 36,
+            "all_gated (hard veto upstream: total=+inf)": 11,
+            "search_margin": 4,
+            "ambiguous (margin)": 3
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "237b12566d5b1b57",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 6,
+          "aspect_clamp_calls": 4,
+          "exit_code": 0,
+          "wall_seconds": 277.4,
+          "arm": "channel_both",
+          "label": "arm D: B + C",
+          "mechanism": "both",
+          "sequence": "dancetrack0010",
+          "target_id_forced": 5,
+          "summary_path": "results\\channel_sweep\\runs\\channel_both\\dancetrack0010\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_both__dancetrack0010.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 277.4
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_both",
+          "overrides": {
+            "cost.channel_accept": true,
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.07373271889400922,
+          "far": 0.03666666666666667,
+          "id_consistency": 0.5217391304347826,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 24,
+          "false_acquisition_frames": 11,
+          "target_switch_count": 9,
+          "ms_per_frame": 1396.4373490024202,
+          "target_id": 3,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 450.09,
+          "n_events": -1,
+          "blind_present_share": 0.907834,
+          "blind_share": 0.92,
+          "n_blind_present": 197,
+          "n_gt_present": 217,
+          "n_blind": 276,
+          "states": {
+            "lost_long": 190,
+            "lost_short": 53,
+            "occluded_soft": 32,
+            "out_of_frame": 1,
+            "reacquiring": 4,
+            "tracking": 20
+          },
+          "refuse_reasons": {
+            "ambiguous (margin)": 167,
+            "search_margin": 84,
+            "cost>bound (the acceptance bound)": 31
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "b96f9c01ec3b2921",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 400,
+          "aspect_clamp_calls": 257,
+          "exit_code": 0,
+          "wall_seconds": 463.7,
+          "arm": "channel_both",
+          "label": "arm D: B + C",
+          "mechanism": "both",
+          "sequence": "dancetrack0014",
+          "target_id_forced": 3,
+          "summary_path": "results\\channel_sweep\\runs\\channel_both\\dancetrack0014\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_both__dancetrack0014.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 463.7
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_both",
+          "overrides": {
+            "cost.channel_accept": true,
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.25793650793650796,
+          "far": 0.5912698412698413,
+          "id_consistency": 0.3037383177570093,
+          "n_report_frames": 252,
+          "n_frames": 252,
+          "n_locked_frames": 160,
+          "false_acquisition_frames": 149,
+          "target_switch_count": 4,
+          "ms_per_frame": 786.562205164782,
+          "target_id": 0,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 230.7,
+          "n_events": -1,
+          "blind_present_share": 0.365079,
+          "blind_share": 0.365079,
+          "n_blind_present": 92,
+          "n_gt_present": 252,
+          "n_blind": 92,
+          "states": {
+            "lost_short": 8,
+            "occluded_soft": 82,
+            "out_of_frame": 2,
+            "reacquiring": 21,
+            "tracking": 139
+          },
+          "refuse_reasons": {
+            "all_gated (hard veto upstream: total=+inf)": 79,
+            "cost>bound (the acceptance bound)": 33,
+            "ambiguous (margin)": 2,
+            "search_margin": 2
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "c245eed239508802",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 19,
+          "aspect_clamp_calls": 14,
+          "exit_code": 0,
+          "wall_seconds": 241.5,
+          "arm": "channel_both",
+          "label": "arm D: B + C",
+          "mechanism": "both",
+          "sequence": "dancetrack0018",
+          "target_id_forced": 0,
+          "summary_path": "results\\channel_sweep\\runs\\channel_both\\dancetrack0018\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_both__dancetrack0018.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 241.5
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_both",
+          "overrides": {
+            "cost.channel_accept": true,
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.21863799283154123,
+          "far": 0.03666666666666667,
+          "id_consistency": 0.8472222222222222,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 75,
+          "false_acquisition_frames": 11,
+          "target_switch_count": 8,
+          "ms_per_frame": 942.8003156693497,
+          "target_id": 6,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 323.37,
+          "n_events": -1,
+          "blind_present_share": 0.738351,
+          "blind_share": 0.75,
+          "n_blind_present": 206,
+          "n_gt_present": 279,
+          "n_blind": 225,
+          "states": {
+            "lost_long": 67,
+            "lost_short": 113,
+            "occluded_soft": 43,
+            "out_of_frame": 2,
+            "reacquiring": 6,
+            "tracking": 69
+          },
+          "refuse_reasons": {
+            "ambiguous (margin)": 124,
+            "search_margin": 71,
+            "cost>bound (the acceptance bound)": 33,
+            "all_gated (hard veto upstream: total=+inf)": 4
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "3d3f1fe6df1c3e3b",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 90,
+          "aspect_clamp_calls": 71,
+          "exit_code": 0,
+          "wall_seconds": 338.5,
+          "arm": "channel_both",
+          "label": "arm D: B + C",
+          "mechanism": "both",
+          "sequence": "dancetrack0019",
+          "target_id_forced": 6,
+          "summary_path": "results\\channel_sweep\\runs\\channel_both\\dancetrack0019\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_both__dancetrack0019.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 338.5
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_both",
+          "overrides": {
+            "cost.channel_accept": true,
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.022556390977443608,
+          "far": 0.8266666666666667,
+          "id_consistency": 0.023622047244094488,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 268,
+          "false_acquisition_frames": 248,
+          "target_switch_count": 21,
+          "ms_per_frame": 862.7500656685637,
+          "target_id": 6,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 299.11,
+          "n_events": -1,
+          "blind_present_share": 0.116541,
+          "blind_share": 0.106667,
+          "n_blind_present": 31,
+          "n_gt_present": 266,
+          "n_blind": 32,
+          "states": {
+            "occluded_soft": 32,
+            "reacquiring": 10,
+            "tracking": 258
+          },
+          "refuse_reasons": {
+            "cost>bound (the acceptance bound)": 44,
+            "ambiguous (margin)": 7,
+            "all_gated (hard veto upstream: total=+inf)": 1
+          },
+          "accept_channels": {
+            "geometry": 1
+          },
+          "csv_sha256_16": "0c3e57b1f98b3a61",
+          "channel_accept_geometry": 1,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 10,
+          "aspect_clamp_calls": 4,
+          "exit_code": 0,
+          "wall_seconds": 310.3,
+          "arm": "channel_both",
+          "label": "arm D: B + C",
+          "mechanism": "both",
+          "sequence": "dancetrack0025",
+          "target_id_forced": 6,
+          "summary_path": "results\\channel_sweep\\runs\\channel_both\\dancetrack0025\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_both__dancetrack0025.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 310.3
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_both",
+          "overrides": {
+            "cost.channel_accept": true,
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.08064516129032258,
+          "far": 0.052980132450331126,
+          "id_consistency": 0.5294117647058824,
+          "n_report_frames": 151,
+          "n_frames": 151,
+          "n_locked_frames": 24,
+          "false_acquisition_frames": 8,
+          "target_switch_count": 10,
+          "ms_per_frame": 1415.1389139183236,
+          "target_id": 9,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 241.86,
+          "n_events": -1,
+          "blind_present_share": 0.814516,
+          "blind_share": 0.84106,
+          "n_blind_present": 101,
+          "n_gt_present": 124,
+          "n_blind": 127,
+          "states": {
+            "lost_long": 40,
+            "lost_short": 59,
+            "occluded_soft": 26,
+            "out_of_frame": 2,
+            "reacquiring": 5,
+            "tracking": 19
+          },
+          "refuse_reasons": {
+            "search_margin": 57,
+            "ambiguous (margin)": 55,
+            "cost>bound (the acceptance bound)": 23
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "c124b43b403a9c96",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 131,
+          "aspect_clamp_calls": 113,
+          "exit_code": 0,
+          "wall_seconds": 254.0,
+          "arm": "channel_both",
+          "label": "arm D: B + C",
+          "mechanism": "both",
+          "sequence": "dancetrack0026",
+          "target_id_forced": 9,
+          "summary_path": "results\\channel_sweep\\runs\\channel_both\\dancetrack0026\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_both__dancetrack0026.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 254.0
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_both",
+          "overrides": {
+            "cost.channel_accept": true,
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.37,
+          "far": 0.016666666666666666,
+          "id_consistency": 0.9565217391304348,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 120,
+          "false_acquisition_frames": 5,
+          "target_switch_count": 5,
+          "ms_per_frame": 994.5889523314933,
+          "target_id": 0,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 330.61,
+          "n_events": -1,
+          "blind_present_share": 0.6,
+          "blind_share": 0.6,
+          "n_blind_present": 180,
+          "n_gt_present": 300,
+          "n_blind": 180,
+          "states": {
+            "lost_long": 114,
+            "lost_short": 47,
+            "occluded_soft": 18,
+            "out_of_frame": 1,
+            "reacquiring": 4,
+            "tracking": 116
+          },
+          "refuse_reasons": {
+            "ambiguous (margin)": 103,
+            "search_margin": 61,
+            "cost>bound (the acceptance bound)": 22
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "7f4f19d5ca056fd8",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 228,
+          "aspect_clamp_calls": 164,
+          "exit_code": 0,
+          "wall_seconds": 344.1,
+          "arm": "channel_both",
+          "label": "arm D: B + C",
+          "mechanism": "both",
+          "sequence": "dancetrack0030",
+          "target_id_forced": 0,
+          "summary_path": "results\\channel_sweep\\runs\\channel_both\\dancetrack0030\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_both__dancetrack0030.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 344.1
+            }
+          ],
+          "from_cache": false
+        }
+      ],
+      "included": [
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_both",
+          "overrides": {
+            "cost.channel_accept": true,
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.28308823529411764,
+          "far": 0.68,
+          "id_consistency": 0.25274725274725274,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 271,
+          "false_acquisition_frames": 204,
+          "target_switch_count": 5,
+          "ms_per_frame": 774.4337810044332,
+          "target_id": 5,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 262.3,
+          "n_events": -1,
+          "blind_present_share": 0.091912,
+          "blind_share": 0.096667,
+          "n_blind_present": 25,
+          "n_gt_present": 272,
+          "n_blind": 29,
+          "states": {
+            "lost_short": 6,
+            "occluded_soft": 23,
+            "reacquiring": 11,
+            "tracking": 260
+          },
+          "refuse_reasons": {
+            "cost>bound (the acceptance bound)": 36,
+            "all_gated (hard veto upstream: total=+inf)": 11,
+            "search_margin": 4,
+            "ambiguous (margin)": 3
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "237b12566d5b1b57",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 6,
+          "aspect_clamp_calls": 4,
+          "exit_code": 0,
+          "wall_seconds": 277.4,
+          "arm": "channel_both",
+          "label": "arm D: B + C",
+          "mechanism": "both",
+          "sequence": "dancetrack0010",
+          "target_id_forced": 5,
+          "summary_path": "results\\channel_sweep\\runs\\channel_both\\dancetrack0010\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_both__dancetrack0010.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 277.4
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_both",
+          "overrides": {
+            "cost.channel_accept": true,
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.07373271889400922,
+          "far": 0.03666666666666667,
+          "id_consistency": 0.5217391304347826,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 24,
+          "false_acquisition_frames": 11,
+          "target_switch_count": 9,
+          "ms_per_frame": 1396.4373490024202,
+          "target_id": 3,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 450.09,
+          "n_events": -1,
+          "blind_present_share": 0.907834,
+          "blind_share": 0.92,
+          "n_blind_present": 197,
+          "n_gt_present": 217,
+          "n_blind": 276,
+          "states": {
+            "lost_long": 190,
+            "lost_short": 53,
+            "occluded_soft": 32,
+            "out_of_frame": 1,
+            "reacquiring": 4,
+            "tracking": 20
+          },
+          "refuse_reasons": {
+            "ambiguous (margin)": 167,
+            "search_margin": 84,
+            "cost>bound (the acceptance bound)": 31
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "b96f9c01ec3b2921",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 400,
+          "aspect_clamp_calls": 257,
+          "exit_code": 0,
+          "wall_seconds": 463.7,
+          "arm": "channel_both",
+          "label": "arm D: B + C",
+          "mechanism": "both",
+          "sequence": "dancetrack0014",
+          "target_id_forced": 3,
+          "summary_path": "results\\channel_sweep\\runs\\channel_both\\dancetrack0014\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_both__dancetrack0014.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 463.7
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_both",
+          "overrides": {
+            "cost.channel_accept": true,
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.25793650793650796,
+          "far": 0.5912698412698413,
+          "id_consistency": 0.3037383177570093,
+          "n_report_frames": 252,
+          "n_frames": 252,
+          "n_locked_frames": 160,
+          "false_acquisition_frames": 149,
+          "target_switch_count": 4,
+          "ms_per_frame": 786.562205164782,
+          "target_id": 0,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 230.7,
+          "n_events": -1,
+          "blind_present_share": 0.365079,
+          "blind_share": 0.365079,
+          "n_blind_present": 92,
+          "n_gt_present": 252,
+          "n_blind": 92,
+          "states": {
+            "lost_short": 8,
+            "occluded_soft": 82,
+            "out_of_frame": 2,
+            "reacquiring": 21,
+            "tracking": 139
+          },
+          "refuse_reasons": {
+            "all_gated (hard veto upstream: total=+inf)": 79,
+            "cost>bound (the acceptance bound)": 33,
+            "ambiguous (margin)": 2,
+            "search_margin": 2
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "c245eed239508802",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 19,
+          "aspect_clamp_calls": 14,
+          "exit_code": 0,
+          "wall_seconds": 241.5,
+          "arm": "channel_both",
+          "label": "arm D: B + C",
+          "mechanism": "both",
+          "sequence": "dancetrack0018",
+          "target_id_forced": 0,
+          "summary_path": "results\\channel_sweep\\runs\\channel_both\\dancetrack0018\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_both__dancetrack0018.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 241.5
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_both",
+          "overrides": {
+            "cost.channel_accept": true,
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.21863799283154123,
+          "far": 0.03666666666666667,
+          "id_consistency": 0.8472222222222222,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 75,
+          "false_acquisition_frames": 11,
+          "target_switch_count": 8,
+          "ms_per_frame": 942.8003156693497,
+          "target_id": 6,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 323.37,
+          "n_events": -1,
+          "blind_present_share": 0.738351,
+          "blind_share": 0.75,
+          "n_blind_present": 206,
+          "n_gt_present": 279,
+          "n_blind": 225,
+          "states": {
+            "lost_long": 67,
+            "lost_short": 113,
+            "occluded_soft": 43,
+            "out_of_frame": 2,
+            "reacquiring": 6,
+            "tracking": 69
+          },
+          "refuse_reasons": {
+            "ambiguous (margin)": 124,
+            "search_margin": 71,
+            "cost>bound (the acceptance bound)": 33,
+            "all_gated (hard veto upstream: total=+inf)": 4
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "3d3f1fe6df1c3e3b",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 90,
+          "aspect_clamp_calls": 71,
+          "exit_code": 0,
+          "wall_seconds": 338.5,
+          "arm": "channel_both",
+          "label": "arm D: B + C",
+          "mechanism": "both",
+          "sequence": "dancetrack0019",
+          "target_id_forced": 6,
+          "summary_path": "results\\channel_sweep\\runs\\channel_both\\dancetrack0019\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_both__dancetrack0019.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 338.5
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_both",
+          "overrides": {
+            "cost.channel_accept": true,
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.022556390977443608,
+          "far": 0.8266666666666667,
+          "id_consistency": 0.023622047244094488,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 268,
+          "false_acquisition_frames": 248,
+          "target_switch_count": 21,
+          "ms_per_frame": 862.7500656685637,
+          "target_id": 6,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 299.11,
+          "n_events": -1,
+          "blind_present_share": 0.116541,
+          "blind_share": 0.106667,
+          "n_blind_present": 31,
+          "n_gt_present": 266,
+          "n_blind": 32,
+          "states": {
+            "occluded_soft": 32,
+            "reacquiring": 10,
+            "tracking": 258
+          },
+          "refuse_reasons": {
+            "cost>bound (the acceptance bound)": 44,
+            "ambiguous (margin)": 7,
+            "all_gated (hard veto upstream: total=+inf)": 1
+          },
+          "accept_channels": {
+            "geometry": 1
+          },
+          "csv_sha256_16": "0c3e57b1f98b3a61",
+          "channel_accept_geometry": 1,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 10,
+          "aspect_clamp_calls": 4,
+          "exit_code": 0,
+          "wall_seconds": 310.3,
+          "arm": "channel_both",
+          "label": "arm D: B + C",
+          "mechanism": "both",
+          "sequence": "dancetrack0025",
+          "target_id_forced": 6,
+          "summary_path": "results\\channel_sweep\\runs\\channel_both\\dancetrack0025\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_both__dancetrack0025.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 310.3
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_both",
+          "overrides": {
+            "cost.channel_accept": true,
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.08064516129032258,
+          "far": 0.052980132450331126,
+          "id_consistency": 0.5294117647058824,
+          "n_report_frames": 151,
+          "n_frames": 151,
+          "n_locked_frames": 24,
+          "false_acquisition_frames": 8,
+          "target_switch_count": 10,
+          "ms_per_frame": 1415.1389139183236,
+          "target_id": 9,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 241.86,
+          "n_events": -1,
+          "blind_present_share": 0.814516,
+          "blind_share": 0.84106,
+          "n_blind_present": 101,
+          "n_gt_present": 124,
+          "n_blind": 127,
+          "states": {
+            "lost_long": 40,
+            "lost_short": 59,
+            "occluded_soft": 26,
+            "out_of_frame": 2,
+            "reacquiring": 5,
+            "tracking": 19
+          },
+          "refuse_reasons": {
+            "search_margin": 57,
+            "ambiguous (margin)": 55,
+            "cost>bound (the acceptance bound)": 23
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "c124b43b403a9c96",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 131,
+          "aspect_clamp_calls": 113,
+          "exit_code": 0,
+          "wall_seconds": 254.0,
+          "arm": "channel_both",
+          "label": "arm D: B + C",
+          "mechanism": "both",
+          "sequence": "dancetrack0026",
+          "target_id_forced": 9,
+          "summary_path": "results\\channel_sweep\\runs\\channel_both\\dancetrack0026\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_both__dancetrack0026.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 254.0
+            }
+          ],
+          "from_cache": false
+        },
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "channel_both",
+          "overrides": {
+            "cost.channel_accept": true,
+            "motion.aspect_clamp_coast": true
+          },
+          "tsr": 0.37,
+          "far": 0.016666666666666666,
+          "id_consistency": 0.9565217391304348,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 120,
+          "false_acquisition_frames": 5,
+          "target_switch_count": 5,
+          "ms_per_frame": 994.5889523314933,
+          "target_id": 0,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 330.61,
+          "n_events": -1,
+          "blind_present_share": 0.6,
+          "blind_share": 0.6,
+          "n_blind_present": 180,
+          "n_gt_present": 300,
+          "n_blind": 180,
+          "states": {
+            "lost_long": 114,
+            "lost_short": 47,
+            "occluded_soft": 18,
+            "out_of_frame": 1,
+            "reacquiring": 4,
+            "tracking": 116
+          },
+          "refuse_reasons": {
+            "ambiguous (margin)": 103,
+            "search_margin": 61,
+            "cost>bound (the acceptance bound)": 22
+          },
+          "accept_channels": {},
+          "csv_sha256_16": "7f4f19d5ca056fd8",
+          "channel_accept_geometry": 0,
+          "channel_accept_appearance": 0,
+          "aspect_clamp_steps": 228,
+          "aspect_clamp_calls": 164,
+          "exit_code": 0,
+          "wall_seconds": 344.1,
+          "arm": "channel_both",
+          "label": "arm D: B + C",
+          "mechanism": "both",
+          "sequence": "dancetrack0030",
+          "target_id_forced": 0,
+          "summary_path": "results\\channel_sweep\\runs\\channel_both\\dancetrack0030\\summary.json",
+          "log": "results\\channel_sweep\\logs\\channel_both__dancetrack0030.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 344.1
+            }
+          ],
+          "from_cache": false
+        }
+      ],
+      "excluded": [],
+      "pooled": {
+        "total_report_frames": 1903,
+        "n_included": 7,
+        "n_excluded": 0,
+        "estimator": "frame-weighted pooled mean over included sequences",
+        "tsr": 0.193159,
+        "tsr_mean": 0.186657,
+        "tsr_median": 0.218638,
+        "tsr_min": 0.022556,
+        "tsr_max": 0.37,
+        "far": 0.334209,
+        "far_mean": 0.320131,
+        "far_median": 0.05298,
+        "far_min": 0.016667,
+        "far_max": 0.826667,
+        "id_consistency": 0.492401,
+        "id_consistency_mean": 0.490715,
+        "id_consistency_median": 0.521739,
+        "id_consistency_min": 0.023622,
+        "id_consistency_max": 0.956522,
+        "ms_per_frame": 1000.106564,
+        "ms_per_frame_mean": 1024.673083,
+        "ms_per_frame_median": 942.800316,
+        "ms_per_frame_min": 774.433781,
+        "ms_per_frame_max": 1415.138914,
+        "blind_present_share": 0.499939,
+        "blind_present_share_mean": 0.519176,
+        "blind_present_share_median": 0.6,
+        "blind_present_share_min": 0.091912,
+        "blind_present_share_max": 0.907834,
+        "blind_present_share_gtweighted": 0.48655,
+        "n_blind_present": 832,
+        "n_gt_present": 1710
+      },
+      "bootstrap": {
+        "tsr": {
+          "reps": 2000,
+          "n_sequences": 7,
+          "seed": 0,
+          "weight_key": "n_report_frames",
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 0.105124,
+          "p50": 0.193159,
+          "p97.5": 0.286332,
+          "mean": 0.19349
+        },
+        "far": {
+          "reps": 2000,
+          "n_sequences": 7,
+          "seed": 0,
+          "weight_key": "n_report_frames",
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 0.101852,
+          "p50": 0.331625,
+          "p97.5": 0.580339,
+          "mean": 0.330995
+        },
+        "id_consistency": {
+          "reps": 2000,
+          "n_sequences": 7,
+          "seed": 0,
+          "weight_key": "n_report_frames",
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 0.261396,
+          "p50": 0.489794,
+          "p97.5": 0.741549,
+          "mean": 0.494201
+        },
+        "ms_per_frame": {
+          "reps": 2000,
+          "n_sequences": 7,
+          "seed": 0,
+          "weight_key": "n_report_frames",
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 853.184038,
+          "p50": 996.216437,
+          "p97.5": 1181.643401,
+          "mean": 1002.681206
+        },
+        "blind_present_share": {
+          "reps": 2000,
+          "n_sequences": 7,
+          "seed": 0,
+          "weight_key": "n_gt_present",
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 0.281214,
+          "p50": 0.491784,
+          "p97.5": 0.711416,
+          "mean": 0.491144
+        }
+      },
+      "engagement": {
+        "n_blind_present": 832,
+        "n_gt_present": 1710,
+        "n_blind": 961,
+        "blind_present_share": 0.48655,
+        "channel_accept_geometry": 1,
+        "channel_accept_appearance": 0,
+        "aspect_clamp_steps": 884,
+        "aspect_clamp_calls": 627,
+        "n_sequences_with_channel_accept": 1,
+        "n_sequences_with_aspect_clamp": 7,
+        "refuse_reasons": {
+          "ambiguous (margin)": 461,
+          "search_margin": 279,
+          "cost>bound (the acceptance bound)": 222,
+          "all_gated (hard veto upstream: total=+inf)": 95
+        },
+        "accept_channels": {
+          "geometry": 1
+        },
+        "states": {
+          "tracking": 881,
+          "lost_long": 411,
+          "lost_short": 286,
+          "occluded_soft": 256,
+          "reacquiring": 61,
+          "out_of_frame": 8
+        }
+      },
+      "frame_counts": {
+        "n_sequences": 7,
+        "n_report_frames": 1903,
+        "n_frames": 1903
+      },
+      "paired": {
+        "tsr": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 7,
+          "unpaired_sequences": [],
+          "delta_mean": 0.001732442,
+          "p2.5": 0.0,
+          "p50": 0.001732442,
+          "p97.5": 0.003886733,
+          "sequences_up": 2,
+          "sequences_down": 0,
+          "sequences_flat": 5,
+          "excludes_zero": false,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": 0.0,
+              "arm_value": 0.283088235,
+              "reference_value": 0.283088235,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0014",
+              "delta": 0.004608295,
+              "arm_value": 0.073732719,
+              "reference_value": 0.069124424,
+              "delta_pp": 0.461
+            },
+            {
+              "sequence": "dancetrack0018",
+              "delta": 0.0,
+              "arm_value": 0.257936508,
+              "reference_value": 0.257936508,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0019",
+              "delta": 0.0,
+              "arm_value": 0.218637993,
+              "reference_value": 0.218637993,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0025",
+              "delta": 0.007518797,
+              "arm_value": 0.022556391,
+              "reference_value": 0.015037594,
+              "delta_pp": 0.752
+            },
+            {
+              "sequence": "dancetrack0026",
+              "delta": 0.0,
+              "arm_value": 0.080645161,
+              "reference_value": 0.080645161,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0030",
+              "delta": 0.0,
+              "arm_value": 0.37,
+              "reference_value": 0.37,
+              "delta_pp": 0.0
+            }
+          ]
+        },
+        "far": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 7,
+          "unpaired_sequences": [],
+          "delta_mean": 0.021519274,
+          "p2.5": -0.265147392,
+          "p50": 0.020952381,
+          "p97.5": 0.328571429,
+          "sequences_up": 2,
+          "sequences_down": 1,
+          "sequences_flat": 4,
+          "excludes_zero": false,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": 0.0,
+              "arm_value": 0.68,
+              "reference_value": 0.68,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0014",
+              "delta": -0.62,
+              "arm_value": 0.036666667,
+              "reference_value": 0.656666667,
+              "delta_pp": -62.0
+            },
+            {
+              "sequence": "dancetrack0018",
+              "delta": 0.003968254,
+              "arm_value": 0.591269841,
+              "reference_value": 0.587301587,
+              "delta_pp": 0.397
+            },
+            {
+              "sequence": "dancetrack0019",
+              "delta": 0.0,
+              "arm_value": 0.036666667,
+              "reference_value": 0.036666667,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0025",
+              "delta": 0.766666667,
+              "arm_value": 0.826666667,
+              "reference_value": 0.06,
+              "delta_pp": 76.667
+            },
+            {
+              "sequence": "dancetrack0026",
+              "delta": 0.0,
+              "arm_value": 0.052980132,
+              "reference_value": 0.052980132,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0030",
+              "delta": 0.0,
+              "arm_value": 0.016666667,
+              "reference_value": 0.016666667,
+              "delta_pp": 0.0
+            }
+          ]
+        },
+        "id_consistency": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 7,
+          "unpaired_sequences": [],
+          "delta_mean": 0.043528675,
+          "p2.5": -0.067798343,
+          "p50": 0.043528675,
+          "p97.5": 0.198791798,
+          "sequences_up": 1,
+          "sequences_down": 2,
+          "sequences_flat": 4,
+          "excludes_zero": false,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": 0.0,
+              "arm_value": 0.252747253,
+              "reference_value": 0.252747253,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0014",
+              "delta": 0.464322862,
+              "arm_value": 0.52173913,
+              "reference_value": 0.057416268,
+              "delta_pp": 46.432
+            },
+            {
+              "sequence": "dancetrack0018",
+              "delta": -0.001426001,
+              "arm_value": 0.303738318,
+              "reference_value": 0.305164319,
+              "delta_pp": -0.143
+            },
+            {
+              "sequence": "dancetrack0019",
+              "delta": 0.0,
+              "arm_value": 0.847222222,
+              "reference_value": 0.847222222,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0025",
+              "delta": -0.158196135,
+              "arm_value": 0.023622047,
+              "reference_value": 0.181818182,
+              "delta_pp": -15.82
+            },
+            {
+              "sequence": "dancetrack0026",
+              "delta": 0.0,
+              "arm_value": 0.529411765,
+              "reference_value": 0.529411765,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0030",
+              "delta": 0.0,
+              "arm_value": 0.956521739,
+              "reference_value": 0.956521739,
+              "delta_pp": 0.0
+            }
+          ]
+        },
+        "ms_per_frame": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 7,
+          "unpaired_sequences": [],
+          "delta_mean": -11.817837631,
+          "p2.5": -109.653145867,
+          "p50": -9.316909907,
+          "p97.5": 72.135525836,
+          "sequences_up": 3,
+          "sequences_down": 4,
+          "sequences_flat": 0,
+          "excludes_zero": false,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": -11.927091326,
+              "arm_value": 774.433781004,
+              "reference_value": 786.36087233,
+              "delta_pp": -1192.709
+            },
+            {
+              "sequence": "dancetrack0014",
+              "delta": 178.980510336,
+              "arm_value": 1396.437349002,
+              "reference_value": 1217.456838666,
+              "delta_pp": 17898.051
+            },
+            {
+              "sequence": "dancetrack0018",
+              "delta": -9.359784518,
+              "arm_value": 786.562205165,
+              "reference_value": 795.921989682,
+              "delta_pp": -935.978
+            },
+            {
+              "sequence": "dancetrack0019",
+              "delta": 4.429660337,
+              "arm_value": 942.800315669,
+              "reference_value": 938.370655332,
+              "delta_pp": 442.966
+            },
+            {
+              "sequence": "dancetrack0025",
+              "delta": -280.49040933,
+              "arm_value": 862.750065669,
+              "reference_value": 1143.240474998,
+              "delta_pp": -28049.041
+            },
+            {
+              "sequence": "dancetrack0026",
+              "delta": 50.789437752,
+              "arm_value": 1415.138913918,
+              "reference_value": 1364.349476166,
+              "delta_pp": 5078.944
+            },
+            {
+              "sequence": "dancetrack0030",
+              "delta": -15.147186672,
+              "arm_value": 994.588952331,
+              "reference_value": 1009.736139004,
+              "delta_pp": -1514.719
+            }
+          ]
+        },
+        "blind_present_share": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 7,
+          "unpaired_sequences": [],
+          "delta_mean": -0.016614143,
+          "p2.5": -0.330290143,
+          "p50": -0.016614143,
+          "p97.5": 0.280447714,
+          "sequences_up": 1,
+          "sequences_down": 1,
+          "sequences_flat": 5,
+          "excludes_zero": false,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0010",
+              "delta": 0.0,
+              "arm_value": 0.091912,
+              "reference_value": 0.091912,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0014",
+              "delta": 0.654378,
+              "arm_value": 0.907834,
+              "reference_value": 0.253456,
+              "delta_pp": 65.438
+            },
+            {
+              "sequence": "dancetrack0018",
+              "delta": 0.0,
+              "arm_value": 0.365079,
+              "reference_value": 0.365079,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0019",
+              "delta": 0.0,
+              "arm_value": 0.738351,
+              "reference_value": 0.738351,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0025",
+              "delta": -0.770677,
+              "arm_value": 0.116541,
+              "reference_value": 0.887218,
+              "delta_pp": -77.068
+            },
+            {
+              "sequence": "dancetrack0026",
+              "delta": 0.0,
+              "arm_value": 0.814516,
+              "reference_value": 0.814516,
+              "delta_pp": 0.0
+            },
+            {
+              "sequence": "dancetrack0030",
+              "delta": 0.0,
+              "arm_value": 0.6,
+              "reference_value": 0.6,
+              "delta_pp": 0.0
+            }
+          ]
+        }
+      },
+      "verdict": {
+        "arm": "channel_both",
+        "rule": "SHIP iff pooled dTSR >= +3.0 pp AND paired-dTSR 95% CI excludes 0 AND paired-dFAR 95% CI upper bound < +3.0 pp AND blind-AND-present share falls; KILL if bit-identical (inert) or dTSR < 0",
+        "verdict": "NO-SHIP",
+        "text": "NO-SHIP: pooled dTSR +0.19 pp < +3.0; paired dTSR CI [+0.00, +0.39] pp includes 0; paired dFAR CI upper +32.86 pp >= +3.0.",
+        "pooled_dtsr_pp": 0.191,
+        "pooled_dfar_pp": 2.365,
+        "pooled_did_consistency_pp": 4.807,
+        "pooled_dms_per_frame": -16.782,
+        "paired_dtsr_mean_pp": 0.173,
+        "paired_dtsr_ci_pp": [
+          0.0,
+          0.389
+        ],
+        "paired_dfar_mean_pp": 2.152,
+        "paired_dfar_ci_pp": [
+          -26.515,
+          32.857
+        ],
+        "paired_dtsr_excludes_zero": false,
+        "paired_dfar_excludes_zero": false,
+        "tsr_magnitude_ok": false,
+        "tsr_ci_ok": false,
+        "far_ci_ok": false,
+        "blind_present_falls": true,
+        "pooled_dblind_present_pp": -3.684,
+        "mechanism_engaged": true,
+        "bit_identical": false,
+        "n_bit_identical": 0,
+        "n_paired_sequences": 7,
+        "sequences_up": 2,
+        "sequences_down": 0,
+        "sequences_flat": 5
+      }
+    }
+  },
+  "target_ids": {
+    "dancetrack0010": 5,
+    "dancetrack0014": 3,
+    "dancetrack0018": 0,
+    "dancetrack0019": 6,
+    "dancetrack0025": 6,
+    "dancetrack0026": 9,
+    "dancetrack0030": 0
+  },
+  "wall_seconds": 9092.6,
+  "wall_seconds_pair_sum": 9092.6
+}

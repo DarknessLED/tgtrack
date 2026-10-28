@@ -1,0 +1,67 @@
+{
+  "generated_by": "scripts/channel_sweep.py",
+  "experiment": "E077",
+  "protocol": {
+    "max_frames": 300,
+    "subsample": 2,
+    "mask": "none",
+    "jobs": 1,
+    "detector": "yolo (shipped default)",
+    "target_strategy": "stressed (shipped default)",
+    "debug_csv": true
+  },
+  "bootstrap": {
+    "reps": 2000,
+    "seed": 0,
+    "unit": "sequence"
+  },
+  "data_root": "data\\raw\\dancetrack\\val",
+  "dev_sequences": [
+    "dancetrack0004",
+    "dancetrack0005",
+    "dancetrack0007"
+  ],
+  "thresholds": {
+    "channel_geom_tau": 0.0278,
+    "channel_app_tau": 0.1345,
+    "correct_frame_median_abs_log_h_ratio": 0.0124,
+    "note": "geom_tau = median over correct frames of |det_c - pred_c| / gate_radius; app_tau = median over correct frames of the appearance cost of the selected candidate. The |log h| leg is the plan's fixed 0.25, and the correct-frame median is reported only to show it sits inside that bound."
+  },
+  "arms": {
+    "channel_off": {
+      "variant": "channel_off",
+      "overrides": {
+        "cost.channel_accept": false,
+        "motion.aspect_clamp_coast": false
+      },
+      "label": "reference: both E077 arms off (shipped behaviour)",
+      "mechanism": "none"
+    },
+    "channel_fusion": {
+      "variant": "channel_fusion",
+      "overrides": {
+        "cost.channel_accept": true
+      },
+      "label": "arm B: channel-conditional acceptance (OR-branch on the bound)",
+      "mechanism": "geometry OR appearance may carry acceptance"
+    },
+    "channel_aspect": {
+      "variant": "channel_aspect",
+      "overrides": {
+        "motion.aspect_clamp_coast": true
+      },
+      "label": "arm C: bounded-aspect coasting",
+      "mechanism": "coasted aspect clamped to the last observed band"
+    },
+    "channel_both": {
+      "variant": "channel_both",
+      "overrides": {
+        "cost.channel_accept": true,
+        "motion.aspect_clamp_coast": true
+      },
+      "label": "arm D: B + C",
+      "mechanism": "both"
+    }
+  },
+  "ship_rule": "pooled dTSR >= +3 pp AND paired-dTSR 95%% CI excludes 0 AND paired-dFAR CI upper < +3 pp AND blind-AND-present share falls; KILL on bit-identity or dTSR < 0"
+}

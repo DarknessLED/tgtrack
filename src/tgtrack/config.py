@@ -217,6 +217,21 @@ class MotionCfg:
     #: Max |aspect velocity| per frame (aspect units); 0 = unbounded.
     aspect_vel_max: float = 0.05
 
+    #: --- E077 arm C: bounded-aspect COASTING ---
+    #: While coasting (no observation this frame), clamp the filter's aspect
+    #: state ``a = w/h`` to ``[aspect_min_ratio, aspect_max_ratio] *
+    #: a_last_observed`` and zero the aspect velocity whenever the clamp fires.
+    #: This is *not* the E014 shape prior (``shape_prior`` above), which is an
+    #: acceptance-time bound on the PREDICTED box and was measured NEGATIVE in
+    #: that role; here the correction is written back into the Kalman state, so
+    #: the runaway cannot be re-integrated on the next frame.  E076 measured the
+    #: defect it targets on dancetrack0097: area ratio 0.79 -> 2.86 across the
+    #: loss with the height pinned at 0.98, i.e. ``w/h`` tripling while blind,
+    #: which collapses IoU with the (near-perfect) detection to ~0.35 and is a
+    #: second reason the gate cannot recover.  Off by default: the shipped
+    #: behaviour is unchanged unless an arm selects it.
+    aspect_clamp_coast: bool = False
+
     #: --- E016: velocity bound (filter-divergence guard) ---
     #: The E014 trace shows the *centre* velocity running away as well as the
     #: aspect: after one poisoned update the filter predicted the box moving
@@ -303,6 +318,28 @@ class MemoryCfg:
     #: dancetrack0007 the memory preferred the stranger).  Borrowed from
     #: continual-learning anchor sets and SLAM reference submaps.  0 = off.
     ltm_anchor_count: int = 0
+    #: E078 -- the *absorb-ratio guard*.  E077-PREP measured that 52.5 % of the frames the
+    #: tracker reports as ``tracking`` are wrong, and that in 88.6 % of those our box sits on
+    #: a DIFFERENT real person at IoU >= 0.5 with median area ratio 1.03: the geometry stays
+    #: excellent while the identity is on the wrong person.  Once that happens the gallery
+    #: absorbs the impostor, so every later frame "confirms" it -- the memory that should
+    #: detect the drift has been poisoned by it.  With ``ltm_absorb_anchor_only`` on, a crop
+    #: is appended to the long-term gallery only while its descriptor is inside a TIGHT band
+    #: around the frozen click anchor::
+    #:
+    #:     cos_dist(crop, anchor) <= ltm_absorb_anchor_ratio * TargetTracker._absorb_band()
+    #:
+    #: ``_absorb_band()`` reuses the E029 self-calibrating band the acceptance veto already
+    #: uses, so the knob is a ratio against a quantity the tracker calibrates on the target
+    #: itself rather than a second absolute constant.  Hard negatives and the click crop are
+    #: NOT gated: an impostor must still be remembered as a negative, and the click crop is
+    #: the anchor.  Off by default, so the shipped behaviour is unchanged.
+    ltm_absorb_anchor_only: bool = False
+    #: Multiplier on the anchor band for the E078 guard above.  Derived from data, not
+    #: chosen: see the E078 section of docs/EXPERIMENTS.md and
+    #: ``results/absorb_sweep/ratio_derivation.json`` (0.90 = the Youden-optimal cut of the
+    #: measured correct-vs-wrong ratio distribution, 1.09 = the correct-frame p99).
+    ltm_absorb_anchor_ratio: float = 1.25
     #: Drift monitor (E021). When the person we are following stops resembling the
     #: long-term bank that froze at the click, the tracker is not "losing" the
     #: target -- it is confidently following somebody else, the failure a MOT
@@ -600,6 +637,121 @@ class CostCfg:
     #: recent confident crops) by ``audit_margin``; the two references then have to
     #: agree.  Inert when the recent reference is absent (a fresh track).
     audit_use_recent: bool = True
+
+    #: E077 arm B -- CHANNEL-CONDITIONAL ACCEPTANCE (docs/E077_PLAN.md).
+    #:
+    #: The additive ``total`` stays exactly what it was: it is still the RANKING
+    #: score, still ordered by ``argsort``, and the shipped accept bound
+    #: (``accept_cost`` / ``accept_cost_lost``) is still applied.  What changes is
+    #: that the bound is no longer the ONLY way in.  Evidence that is individually
+    #: conclusive may carry the decision:
+    #:
+    #:     accept  iff  total <= bound
+    #:              or  (norm_centre <= channel_geom_tau AND |log h_ratio| <= 0.25)
+    #:              or  (app_cost <= channel_app_tau    AND margin >= distractor_margin)
+    #:
+    #: Every EXISTING refusal still applies on top of the OR-branch -- the
+    #: ambiguous-margin test, the lone-candidate bound, and the search path's
+    #: ``search_needs_appearance`` rule can each still refuse a candidate the
+    #: branch would otherwise accept.  That is deliberate: the branch widens
+    #: ACCEPTANCE of a candidate the additive sum wrongly doubts, it does not
+    #: disable the anti-latch machinery.
+    #:
+    #: Motivation is measured, not assumed.  E076: on dancetrack0097 the neural
+    #: appearance term denies a candidate whose detection has IoU 0.968 with the
+    #: target, and ``--no-embed`` keeps ``tracking`` 17 frames longer; E013: the
+    #: DanceTrack appearance AUC is 0.59-0.67, so a fixed ``w_appearance = 1.6``
+    #: in an additive sum must over-refuse.  Two channel costs, one accept rule --
+    #: no third weight.
+    #:
+    #: OFF by default, so the shipped behaviour is byte-for-byte unchanged.
+    channel_accept: bool = False
+    #: E077 -- "geometry alone is conclusive": height-normalised centre distance
+    #: (``dist / gate_radius``, the same normalisation ``motion_cost`` uses) must
+    #: be at most this, AND ``|log(det_h / pred_h)|`` at most 0.25 (fixed in code,
+    #: which is where the plan puts it -- it is not a knob).
+    #:
+    #: MEASURED, not fitted: the median over "correct" frames (reported box IoU >=
+    #: 0.5 with the target GT) of the DEV split dancetrack0004/0005/0007, from the
+    #: per-frame channel dump ``--debug-csv`` now writes (columns ``ch_norm_centre``
+    #: and ``ch_log_h_ratio``): 0.0278 over 131 correct frames
+    #: (``results/e077_calib/thresholds.json``).  The same distribution reads
+    #: 0.343 on the frames where the tracker REPORTED but was wrong, i.e. the
+    #: channel separates correct from wrong by more than a factor of 10.
+    channel_geom_tau: float = 0.0278
+    #: E077 -- "appearance alone is conclusive": the appearance cost must be at
+    #: most this, AND the candidate must still beat the runner-up by
+    #: ``distractor_margin``.  Same derivation: the median over correct frames of
+    #: the DEV split = 0.1345 (134 frames; 0.441 on reported-but-wrong frames).
+    #: Cross-checked against the archived E013/E017 same-identity distance
+    #: measurement (``results/embed_metric/report.json``, DanceTrack ``raw_l2``
+    #: same-id mean 0.4888): the tracker's cost is TIGHTER than that because it is
+    #: the STM-EMA/LTM blend rather than a raw single-crop cosine, so the measured
+    #: median of the quantity the branch actually compares is the right number.
+    channel_app_tau: float = 0.1345
+
+    #: E079 -- REFERENCE VOTE ON THE ANCHOR VETO (docs/E079_PLAN.md).
+    #:
+    #: E076 decomposed the remaining target failure into ``0.768 = 0.511 blindness
+    #: + 0.238 wrong-while-tracking + 0.019 other``; E077 then localised the
+    #: blindness onto the E027/E029 anchor ceiling (61 of 70 refused frames on
+    #: dancetrack0097 are ``all_gated:anchor_ceiling``), and E078 showed the E029 band
+    #: is pinned at its 0.75 ceiling on ~75 % of frames -- so on those frames the
+    #: "adaptive" band is an absolute cut against ONE crop, the click.
+    #:
+    #: The veto is a single-reference test: the frozen click crop.  A single crop
+    #: carries the pose, blur and (possibly) partial view of one instant, so the
+    #: honest question is not "is this within 0.75 of that one crop" but "how many
+    #: independent references call this the target".  This knob adds two more
+    #: references and a k-of-3 vote:
+    #:
+    #:   R1  the frozen click crop (``_anchor_feat``) -- unpoisonable, never updated;
+    #:   R2  a refreshed anchor: an EMA (``anchor_vote_alpha``, ~10-frame time
+    #:       constant at 0.1) of the descriptors of accepted crops, updated ONLY on
+    #:       frames where R1 AND R3 both already accept the same box.  The
+    #:       conjunction is the anti-poisoning rule: the gallery and the click crop
+    #:       have to agree before the reference that will later admit candidates is
+    #:       allowed to move, so a drift cannot teach R2 to recognise the impostor;
+    #:   R3  the long-term gallery: the cosine distance of the nearest entry
+    #:       (``LongTermGallery.best``), the same quantity the appearance cost already
+    #:       consumes.
+    #:
+    #: All three answer the SAME question with the SAME threshold -- the E029 band
+    #: (``_anchor_limit``), so no new constant enters the system.  A candidate whose
+    #: refusal is currently the anchor veto is admitted iff it passes at least k of
+    #: the three (k = 2 for ``majority``, k = 3 for ``unanimous``).  Every other
+    #: refusal path keeps applying afterwards: the additive accept bound (which the
+    #: vetoed candidate already fails -- that is why the veto mattered), the
+    #: ambiguous-margin test, the lone-candidate bound, and the search path's
+    #: ``search_needs_appearance`` / ``search_margin`` rules.
+    #:
+    #: ``"off"`` is the shipped value, and with it the veto block is arithmetically
+    #: identical to the pre-E079 one (a candidate over the band gets ``total = inf``).
+    #: Note the consequence for the control arm: a candidate reaches this vote only
+    #: because R1 ALREADY rejected it, so ``unanimous`` (k = 3) can never admit
+    #: anything and is bit-identical to ``off``.  That is not a bug, it is the
+    #: identification result -- if the veto fires only where all three references
+    #: disagree with the click crop, the vote is inert and this experiment says so.
+    anchor_vote: str = "off"
+    #: E079 -- EMA rate of the refreshed anchor R2.  0.1 gives a ~10-frame time
+    #: constant, i.e. R2 lags the click crop by a fraction of a second of tracking
+    #: rather than by the whole sequence.  NOT swept: the experiment has three arms
+    #: (off / k=2 / k=3) and the multiplicity is spent on k, not on alpha.
+    anchor_vote_alpha: float = 0.1
+    #: E081 -- gate the E079 vote by recent DISTRESS instead of voting on every
+    #: frame.  E079 missed its pre-registered ship rule by 0.12 pp of TSR while its
+    #: FAR gain cleared the bar by 13.4 pp, and the mechanism reading is that the vote
+    #: should only overrule the frozen click crop while the tracker is in a regime
+    #: where that crop is likely stale.  ``anchor_vote='adaptive'`` uses k=2 and
+    #: refuses to vote at all while distress <= tau, which makes tau = 1.0 the null
+    #: control (never distressed -> never votes -> identical to 'off').
+    #: ``distress`` is the share of the trailing window spent blind (soft-occluded,
+    #: lost, out of frame): the tracker's own uncertainty, needing no labels and no
+    #: new signal.  tau < 0 disables the gate, so 'adaptive' with tau < 0 is
+    #: bit-identical to 'majority' (pinned by tests).  Inert while ``anchor_vote``
+    #: stays 'off'.
+    anchor_vote_distress_window: int = 50
+    anchor_vote_distress_tau: float = 0.35
 
 
 @dataclass

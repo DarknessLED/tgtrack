@@ -612,6 +612,12 @@ class MotionModel:
         self._last_innov_cov = np.eye(4, dtype=np.float64) * 1e-6
         self._predicted = False
         self._logged_low_score = False
+        #: E077 arm C engagement counters: how many coast steps actually clamped an
+        #: aspect that had extrapolated out of the reference band.  Reported in
+        #: ``TargetTracker.stats()`` because a clamp that never fires is a no-op
+        #: the metrics cannot distinguish from a real (or absent) effect.
+        self.aspect_clamp_steps = 0
+        self.aspect_clamp_calls = 0
 
         names = list(cfg.imm_models) if cfg.model == "imm" else []
         names = [n for n in names if n in _MODEL_FACTORY]
@@ -917,19 +923,88 @@ class MotionModel:
             out.append((c.box.astype(np.float32).copy(), float(wi)))
         return out
 
+    def _blended_box(self) -> np.ndarray:
+        """Current box of the (possibly multi-model) filter, from the components."""
+        if self.is_imm and self._comps:
+            w = self._mode_weights()
+            box = (w[:, None] * np.stack([c.box for c in self._comps])).sum(axis=0)
+            return _finite(box)
+        if self._comps:
+            return _finite(self._comps[0].box)
+        return _finite(self._last_pred_box)
+
+    def _clamp_aspect_to_reference(self) -> int:
+        """E077 arm C: bound the coasted ASPECT state to the last OBSERVED one.
+
+        Writes the correction back into the Kalman state (and zeroes the aspect
+        velocity when the clamp fires), which is what distinguishes it from the
+        E014 shape prior: ``_apply_shape_prior`` bounds the *predicted box* and
+        leaves the state alone, so the runaway is re-integrated on the next frame.
+        E076 measured the divergence on dancetrack0097 -- ``w/h`` tripling while
+        blind (area ratio 0.79 -> 2.86) with the height pinned at 0.98 -- which
+        collapses IoU with a near-perfect detection and blocks recovery.
+
+        The band is ``[aspect_min_ratio, aspect_max_ratio] * a_last_observed``
+        where ``a_last_observed`` is the aspect of the last ACCEPTED observation
+        (``_ref_state[2]``, updated in :meth:`update`/`initiate`), so a genuine
+        approach/recede or a turning body is still allowed to change shape;
+        only an extrapolation that leaves the band is clipped.
+
+        Returns the number of components that were clamped (0 = inert).
+        """
+        if not bool(getattr(self.cfg, "aspect_clamp_coast", False)):
+            return 0
+        ref = getattr(self, "_ref_state", None)
+        if ref is None:
+            return 0
+        ref_a = max(abs(float(np.asarray(ref).reshape(-1)[2])), _MIN_SIZE)
+        amin = max(float(getattr(self.cfg, "aspect_min_ratio", 0.60)), 1e-2)
+        amax = max(float(getattr(self.cfg, "aspect_max_ratio", 1.70)), amin)
+        lo, hi = ref_a * amin, ref_a * amax
+        clamped = 0
+        for c in self._comps:
+            mean = getattr(c, "mean", None)
+            if mean is None or mean.size < 7:
+                continue
+            a = float(mean[2])
+            if not np.isfinite(a):
+                mean[2] = ref_a
+                if mean.size > 6:
+                    mean[6] = 0.0
+                c.box = c.current_xyxy()
+                clamped += 1
+                continue
+            target = float(np.clip(a, lo, hi))
+            if target != a:
+                mean[2] = target
+                mean[6] = 0.0
+                c.box = c.current_xyxy()
+                clamped += 1
+        if clamped:
+            self.aspect_clamp_steps += clamped
+            self.aspect_clamp_calls += 1
+        return clamped
+
     def coast(self) -> np.ndarray:
         """Advance without an observation, damping the velocity.
 
         Idempotent within a frame: if :meth:`predict` already advanced the
         state, this only applies the damping/inflation and returns the same
         box.  Never produces NaN/inf and keeps ``h``/``a`` positive.
+
+        With ``MotionCfg.aspect_clamp_coast`` (E077 arm C) the coasted aspect
+        state is additionally bounded to the last observed aspect; see
+        :meth:`_clamp_aspect_to_reference`.
         """
         self._ensure()
         damp = float(getattr(self.cfg, "coast_velocity_damp", 1.0))
         if not np.isfinite(damp) or damp <= 0.0 or damp > 1.0:
             damp = float(np.clip(damp, 1e-3, 1.0)) if np.isfinite(damp) else 1.0
         if not self._predicted:
-            return self._do_predict(damp=damp).copy()
+            box = self._do_predict(damp=damp).copy()
+            if self._clamp_aspect_to_reference():
+                box = self._blended_box()
+            return self._set_push_box(box).copy()
         # Already advanced this frame: only damp the velocity of each model.
         for c in self._comps:
             if c.dim >= 8:
@@ -951,6 +1026,8 @@ class MotionModel:
             box = _finite(box)
         else:
             box = _finite(self._comps[0].box)
+        if self._clamp_aspect_to_reference():
+            box = self._blended_box()
         return self._set_push_box(box).copy()
 
     # ------------------------------------------------------------------ #

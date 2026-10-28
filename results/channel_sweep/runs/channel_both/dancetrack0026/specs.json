@@ -1,0 +1,12 @@
+[
+  {
+    "seq_name": "dancetrack0026",
+    "variant": "channel_both",
+    "overrides": {
+      "cost.channel_accept": true,
+      "motion.aspect_clamp_coast": true
+    },
+    "mask": "none",
+    "target_id": 9
+  }
+]

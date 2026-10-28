@@ -1,0 +1,12 @@
+[
+  {
+    "seq_name": "dancetrack0035",
+    "variant": "consensus_2f",
+    "overrides": {
+      "cost.commit_consensus": true,
+      "cost.consensus_frames": 2
+    },
+    "mask": "none",
+    "target_id": 5
+  }
+]

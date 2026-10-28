@@ -1,6 +1,6 @@
 # MANIFEST — what is in this package
 
-Generated 2026-10-27 01:34 中国标准时间 by `scripts/build_handoff.py`. 1043 files, 17.18 MB uncompressed.
+Generated 2026-10-28 21:29 中国标准时间 by `scripts/build_handoff.py`. 2309 files, 38.02 MB uncompressed.
 
 This file is generated; do not edit by hand.
 
@@ -11,13 +11,13 @@ This file is generated; do not edit by hand.
 | `README.md/` | 1 | 0.06 MB | — |
 | `configs/` | 12 | 0.01 MB | tracker configs (ultralytics-compatible) used by the runs |
 | `conftest.py/` | 1 | 0.00 MB | — |
-| `docs/` | 34 | 1.12 MB | reports, the experiment ledger, surveys, plans, external reviews |
+| `docs/` | 39 | 1.19 MB | reports, the experiment ledger, surveys, plans, external reviews |
 | `pytest.ini/` | 1 | 0.00 MB | — |
 | `requirements.txt/` | 1 | 0.00 MB | — |
-| `results/` | 908 | 14.30 MB | the measured numbers as markdown/csv/small json summaries |
-| `scripts/` | 47 | 0.76 MB | every reproducible entry point; each experiment cites one |
-| `src/` | 18 | 0.52 MB | the library itself (`tgtrack`) |
-| `tests/` | 20 | 0.41 MB | the guarantees: 470+ tests encoding every measured behaviour |
+| `results/` | 2161 | 34.81 MB | the measured numbers as markdown/csv/small json summaries |
+| `scripts/` | 53 | 0.96 MB | every reproducible entry point; each experiment cites one |
+| `src/` | 18 | 0.56 MB | the library itself (`tgtrack`) |
+| `tests/` | 22 | 0.44 MB | the guarantees: 470+ tests encoding every measured behaviour |
 | root files | 4 | — | README, pytest config, requirements |
 
 ## Deliberately EXCLUDED (and how to regenerate)
@@ -53,12 +53,17 @@ First 40 files by path, with sha256 prefix (12 hex), so a copy can be verified:
 | `docs/BRIEF.md` | 33595 | `1fc7a5c1a38e` |
 | `docs/E045_PLAN.md` | 4649 | `9bd3080e5161` |
 | `docs/E071_PLAN.md` | 5269 | `953140f88667` |
-| `docs/EXPERIMENTS.md` | 163484 | `87090361024a` |
+| `docs/E077_PLAN.md` | 2591 | `1364dafc01aa` |
+| `docs/E079_PLAN.md` | 5356 | `ad8721c1cdcc` |
+| `docs/E081_PLAN.md` | 3826 | `6e72008c2249` |
+| `docs/E082_PLAN.md` | 4166 | `cf9f749be774` |
+| `docs/EXPERIMENTS.md` | 202236 | `118653b08cee` |
 | `docs/EXPLORATION_TREE.md` | 17127 | `e05ff6c14385` |
-| `docs/HANDOFF.md` | 8352 | `37f32706ca30` |
-| `docs/HANDOFF.md` | 8352 | `37f32706ca30` |
+| `docs/HANDOFF.md` | 9722 | `554d51d0a89d` |
+| `docs/HANDOFF.md` | 9722 | `554d51d0a89d` |
 | `docs/METHOD.md` | 13146 | `3399dee859e0` |
-| `docs/NEXT_ROUND.md` | 3207 | `1f0623874375` |
+| `docs/NEXT_ROUND.md` | 4310 | `0ad0183be41f` |
+| `docs/PARETO.md` | 5002 | `876748a48bd0` |
 | `docs/REPORT.md` | 46694 | `1b473970046f` |
 | `docs/REPORT_v1_chronological.md` | 18078 | `539368cad236` |
 | `docs/RESEARCH_PLAN.md` | 10296 | `c549f7af1c95` |
@@ -71,10 +76,5 @@ First 40 files by path, with sha256 prefix (12 hex), so a copy can be verified:
 | `docs/research/_raw_ostrack_readme.md` | 8446 | `ac118fa83265` |
 | `docs/research/_recovered_b10.md` | 169926 | `9d207515cf88` |
 | `docs/research/_recovered_b7.md` | 52873 | `e2deec3e10a2` |
-| `docs/research/_recovered_b9.md` | 37859 | `84b52cf51804` |
-| `docs/research/_rm_MixFormerV2.md` | 3532 | `899de294b622` |
-| `docs/research/_rm_OSTrack.md` | 8446 | `ac118fa83265` |
-| `docs/research/_rm_SAM2Long_Mark12Ding.md` | 7645 | `714338370037` |
-| `docs/research/_rm_SAMURAI.md` | 8379 | `9a4399e19f37` |
 
 (Full list is `find . -type f | sort` in the package root.)

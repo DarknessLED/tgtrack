@@ -1,0 +1,11 @@
+[
+  {
+    "seq_name": "dancetrack0090",
+    "variant": "consensus_off",
+    "overrides": {
+      "cost.commit_consensus": false
+    },
+    "mask": "none",
+    "target_id": 12
+  }
+]

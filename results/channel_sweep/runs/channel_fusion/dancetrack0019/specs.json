@@ -1,0 +1,11 @@
+[
+  {
+    "seq_name": "dancetrack0019",
+    "variant": "channel_fusion",
+    "overrides": {
+      "cost.channel_accept": true
+    },
+    "mask": "none",
+    "target_id": 6
+  }
+]
