@@ -144,6 +144,31 @@ ARMS: dict[str, dict[str, Any]] = {
         "k": 0,
         "label": "the shipped default after E089 (lost-scale 1.25)",
     },
+    # E090 (docs/E090_PLAN.md): the shipped epoch, with the ambiguity gate relaxed
+    # while the target is lost.  `distractor_margin_lost` = 0.0 means "disabled, fall
+    # back to distractor_margin (0.06)"; a smaller positive value relaxes it.
+    "margin_lost_0.03": {
+        "overrides": {
+            "cost.anchor_vote": "off",
+            "cost.anchor_band_lost_scale": 1.25,
+            "cost.distractor_margin_lost": 0.03,
+        },
+        "variant": "margin_lost_0.03",
+        "reference": False,
+        "k": 0,
+        "label": "shipped epoch, ambiguity margin 0.03 while lost (E090)",
+    },
+    "margin_lost_0.01": {
+        "overrides": {
+            "cost.anchor_vote": "off",
+            "cost.anchor_band_lost_scale": 1.25,
+            "cost.distractor_margin_lost": 0.01,
+        },
+        "variant": "margin_lost_0.01",
+        "reference": False,
+        "k": 0,
+        "label": "shipped epoch, ambiguity margin 0.01 while lost (E090)",
+    },
     "vote_majority": {
         "overrides": {"cost.anchor_vote": "majority", "cost.anchor_vote_alpha": 0.1},
         "variant": "vote_majority",
@@ -364,6 +389,115 @@ ARMS["ceil_lost_1.00"] = {
     "label": "E089 control: scale 1.0, must be bit-identical to vote_off",
 }
 REFERENCE_ARM = "vote_off"
+
+#: E090 (docs/E090_PLAN.md): relax the ambiguity gate while the target is lost, on the
+#: shipped epoch.  Ordered here, after the E089 family, so the report table reads in
+#: experiment order.
+ARM_ORDER += ["margin_lost_0.03", "margin_lost_0.01"]
+
+#: E091: geometry-conditional ceiling widening while lost.  E089/E090 showed that
+#: widening for EVERY candidate trades FAR on the sequences where the motion model had
+#: already ruled the candidate out (0034 +7.6, 0065 +17.7, 0081 +27.0 pp of FAR).  These
+#: arms widen further, but only for candidates whose normalised centre distance to the
+#: prediction is inside the motion gate (`norm_centre <= 1.0`).  `geom_widen_1.00` is the
+#: plumbing control and must be bit-identical to the shipped default.
+for _gs in (1.50, 2.50):
+    _name = "geom_widen_%.2f" % _gs
+    ARMS[_name] = {
+        "overrides": {
+            "cost.anchor_vote": "off",
+            "cost.anchor_band_lost_geom_scale": float(_gs),
+        },
+        "variant": _name,
+        "reference": False,
+        "k": 0,
+        "lost_scale": 1.25,
+        "label": "E091: ceiling x%.2f while lost, only inside the motion gate" % _gs,
+    }
+ARMS["geom_widen_1.00"] = {
+    "overrides": {"cost.anchor_vote": "off", "cost.anchor_band_lost_geom_scale": 1.0},
+    "variant": "geom_widen_1.00",
+    "reference": False,
+    "k": 0,
+    "lost_scale": 1.25,
+    "label": "E091 control: geom scale 1.0, must be bit-identical to shipped",
+}
+ARM_ORDER += ["geom_widen_1.50", "geom_widen_2.50", "geom_widen_1.00"]
+
+#: E092: temporal confidence in a re-acquisition.  E091 killed the spatial version of this
+#: idea (a near wrong candidate survives every geometry test), so the qualifier here is
+#: persistence: the same candidate must be offered on N consecutive frames before it may
+#: take the identity.  `reacq_confirm_1` is the plumbing control (shipped behaviour).
+for _n in (2, 3):
+    _name = "reacq_confirm_%d" % _n
+    ARMS[_name] = {
+        "overrides": {
+            "cost.anchor_vote": "off",
+            "state.reacquire_confirm_frames": int(_n),
+        },
+        "variant": _name,
+        "reference": False,
+        "k": 0,
+        "lost_scale": 1.25,
+        "label": "E092: re-acquisition needs %d consecutive frames of the same candidate" % _n,
+    }
+ARMS["reacq_confirm_1"] = {
+    "overrides": {"cost.anchor_vote": "off", "state.reacquire_confirm_frames": 1},
+    "variant": "reacq_confirm_1",
+    "reference": False,
+    "k": 0,
+    "lost_scale": 1.25,
+    "label": "E092 control: confirm frames 1, must be bit-identical to shipped",
+}
+ARM_ORDER += ["reacq_confirm_2", "reacq_confirm_3", "reacq_confirm_1"]
+
+#: E092b: the same qualifier with gap tolerance.  E092's screen showed the strict streak
+#: is reset by one jittered box or one alternating distractor, so a legitimate
+#: re-acquisition of a fast or partially occluded target was deferred indefinitely
+#: (0034 -23.4, 0018 -28.2 pp).  These arms ask "have N of the last M candidates agreed".
+for _n, _m in ((2, 4), (3, 6)):
+    _name = "reacq_window_%dof%d" % (_n, _m)
+    ARMS[_name] = {
+        "overrides": {
+            "cost.anchor_vote": "off",
+            "state.reacquire_confirm_frames": int(_n),
+            "state.reacquire_confirm_window": int(_m),
+        },
+        "variant": _name,
+        "reference": False,
+        "k": 0,
+        "lost_scale": 1.25,
+        "label": "E092b: %d agreeing candidates within %d frames confirms a re-acquisition"
+                 % (_n, _m),
+    }
+ARMS["reacq_window_2of2"] = {
+    "overrides": {"cost.anchor_vote": "off", "state.reacquire_confirm_frames": 2,
+                  "state.reacquire_confirm_window": 0},
+    "variant": "reacq_window_2of2",
+    "reference": False,
+    "k": 0,
+    "lost_scale": 1.25,
+    "label": "E092b control: window 0 == strict streak, must equal reacq_confirm_2",
+}
+ARM_ORDER += ["reacq_window_2of4", "reacq_window_3of6", "reacq_window_2of2"]
+
+#: E093: do two independently-selected Pareto points stack?  E082's contrast vote was measured on
+#: the pre-E089 epoch (lost scale pinned to 1.0) and missed the ship bar by 0.46 pp; E089's widening
+#: then shipped.  The combination has never been measured.  If the stack lands near E082's own
+#: +6.83 pp the mechanisms are substitutes; near +9.7 pp they add.
+ARMS["stack_contrast_1.25"] = {
+    "overrides": {
+        "cost.anchor_vote": "contrast",
+        "cost.anchor_vote_contrast": 0.10,
+        "cost.anchor_band_lost_scale": 1.25,
+    },
+    "variant": "stack_contrast_1.25",
+    "reference": False,
+    "k": 2,
+    "lost_scale": 1.25,
+    "label": "E093: E082 contrast 0.10 stacked on the E089 shipped ceiling (substitute or additive?)",
+}
+ARM_ORDER += ["stack_contrast_1.25"]
 
 
 # --------------------------------------------------------------------------- #

@@ -1,0 +1,12 @@
+[
+  {
+    "seq_name": "dancetrack0097",
+    "variant": "geom_widen_1.50",
+    "overrides": {
+      "cost.anchor_vote": "off",
+      "cost.anchor_band_lost_geom_scale": 1.5
+    },
+    "mask": "none",
+    "target_id": 3
+  }
+]

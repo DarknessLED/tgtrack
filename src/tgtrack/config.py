@@ -808,6 +808,26 @@ class CostCfg:
     #: pooled (+5.57 pp) but broke ``dancetrack0077`` (-21.0 pp) and P2 on
     #: ``dancetrack0097``, so the relaxer shipped in the mild setting.
     anchor_band_lost_scale: float = 1.25
+    #: E091 -- make the lost-regime ceiling widening GEOMETRY-CONDITIONAL.
+    #:
+    #: E089/E090 established the pattern: every widen-everywhere lever buys TSR on
+    #: ceiling-dominated sequences and pays it back as false acquisitions elsewhere
+    #: (the 0.0 arm cost 0034 +7.6, 0065 +17.7, 0081 +27.0 pp of FAR).  The
+    #: candidates that cost FAR are the ones the motion model had already ruled out;
+    #: while ``searching`` the motion gate is NOT applied (``apply_gate=not searching``),
+    #: so a widened appearance ceiling can admit a box far from any plausible target
+    #: position.  This knob widens the ceiling FURTHER (> ``anchor_band_lost_scale``)
+    #: but only for candidates whose normalised centre distance to the prediction,
+    #: ``norm_centre``, is within ``anchor_band_lost_geom_tau`` (1.0 = inside the
+    #: motion-gate radius).  Candidates outside keep the shipped limit.
+    #:
+    #: 1.0 is the pre-E091 behaviour and stays bit-identical; the knob is inert while
+    #: the tracker has a fresh measurement.
+    anchor_band_lost_geom_scale: float = 1.0
+    #: E091 -- the normalised-centre threshold for the geometry-conditional widening
+    #: (``norm_centre = |candidate - prediction| / gate_radius``, so 1.0 is exactly the
+    #: motion gate).  Only read when ``anchor_band_lost_geom_scale > 1``.
+    anchor_band_lost_geom_tau: float = 1.0
     #: E083 -- run two structurally different hypotheses instead of one tracker
     #: (docs/E083_PLAN.md).  The amendment in docs/EXPERIMENTS.md replaces the
     #: plan's K clones with K = 2 hypotheses that differ in exactly one thing:
@@ -886,6 +906,22 @@ class StateCfg:
     #: While lost, an unconfirmed re-acquisition candidate must persist this many
     #: frames before being confirmed (anti-distractor latch protection).
     reacquire_hold: int = 2
+    #: E092 -- how many consecutive frames a re-acquisition candidate must BE THE SAME
+    #: CANDIDATE before it may take the identity.  ``1`` is the shipped behaviour (the
+    #: first accepted candidate commits that same frame).  Aimed at the failure mode E091
+    #: exposed: while the target is lost the dangerous candidate is the *near* wrong one,
+    #: and geometry cannot order candidates -- time can.  A wrong latch is usually a
+    #: one-frame event, while a true re-appearance persists with high IoU.
+    reacquire_confirm_frames: int = 1
+    #: IoU between two consecutive provisional candidates for them to count as the same
+    #: candidate.  Only read when ``reacquire_confirm_frames > 1``.
+    reacquire_confirm_iou: float = 0.3
+    #: E092b -- gap tolerance for the rule above.  ``0`` keeps E092's strict "N
+    #: consecutive frames" streak; ``M > 0`` asks instead whether N of the last M
+    #: candidates agree with each other, so one jittered box or one alternating
+    #: distractor no longer resets the count.  E092's screen showed the strict streak
+    #: is what cost 23-28 pp of TSR on sequences whose re-acquisition was real.
+    reacquire_confirm_window: int = 0
     #: Freeze the appearance memory while in these states.
     frozen_states: tuple[str, ...] = ("occluded_soft", "lost_short", "lost_long", "out_of_frame")
     #: States in which the prediction is no longer trustworthy, so the motion

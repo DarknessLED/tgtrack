@@ -722,6 +722,57 @@ Epoch discipline matters from here on, because these numbers are comparable hist
 bit-comparable, and a new `shipped` arm tracks the config default (`run_target.py` gains the
 `shipped_e089` variant, which spells out no scale).
 
+The follow-up lever - relaxing the *ambiguity* margin while lost (`distractor_margin_lost` 0.06 -> 0.03),
+which is the other refusal that fires in the lost regime - was measured next and **killed**: pooled TSR
+0.2395 -> 0.2267 (-1.28 pp, CI [-4.38, +1.14]), FAR 0.2089 -> 0.2136, and three of the four hard
+constraints violated (`0018` -29.0 pp, `0034` -7.7, `0081` -11.4; `0030` idcons 0.957 -> 0.531). Its
+wiring check is the useful part: the same knob moved `dancetrack0073` by **+27.6 pp at 0.01 and +5.6 pp at
+0.03** while leaving `dancetrack0097` bit-identical - a non-monotone response in the knob's own direction.
+That is the campaign's clearest demonstration that these identity decisions are *sequential*: one
+differently-accepted frame forks the whole downstream trajectory, so a pooled delta over a forked
+trajectory is not a controlled comparison, and a knob with such a response is a bifurcation, not a
+tunable. The record states that the 0.01 arm was deliberately not run rather than silently dropped.
+
+### E092: the identity layer is a Pareto surface, measured twice
+
+A re-acquisition hold (accept a lost-regime candidate only after the same box persists for 2-3 frames)
+was screened on five sequences and killed: pooled FAR fell **-8.11 pp** -- the best FAR number the campaign
+has produced (0065 0.2033 -> 0.0467, 0034 0.2302 -> 0.0997) -- while pooled TSR fell **-8.87 pp**, with
+0034 -23.39 and 0018 -28.17 pp. E089 had already sold -3.83 pp of FAR for +2.91 pp of TSR. Two mechanisms,
+opposite directions, roughly the same exchange rate: the identity layer is a Pareto surface, and no single
+dial moves it to the corner. The arm's failure mode is diagnostic rather than mysterious -- the commit rule
+is a strict consecutive-frame streak, so jitter resets it and a legitimate re-acquisition of a fast target
+can be deferred indefinitely.
+
+### E092b: the temporal qualifier was repaired and it did not help
+
+E092 held a lost-regime re-acquisition until the same candidate persisted, and bought the best
+false-acquisition number this protocol has produced (-8.11 pp) at a TSR cost of the same size.
+The obvious repair was gap tolerance: a strict consecutive streak is reset by one jittered box or
+one alternating distractor, so E092b asked whether N of the last M candidates agree instead
+(`state.reacquire_confirm_window`, window 0 = E092's exact rule, control verified bit-identical on
+`dancetrack0018`). **It did not repair anything**: 0.3911 -> 0.1653 on `dancetrack0034` (E092:
+0.1573) and 0.5675 -> 0.2698 on `dancetrack0018` (E092: 0.2857), with the same FAR win (-8.73 pp).
+Gap tolerance was not the defect. Together with E089 and E082, the identity layer now measures as a
+Pareto surface with a near-unit TSR/FAR exchange rate, which is a statement about the objective:
+one candidate set and one decision per frame make a miss and a false report the same event.
+
+### E093: the two Pareto points do not stack, and that closes the identity layer
+
+The natural next move after E082/E089 was to combine them: contrast vote *and* widened lost-regime
+ceiling. Measured on the same 22 sequences against the shipped default, `stack_contrast_1.25` is the
+best pooled point the campaign has on both axes -- **TSR 0.2688 / FAR 0.2037** versus shipped
+0.2395 / 0.2089 -- and it still fails the pre-committed rule (paired dTSR `+2.93 pp [-2.24, +8.94]`
+includes 0; four sequences lose more than 2 pp, `dancetrack0010` by 23.53).
+
+The decisive number is not the pooled delta but the comparison with E082 *alone*: against the same
+reference, contrast scored +6.83 pp and the stack scores +5.83 pp, one point **lower**. The two
+mechanisms are substitutes, and slightly negative ones. With E092/E092b (which bought FAR at 1:1 in
+the other direction), every identity lever now sits on one Pareto surface with a near-unit exchange
+rate. That is a statement about the objective -- one candidate set, one commit per frame, so a miss
+and a false report are the same event -- and it means the identity layer is done: **no further knob
+in it can reach TSR 0.55 at FAR 0.20**, a gap of 0.28 rather than the 0.03-0.07 the frontier moves.
+
 ## Corrections after the first independent audit (round A)
 
 An independent audit re-derived 24 numeric claims in this file from the `results/` artifacts and found

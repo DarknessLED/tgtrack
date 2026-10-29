@@ -1,0 +1,2 @@
+group,variant,mask,seqs,frames,visible,TSR,prec,loss,loss_lock,recq_rate,recq_lat,recq_p90,recq_max,FAR,FAR_lock,FA_ev,FA_ev_lock,id_cons,switches,frag,longest,coast_ok,worst_id,detect,ms/frame
+e090_wire,relax_0.01,none,1,300,250,0.5160,0.3932,0.4840,0.1560,0.6667,26.00,38.80,42.00,0.15333,0.25862,5,5,0.7341,7,4,61,,,,796.65

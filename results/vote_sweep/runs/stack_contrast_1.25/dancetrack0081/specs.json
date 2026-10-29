@@ -1,0 +1,13 @@
+[
+  {
+    "seq_name": "dancetrack0081",
+    "variant": "stack_contrast_1.25",
+    "overrides": {
+      "cost.anchor_vote": "contrast",
+      "cost.anchor_vote_contrast": 0.1,
+      "cost.anchor_band_lost_scale": 1.25
+    },
+    "mask": "none",
+    "target_id": 19
+  }
+]

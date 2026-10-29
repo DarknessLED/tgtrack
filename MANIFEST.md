@@ -1,6 +1,6 @@
 # MANIFEST — what is in this package
 
-Generated 2026-10-29 09:18 中国标准时间 by `scripts/build_handoff.py`. 3437 files, 61.79 MB uncompressed.
+Generated 2026-10-29 15:31 中国标准时间 by `scripts/build_handoff.py`. 3854 files, 70.04 MB uncompressed.
 
 This file is generated; do not edit by hand.
 
@@ -11,13 +11,13 @@ This file is generated; do not edit by hand.
 | `README.md/` | 1 | 0.07 MB | — |
 | `configs/` | 12 | 0.01 MB | tracker configs (ultralytics-compatible) used by the runs |
 | `conftest.py/` | 1 | 0.00 MB | — |
-| `docs/` | 42 | 1.28 MB | reports, the experiment ledger, surveys, plans, external reviews |
+| `docs/` | 43 | 1.32 MB | reports, the experiment ledger, surveys, plans, external reviews |
 | `pytest.ini/` | 1 | 0.00 MB | — |
 | `requirements.txt/` | 1 | 0.00 MB | — |
-| `results/` | 3283 | 58.33 MB | the measured numbers as markdown/csv/small json summaries |
-| `scripts/` | 53 | 1.00 MB | every reproducible entry point; each experiment cites one |
-| `src/` | 19 | 0.62 MB | the library itself (`tgtrack`) |
-| `tests/` | 24 | 0.48 MB | the guarantees: 470+ tests encoding every measured behaviour |
+| `results/` | 3697 | 66.51 MB | the measured numbers as markdown/csv/small json summaries |
+| `scripts/` | 53 | 1.01 MB | every reproducible entry point; each experiment cites one |
+| `src/` | 19 | 0.63 MB | the library itself (`tgtrack`) |
+| `tests/` | 26 | 0.49 MB | the guarantees: 470+ tests encoding every measured behaviour |
 | root files | 4 | — | README, pytest config, requirements |
 
 ## Deliberately EXCLUDED (and how to regenerate)
@@ -36,7 +36,7 @@ First 40 files by path, with sha256 prefix (12 hex), so a copy can be verified:
 
 | path | bytes | sha256[:12] |
 |---|---|---|
-| `README.md` | 69333 | `10c28d50e2b6` |
+| `README.md` | 73523 | `afdf65fb3b83` |
 | `configs/bs_reid.yaml` | 254 | `96710faf56f6` |
 | `configs/ch_1280.yaml` | 97 | `1b237aa3b148` |
 | `configs/ch_960.yaml` | 96 | `6d55902072cb` |
@@ -60,12 +60,13 @@ First 40 files by path, with sha256 prefix (12 hex), so a copy can be verified:
 | `docs/E083_PLAN.md` | 7132 | `4f5d8e303acc` |
 | `docs/E084_PLAN.md` | 5138 | `a4bb811c6d05` |
 | `docs/E086_PLAN.md` | 9026 | `de23bd7d9b3c` |
-| `docs/EXPERIMENTS.md` | 249213 | `3d6efea7aecb` |
+| `docs/E090_PLAN.md` | 3731 | `713ea92eab0b` |
+| `docs/EXPERIMENTS.md` | 266755 | `93bee4c71cc9` |
 | `docs/EXPLORATION_TREE.md` | 17127 | `e05ff6c14385` |
 | `docs/HANDOFF.md` | 9722 | `554d51d0a89d` |
 | `docs/HANDOFF.md` | 9722 | `554d51d0a89d` |
 | `docs/METHOD.md` | 17653 | `13e0d0f3f09a` |
-| `docs/NEXT_ROUND.md` | 22143 | `fd2922334e63` |
+| `docs/NEXT_ROUND.md` | 39164 | `c6ccb28cd783` |
 | `docs/PARETO.md` | 5002 | `876748a48bd0` |
 | `docs/REPORT.md` | 51018 | `e7100a476936` |
 | `docs/REPORT_v1_chronological.md` | 18078 | `539368cad236` |
@@ -75,6 +76,5 @@ First 40 files by path, with sha256 prefix (12 hex), so a copy can be verified:
 | `docs/research/R3_single_target_uav.md` | 78692 | `8bf29943b42a` |
 | `docs/research/R4_datasets.md` | 64472 | `d6383b66b739` |
 | `docs/research/R4b_datasets_inventory.md` | 47942 | `f88904f7bd71` |
-| `docs/research/_raw_mixformer_readme.md` | 7821 | `317baf00ff6f` |
 
 (Full list is `find . -type f | sort` in the package root.)

@@ -7,7 +7,7 @@
 > SHIP `vote_majority` iff ALL THREE: (1) pooled TSR rises >= +3.0 pp with the paired 95 % CI excluding 0; (2) the paired dFAR 95 % CI upper bound is < +3.0 pp; (3) the mechanism engaged -- the `blind AND present` frame share falls versus `vote_off`. Otherwise KILL. `vote_unanimous` is a control.
 
 - **`ceil_lost_1.25`** (k = 0) -- **KILL**: KILL: pooled dTSR +2.91 pp (CI [+0.13, +6.64]) fails the >= +3.0 pp bar with a CI excluding 0; blind AND present share did not fall (pooled +2.44 pp); the vote never engaged (0 vetoed candidates, 0 rescued).
-- **`ceil_lost_off`** (k = 0) -- **KILL**: KILL: blind AND present share did not fall (pooled +2.36 pp); the vote never engaged (0 vetoed candidates, 0 rescued).
+- **`stack_contrast_1.25`** (k = 2) -- **KILL**: KILL: pooled dTSR +5.83 pp (CI [-1.20, +14.92]) fails the >= +3.0 pp bar with a CI excluding 0; paired dFAR CI upper +4.99 pp >= +3.0 pp.
 
 **Ship decision: kill the mechanism; the shipped default (`anchor_vote = "off"`) stays.**
 
@@ -22,7 +22,7 @@
 - one `--ablate vote` arm per run, `run_target.build_variants` replaced in the child; `specs.json` asserts exactly 1 spec with exactly the intended overrides and each `summary.json` reports exactly 1 variant
 - target identity: the reference arm picks it (`stressed`), every other arm is pinned to the same id and the mismatch is a hard error
 - pooling: frame-weighted mean over `n_report_frames`; CIs are cluster bootstraps over **sequences** (2000 reps, seed 0); deltas are **paired** per sequence against the reference arm
-- runs: 66 (including any retried pair); wall 106.0 min
+- runs: 66 (including any retried pair); wall 98.9 min
 
 ## Per-arm results
 
@@ -30,7 +30,7 @@
 |---|---|---|---|---|---|---|---|
 | `vote_off` | 0 | 22 | 6181 | 0.2104 [0.1157, 0.3254] | 0.2472 [0.1489, 0.3487] | 0.4358 [0.2899, 0.5771] | 0.491 [0.369, 0.607] |
 | `ceil_lost_1.25` | 0 | 22 | 6181 | 0.2395 [0.1385, 0.3586] | 0.2089 [0.1170, 0.3078] | 0.4790 [0.3376, 0.6302] | 0.516 [0.393, 0.635] |
-| `ceil_lost_off` | 0 | 22 | 6181 | 0.2661 [0.1496, 0.3939] | 0.1844 [0.1023, 0.2825] | 0.4824 [0.3362, 0.6308] | 0.515 [0.397, 0.629] |
+| `stack_contrast_1.25` | 2 | 22 | 6181 | 0.2688 [0.1380, 0.4129] | 0.2037 [0.1034, 0.3222] | 0.4805 [0.3141, 0.6503] | 0.449 [0.323, 0.581] |
 
 [value [95 % CI]]: cluster bootstrap over sequences, 2000 reps, seed 0.
 
@@ -41,9 +41,9 @@
 | `ceil_lost_1.25` | dTSR | +2.91 pp | +2.98 pp | [+0.13, +6.64] pp | 6 / 3 / 13 | yes |
 | `ceil_lost_1.25` | dFAR | -3.83 pp | -3.94 pp | [-11.29, +2.02] pp | 3 / 7 / 12 | no |
 | `ceil_lost_1.25` | dID | +4.31 pp | +4.46 pp | [-2.85, +12.35] pp | 8 / 2 / 12 | no |
-| `ceil_lost_off` | dTSR | +5.57 pp | +5.47 pp | [+0.02, +11.93] pp | 6 / 4 / 12 | yes |
-| `ceil_lost_off` | dFAR | -6.28 pp | -6.23 pp | [-14.61, +0.92] pp | 4 / 7 / 11 | no |
-| `ceil_lost_off` | dID | +4.66 pp | +4.78 pp | [-3.42, +13.35] pp | 7 / 4 / 11 | no |
+| `stack_contrast_1.25` | dTSR | +5.83 pp | +6.06 pp | [-1.20, +14.92] pp | 7 / 5 / 10 | no |
+| `stack_contrast_1.25` | dFAR | -4.35 pp | -4.48 pp | [-14.31, +4.99] pp | 3 / 9 / 10 | no |
+| `stack_contrast_1.25` | dID | +4.46 pp | +4.70 pp | [-4.70, +15.38] pp | 7 / 6 / 9 | no |
 
 ## Mechanism engagement (a veto that never fires is not a result)
 
@@ -51,36 +51,36 @@
 |---|---|---|---|---|---|---|---|---|---|
 | `vote_off` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 5833 | 52.2 % |
 | `ceil_lost_1.25` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 5826 | 45.0 % |
-| `ceil_lost_off` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 5832 | 47.7 % |
+| `stack_contrast_1.25` | 5964 | 0 | 2761 | 3238 | 2318 | 426 | 2141 | 5814 | 55.4 % |
 
 R1 pass is 0 by construction for a vetoed candidate (that is why it was vetoed); it is reported to prove the vote saw the right population. `rescued` counts candidates that would have been `+inf` and were left finite by the vote.
 
 ## Per-sequence detail
 
-| sequence | frames | `vote_off` TSR / FAR / b&p | `ceil_lost_1.25` TSR / FAR / b&p | `ceil_lost_off` TSR / FAR / b&p |
+| sequence | frames | `vote_off` TSR / FAR / b&p | `ceil_lost_1.25` TSR / FAR / b&p | `stack_contrast_1.25` TSR / FAR / b&p |
 |---|---|---|---|---|
-| dancetrack0010 | 300 | 0.283 / 0.680 / 0.083 | 0.283 / 0.680 / 0.083 | 0.283 / 0.680 / 0.083 |
+| dancetrack0010 | 300 | 0.283 / 0.680 / 0.083 | 0.283 / 0.680 / 0.083 | 0.048 / 0.417 / 0.443 |
 | dancetrack0014 | 300 | 0.069 / 0.657 / 0.183 | 0.069 / 0.657 / 0.183 | 0.069 / 0.657 / 0.183 |
-| dancetrack0018 | 252 | 0.258 / 0.587 / 0.365 | 0.567 / 0.087 / 0.456 | 0.567 / 0.087 / 0.456 |
-| dancetrack0019 | 300 | 0.219 / 0.037 / 0.687 | 0.219 / 0.037 / 0.687 | 0.219 / 0.037 / 0.687 |
+| dancetrack0018 | 252 | 0.258 / 0.587 / 0.365 | 0.567 / 0.087 / 0.456 | 1.000 / 0.000 / 0.004 |
+| dancetrack0019 | 300 | 0.219 / 0.037 / 0.687 | 0.219 / 0.037 / 0.687 | 0.226 / 0.033 / 0.677 |
 | dancetrack0025 | 300 | 0.015 / 0.060 / 0.787 | 0.015 / 0.060 / 0.787 | 0.015 / 0.060 / 0.787 |
 | dancetrack0026 | 151 | 0.081 / 0.053 / 0.669 | 0.081 / 0.053 / 0.669 | 0.081 / 0.053 / 0.669 |
 | dancetrack0030 | 300 | 0.370 / 0.017 / 0.600 | 0.370 / 0.017 / 0.600 | 0.370 / 0.017 / 0.600 |
-| dancetrack0034 | 291 | 0.181 / 0.155 / 0.613 | 0.391 / 0.230 / 0.507 | 0.383 / 0.251 / 0.487 |
+| dancetrack0034 | 291 | 0.181 / 0.155 / 0.613 | 0.391 / 0.230 / 0.507 | 0.609 / 0.299 / 0.090 |
 | dancetrack0035 | 297 | 0.022 / 0.057 / 0.730 | 0.022 / 0.057 / 0.730 | 0.022 / 0.057 / 0.730 |
-| dancetrack0041 | 300 | 0.174 / 0.047 / 0.503 | 0.169 / 0.027 / 0.513 | 0.169 / 0.027 / 0.513 |
+| dancetrack0041 | 300 | 0.174 / 0.047 / 0.503 | 0.169 / 0.027 / 0.513 | 0.174 / 0.047 / 0.490 |
 | dancetrack0043 | 92 | 0.111 / 0.043 / 0.663 | 0.111 / 0.043 / 0.663 | 0.111 / 0.043 / 0.663 |
 | dancetrack0047 | 300 | 0.146 / 0.470 / 0.390 | 0.146 / 0.093 / 0.683 | 0.146 / 0.093 / 0.683 |
-| dancetrack0058 | 300 | 0.047 / 0.340 / 0.593 | 0.057 / 0.093 / 0.847 | 0.057 / 0.093 / 0.847 |
-| dancetrack0063 | 300 | 0.030 / 0.157 / 0.793 | 0.010 / 0.087 / 0.893 | 0.010 / 0.087 / 0.893 |
-| dancetrack0065 | 300 | 0.047 / 0.027 / 0.893 | 0.043 / 0.203 / 0.697 | 0.043 / 0.203 / 0.697 |
-| dancetrack0073 | 300 | 0.228 / 0.583 / 0.153 | 0.240 / 0.580 / 0.177 | 0.536 / 0.170 / 0.263 |
-| dancetrack0077 | 300 | 0.233 / 0.410 / 0.390 | 0.270 / 0.237 / 0.540 | 0.023 / 0.077 / 0.937 |
+| dancetrack0058 | 300 | 0.047 / 0.340 / 0.593 | 0.057 / 0.093 / 0.847 | 0.034 / 0.900 / 0.050 |
+| dancetrack0063 | 300 | 0.030 / 0.157 / 0.793 | 0.010 / 0.087 / 0.893 | 0.010 / 0.087 / 0.887 |
+| dancetrack0065 | 300 | 0.047 / 0.027 / 0.893 | 0.043 / 0.203 / 0.697 | 0.050 / 0.387 / 0.523 |
+| dancetrack0073 | 300 | 0.228 / 0.583 / 0.153 | 0.240 / 0.580 / 0.177 | 0.240 / 0.440 / 0.227 |
+| dancetrack0077 | 300 | 0.233 / 0.410 / 0.390 | 0.270 / 0.237 / 0.540 | 0.610 / 0.000 / 0.320 |
 | dancetrack0079 | 300 | 0.913 / 0.023 / 0.067 | 0.913 / 0.023 / 0.067 | 0.913 / 0.023 / 0.067 |
-| dancetrack0081 | 300 | 0.027 / 0.200 / 0.523 | 0.132 / 0.470 / 0.420 | 0.132 / 0.467 / 0.423 |
+| dancetrack0081 | 300 | 0.027 / 0.200 / 0.523 | 0.132 / 0.470 / 0.420 | 0.018 / 0.073 / 0.697 |
 | dancetrack0090 | 298 | 0.004 / 0.554 / 0.330 | 0.004 / 0.554 / 0.330 | 0.004 / 0.554 / 0.330 |
-| dancetrack0094 | 300 | 0.880 / 0.097 / 0.037 | 0.880 / 0.097 / 0.037 | 0.880 / 0.097 / 0.037 |
-| dancetrack0097 | 300 | 0.160 / 0.000 / 0.947 | 0.160 / 0.000 / 0.947 | 0.667 / 0.050 / 0.463 |
+| dancetrack0094 | 300 | 0.880 / 0.097 / 0.037 | 0.880 / 0.097 / 0.037 | 0.957 / 0.027 / 0.013 |
+| dancetrack0097 | 300 | 0.160 / 0.000 / 0.947 | 0.160 / 0.000 / 0.947 | 0.126 / 0.000 / 0.933 |
 
 ## Notes
 

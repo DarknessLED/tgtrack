@@ -186,6 +186,15 @@ class TargetTracker:
         self._was_out_of_frame = False
         #: Consecutive accepted matches; drives the re-acquisition hold.
         self._hold = 0
+        #: E092 -- provisional re-acquisition candidate: the box that is asking for the
+        #: identity while the target is lost, and how many consecutive frames it has
+        #: survived.  Inert at ``reacquire_confirm_frames = 1`` (the shipped path).
+        self._pending_box: np.ndarray | None = None
+        self._pending_hits: int = 0
+        #: E092b -- (frame, box) of the candidates considered while lost, used by the
+        #: gap-tolerant commit rule.  Empty on the shipped path.
+        self._pending_hist: list[tuple[int, np.ndarray]] = []
+        self._deferred_frame: bool = False
         #: Per-frame scratch used by the hard-negative bookkeeping.
         self._frame_dets: list[Detection] = []
         self._encoded_dets: list[Detection] = []
@@ -1059,9 +1068,15 @@ class TargetTracker:
         result, breakdown, chosen = self._associate(frame_bgr, dets, h, w)
 
         if result.accepted and chosen is not None:
-            self._on_match(frame_bgr, chosen, result, h, w)
-            self._check_drift(chosen)
-            self._audit_switch(frame_bgr, dets, chosen, h, w)
+            if self._provisional_reacquire_ok(chosen, prev_state):
+                self._on_match(frame_bgr, chosen, result, h, w)
+                self._check_drift(chosen)
+                self._audit_switch(frame_bgr, dets, chosen, h, w)
+            else:
+                # E092: the candidate is plausible but has not persisted yet, so the
+                # frame is a miss for identity purposes -- keep the prediction, keep
+                # counting time lost, and let the candidate keep asking.
+                self._on_miss(prev_state, result)
         elif str(result.reason).startswith(REASON_CONSENSUS_PENDING):
             # E071: the frame's winner is a challenger the vote has not
             # confirmed yet, so the incumbent keeps the identity. This is a
@@ -1091,6 +1106,12 @@ class TargetTracker:
                 "fsu": self.frames_since_update,
             }
         )
+        if self._deferred_frame:
+            # E092: make the deferral explicit for the debug CSV and the refusal counts.
+            self._last_diag["reason"] = "deferred:reacquire_pending"
+            self._last_diag["accepted"] = False
+            self._last_diag["reacquire_pending_hits"] = int(self._pending_hits)
+            self._deferred_frame = False
         if breakdown is not None:
             self._last_diag["gate_pass"] = int(np.count_nonzero(breakdown.gate))
         return self.status()
@@ -1256,7 +1277,14 @@ class TargetTracker:
                 # converted to Python scalars" deep inside select_candidate.
                 feat_arr = np.asarray(feats, np.float32)
                 dist = cosine_distance_matrix(feat_arr, self._anchor_feat).ravel()
-                over = dist > float(limit)
+                # E091: the veto threshold may be per-candidate (widened only for
+                # candidates already inside the motion gate); at the default knob it is
+                # the plain scalar and this is exactly the shipped comparison.
+                limit_eff = self._lost_geom_limit(cfg, limit, full)
+                if isinstance(limit_eff, np.ndarray):
+                    over = dist > np.asarray(limit_eff, np.float64)
+                else:
+                    over = dist > float(limit)
                 # E079: a candidate the click crop rejects is admitted iff at
                 # least k of the three references pass it.  ``admitted`` is all
                 # False while the vote is off, so ``veto`` is then exactly the
@@ -1804,6 +1832,87 @@ class TargetTracker:
         self._last_diag["audit_switch"] = 1
         self._emit("audit_switch", margin=round(float(cur_d - rival_cost), 4),
                    margin_recent=None if recent_margin is None else round(recent_margin, 4))
+    def _provisional_reacquire_ok(self, chosen: Detection, prev: TargetState) -> bool:
+        """E092 -- may this candidate take the identity *this* frame?
+
+        Returns True for ordinary tracking (the target was not lost), and for a
+        re-acquisition only once the same candidate (IoU >= ``reacquire_confirm_iou``)
+        has been offered on ``reacquire_confirm_frames`` consecutive frames.  At the
+        default of 1 the function returns True immediately and touches nothing, so the
+        shipped path is bit-identical.
+
+        Why time and not geometry: E091 measured that widening the lost-regime ceiling
+        for candidates *near* the stale prediction recovers a ceiling-bound sequence
+        (+50.3 pp) and destroys a neighbour-switch sequence (-20.0 pp), with nothing
+        spatial separating the two cases.  What does separate them is persistence -- a
+        wrong latch is typically one frame, a true re-appearance stays put.
+        """
+        n = int(getattr(self.cfg.state, "reacquire_confirm_frames", 1) or 1)
+        if n <= 1:
+            return True
+        if prev not in BLIND_STATES:
+            # Ordinary tracking: no confirmation is owed, and any pending candidate is
+            # stale by definition.
+            self._pending_box = None
+            self._pending_hits = 0
+            self._pending_hist = []
+            return True
+        try:
+            box = np.asarray(chosen.xyxy, np.float64).reshape(-1)[:4]
+        except Exception:  # pragma: no cover - defensive
+            return True
+        thr = float(getattr(self.cfg.state, "reacquire_confirm_iou", 0.3) or 0.3)
+        #: E092b -- with a window > 0 the rule tolerates gaps: the question becomes "have
+        #: N of the last M candidates agreed with each other", not "N consecutive frames".
+        #: E092's strict streak was reset by one jittered box or one alternating
+        #: distractor, which is why it cost 23-28 pp of TSR on sequences whose
+        #: re-acquisition was real.  0 keeps E092's exact rule (and the shipped path
+        #: unchanged at n = 1).
+        window = int(getattr(self.cfg.state, "reacquire_confirm_window", 0) or 0)
+        if window <= 0:
+            same = False
+            if self._pending_box is not None:
+                try:
+                    same = float(
+                        iou_matrix(self._pending_box[None], box[None])[0, 0]) >= thr
+                except Exception:  # pragma: no cover - defensive
+                    same = False
+            if same:
+                self._pending_hits += 1
+            else:
+                self._pending_box = box
+                self._pending_hits = 1
+            if self._pending_hits >= n:
+                self._pending_box = None
+                self._pending_hits = 0
+                return True
+            self._deferred_frame = True
+            return False
+
+        frame = int(getattr(self, "frame_idx", 0) or 0)
+        hist = [(f, b) for (f, b) in self._pending_hist if frame - f < window]
+        hist.append((frame, box))
+        best = 0
+        for _f_i, b_i in hist:
+            count = 0
+            for _f_j, b_j in hist:
+                try:
+                    if float(iou_matrix(b_i[None], b_j[None])[0, 0]) >= thr:
+                        count += 1
+                except Exception:  # pragma: no cover - defensive
+                    continue
+            best = max(best, count)
+        self._pending_box = box
+        self._pending_hits = best
+        if best >= n:
+            self._pending_hist = []
+            self._pending_box = None
+            self._pending_hits = 0
+            return True
+        self._pending_hist = hist
+        self._deferred_frame = True
+        return False
+
     def _on_match(
         self,
         frame_bgr: np.ndarray | None,
@@ -1979,6 +2088,50 @@ class TargetTracker:
         if scale <= 0.0:
             return None
         return float(limit) * scale
+
+    def _lost_geom_limit(self, cfg: Any, limit: float | None, b: Any) -> Any:
+        """E091: widen the lost-regime ceiling further, but only near the prediction.
+
+        Returns ``limit`` (a scalar) untouched unless ``cost.anchor_band_lost_geom_scale
+        > 1`` and the target is lost; in that case returns a per-candidate array whose
+        entries are ``limit * geom_scale`` for candidates with ``norm_centre <= tau``
+        and ``limit`` for the rest.  ``norm_centre = |candidate centre - prediction| /
+        gate_radius``, so ``tau = 1.0`` means "inside the motion gate" -- exactly the
+        candidates the shipped veto refuses on appearance grounds although the motion
+        model considers them plausible.
+
+        Bit-identical to the shipped path when the knob is at its default 1.0 (the
+        caller then compares against the scalar and nothing else changes).
+        """
+        if limit is None:
+            return None
+        cost_cfg = getattr(cfg, "cost", cfg)
+        try:
+            gs = float(getattr(cost_cfg, "anchor_band_lost_geom_scale", 1.0))
+        except (TypeError, ValueError):
+            return limit
+        if not (gs > 1.0):
+            return limit
+        state_cfg = getattr(getattr(self, "cfg", None), "state", None)
+        after = int(getattr(state_cfg, "lost_short_after", 12))
+        if int(getattr(self, "frames_since_update", 0)) <= after:
+            return limit
+        nc = getattr(b, "norm_centre", None)
+        if nc is None:
+            return limit
+        nc_arr = np.asarray(nc, np.float64).ravel()
+        if nc_arr.size == 0:
+            return limit
+        try:
+            tau = float(getattr(cost_cfg, "anchor_band_lost_geom_tau", 1.0))
+        except (TypeError, ValueError):
+            tau = 1.0
+        near = np.isfinite(nc_arr) & (nc_arr <= tau)
+        if not bool(near.any()):
+            return limit
+        self._last_diag["anchor_band_lost_geom_scale"] = gs
+        self._last_diag["anchor_band_lost_geom_n"] = int(near.sum())
+        return np.where(near, float(limit) * gs, float(limit))
 
     def _anchor_limit(self, cfg: Any) -> float | None:
         """Distance ceiling against the frozen click crop (E027 fixed, E029 adaptive).

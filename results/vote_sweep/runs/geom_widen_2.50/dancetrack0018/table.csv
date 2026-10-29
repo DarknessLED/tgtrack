@@ -1,0 +1,2 @@
+group,variant,mask,seqs,frames,visible,TSR,prec,loss,loss_lock,recq_rate,recq_lat,recq_p90,recq_max,FAR,FAR_lock,FA_ev,FA_ev_lock,id_cons,switches,frag,longest,coast_ok,worst_id,detect,ms/frame
+vote_sweep,geom_widen_2.50,none,1,252,252,0.5675,0.5342,0.4325,0.0675,,,,,0.08730,0.10219,9,9,0.8650,16,6,71,,,,672.24

@@ -1,0 +1,12 @@
+[
+  {
+    "seq_name": "dancetrack0077",
+    "variant": "reacq_confirm_2",
+    "overrides": {
+      "cost.anchor_vote": "off",
+      "state.reacquire_confirm_frames": 2
+    },
+    "mask": "none",
+    "target_id": 0
+  }
+]

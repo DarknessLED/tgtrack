@@ -3833,3 +3833,252 @@ tracks the config default. `run_target.py` gains the `shipped_e089` variant (no 
 **Why +2.91 pp and not more.** The ceiling is only one refusal reason: E088 measured 41 %
 `all_gated:anchor_ceiling`, and the remainder is `ambiguous: margin X < 0.060`, which no band scale can
 move. The next lever is the reporting/coasting half of the loss, not the ceiling.
+
+## E090 -- relax the ambiguity margin while the target is lost (KILL, and a sharp lesson about nonlinear levers)
+
+**Question.** E089 shipped a 1.25x identity-ceiling widening while the target is lost. E088 had shown that
+most refusals at the *ceiling* are distractors, but E090 asked the other question: does the shipped
+`distractor_margin_lost = 0.06` refusal ("ambiguous: margin X < 0.06") discard frames the tracker could
+have taken? The margin gate is applied only while `lost` is true (`association.select_candidate`), which is
+exactly the regime E089 improved.
+
+**Preregistration** (`docs/E090_PLAN.md`): knob `cost.distractor_margin_lost` in {0.03, 0.01}, both with
+`cost.anchor_vote = "off"` on top of the shipped epoch (`anchor_band_lost_scale = 1.25`); reference
+`ceil_lost_1.25`; 22 held-out sequences, 6181 report frames. Ship rule = the campaign rule (paired
+per-sequence dTSR bootstrap CI excluding 0) with P2 (pooled FAR rise <= +2 pp) and P3 (idcons drop <= 0.05
+where the reference was >= 0.90) as hard constraints and no sequence worse than 2.0 pp, plus P4 = does the
+gain land on the E088 ambiguity-heavy set (0034 / 0073 / 0077 / 0097).
+
+Wiring check first (`_x/e090_wire.py`, jobs on `results/e090_wire/`): on `dancetrack0073` the knob moved 79
+of 300 frame decisions (TSR 0.2400 -> 0.5160 at 0.01), on `dancetrack0097` it was bit-identical. So the
+knob is plumbed; the effect travels through a *trajectory fork* (state diverges at frame 105) rather than
+through the handful of `ambiguous:` refusal lines, which is the first hint that this lever is chaotic.
+
+**Result (`margin_lost_0.03`, 22 sequences).**
+
+| arm | TSR | FAR | idcons | dTSR [CI] | dFAR |
+|---|---|---|---|---|---|
+| `ceil_lost_1.25` (shipped) | 0.2395 | 0.2089 | 0.4790 | - | - |
+| `margin_lost_0.03` | 0.2267 | 0.2136 | 0.4698 | **-1.28 pp [-4.38, +1.14]** | +0.47 pp |
+
+Movers: `0030` +8.7 pp (FAR 0.017 -> 0.383, idcons 0.957 -> 0.531), `0073` +5.6, `0065` +3.7, `0047` +3.1,
+`0026` -4.0, `0034` -7.7, `0081` -11.4, `0018` **-29.0** (the E089 gainer, 0.5675 -> 0.2778). Twelve
+sequences bit-identical.
+
+**Verdict KILL**, on three independent clauses: the paired CI does not exclude 0 (it is centred below 0),
+P3 is violated (`0030` idcons -0.43 on a 0.957 sequence) and the "no sequence worse than 2.0 pp" clause is
+violated by three sequences. P4 is also refuted: the only gainer inside the E088 ambiguity set is `0073`.
+
+**Why the more aggressive arm was not spent.** The family's fate is decided by hard constraints that
+`0.03` already breaks on four sequences, and a more permissive margin can only break them harder. Killing
+the `0.01` arm after `0.03` finished saved ~1.5 h of GPU that the next experiment needs. Recorded here so
+the ledger shows that the arm was *deliberately not run*, not silently dropped.
+
+**Lesson (the one worth more than the arm).** The wiring check's +27.6 pp on `dancetrack0073` at 0.01
+became +5.6 pp at 0.03 and -1.3 pp pooled: a lever whose per-sequence response is non-monotone in its own
+knob is not a lever but a bifurcation. Every identity decision here is a *sequential* decision, so once a
+frame is accepted differently the entire downstream trajectory forks; pooled averages of a forked trajectory
+are averages over different state sequences, not over the same state sequence with one cell changed. The
+diagnostic that would have caught this before spending GPU: measure the knob's effect on a *single* sequence
+at two values and check monotonicity in the quantity the knob controls (here: admitted-candidate count),
+not in the outcome.
+
+## E091 -- SCREEN KILL: making the lost-regime widening geometry-conditional
+
+**Preregistration**: `docs/NEXT_ROUND.md` round 34 (written before any measurement).
+
+**Motivation.** E089/E090 shared one signature: every lever that widens the lost-regime identity
+decision buys TSR on ceiling-dominated sequences and pays it back as false acquisitions on a few others
+(0.0 arm: 0034 +7.6, 0065 +17.7, 0081 +27.0 pp FAR). The plausible reading was that while `searching`
+the motion gate is off (`apply_gate = not searching`), so a widened appearance ceiling admits boxes far
+from any plausible position. E091 therefore makes the widening per-candidate: `limit * geom_scale` only
+where `norm_centre <= geom_tau` (default tau 1.0 = the motion gate), shipped `limit` elsewhere.
+
+**Screen** (six sequences chosen for role, 300 frames, subsample 2, shipped detector; `_x/e091_screen.py`,
+wall 2923.3 s). Reference is the shipped default (`ceil_lost_1.25` == `shipped_e089`):
+
+| seq | shipped TSR | geom 1.50 | geom 2.50 | shipped FAR | geom 1.50 FAR |
+|---|---|---|---|---|---|
+| 0097 | 0.1599 | **0.6633** | 0.6633 | 0.0000 | 0.0400 |
+| 0073 | 0.2400 | 0.2400 | 0.2400 | 0.5800 | 0.5800 |
+| 0077 | 0.2700 | **0.0700** | 0.0533 | 0.2367 | 0.1000 |
+| 0034 | 0.3911 | 0.3911 | 0.3911 | 0.2302 | 0.2302 |
+| 0058 | 0.0574 | 0.0574 | 0.0574 | 0.0933 | 0.0933 |
+| 0018 | 0.5675 | 0.5675 | 0.5675 | 0.0873 | 0.0873 |
+
+Mean dTSR +5.06 pp, **worst -20.00 pp**, pooled dFAR -1.66 pp -> **KILL by clause (b) of the screen bar**
+(no sequence worse than -3.0 pp). Two more observations: 1.50 and 2.50 are identical on every sequence
+(above 1.5 the ceiling stops being the binding constraint inside the gate), and the gate is a **no-op on
+four of the six sequences** -- including exactly the two FAR casualties it was built to protect.
+
+**Score the predictions.** P1 (FAR casualties vanish) **REFUTED**: 0034 and 0058 are unchanged, so the
+E089 FAR rises do NOT come from far-candidate admissions; they come from *near-but-wrong* candidates,
+which a geometry gate by construction cannot remove. P2 (0097 gains) **CONFIRMED**, and strongly
+(+50.3 pp; 0.6633 is the same value the ceiling-off arm reaches, i.e. the geometry gate is sufficient to
+recover the entire ceiling-bound sequence). P3 (0077 loses <= 2 pp) **REFUTED** in the worst way: it
+loses 20.0 pp, and that loss does not exist in the shipped 1.25 arm -- the gate *creates* it by
+preferring near candidates while lost, i.e. the switched neighbour is near. P4 (0018 gains < +2 pp)
+**confirmed** (0.00 pp), which rules out wiring error.
+
+**Lessons.**
+1. *The dangerous candidate while lost is not the distant one; it is the near one.* Spatial gating is the
+   wrong axis for a re-acquisition decision -- distance to a stale prediction is not evidence of identity,
+   and the closer a stranger is to the prediction the less geometry protects against it.
+2. *A mechanism can be right on one sequence and actively harmful on another for the same reason.* 0097
+   (+50.3) and 0077 (-20.0) both respond to "widen for near candidates"; on 0097 the near candidate is the
+   target, on 0077 it is a neighbour. Nothing in the geometry distinguishes them, so no threshold of this
+   family can exist.
+3. A screen killing an arm on 6 sequences for 2923 s is cheap relative to the 22-sequence protocol; the
+   preregistered bar made the verdict mechanical instead of a judgement call.
+
+**Status**: E091 not shipped (`anchor_band_lost_geom_scale` stays 1.0). E089's `anchor_band_lost_scale
+= 1.25` remains the shipped default. The FAR head-room (0.2089 vs the 0.20 barrier) is still open.
+
+### E092 -- hold a lost-regime re-acquisition until the same candidate persists -> KILL
+
+Pre-registration: `docs/NEXT_ROUND.md` round 35. Mechanism: `state.reacquire_confirm_frames` (default 1)
++ `state.reacquire_confirm_iou` (0.3); while the previous state is blind, an accepted candidate becomes a
+*provisional* candidate, the frame is booked as a miss, and only the same candidate (IoU >= 0.3 with the
+previous provisional box) offered on N consecutive frames commits.
+
+Screen: five sequences chosen for role, `results/vote_sweep/runs/reacq_confirm_{2,3}/`, wall 2499.8 s,
+reference = shipped (`ceil_lost_1.25`).
+
+| seq | ship TSR | c2 TSR | c3 TSR | ship FAR | c2 FAR | c3 FAR | dTSR_2 | dTSR_3 |
+|---|---|---|---|---|---|---|---|---|
+| 0034 | 0.3911 | 0.1573 | 0.2460 | 0.2302 | 0.0997 | 0.0653 | -23.39 | -14.52 |
+| 0065 | 0.0433 | 0.0267 | 0.0567 | 0.2033 | 0.0467 | 0.1700 | -1.67 | +1.33 |
+| 0077 | 0.2700 | 0.3233 | 0.0533 | 0.2367 | 0.1633 | 0.0133 | +5.33 | -21.67 |
+| 0097 | 0.1599 | 0.1599 | 0.1599 | 0.0000 | 0.0000 | 0.0000 | 0.00 | 0.00 |
+| 0018 | 0.5675 | 0.2857 | 0.4960 | 0.0873 | 0.0476 | 0.3135 | -28.17 | -7.14 |
+| pooled | | | | | | | **-8.87** | **-8.40** |
+| pooled dFAR | | | | | | | **-8.11** | **-4.71** |
+| pooled dID | | | | | | | **+6.03** | **+6.30** |
+
+**Screen bar: KILL.** (a) pooled FAR falls >= 1.0 pp: MET (-8.11 / -4.71); (b) no sequence loses more than
+3.0 pp: FAILED (0034 -23.39, 0018 -28.17; c3 also 0077 -21.67); (c) pooled TSR >= -2.0 pp: FAILED (-8.87 /
+-8.40).
+
+Predictions: P1 (pooled FAR falls, most on 0065) MET -- 0.2033 -> 0.0467, the single best FAR number on
+that sequence in the campaign. P2 (0097 loses <= 2 pp) MET, bit-identical. P3 (0018 within 1 pp) REFUTED:
+-28.17 pp. P4 (a TSR loss must appear somewhere or the counter is not gating) MET.
+
+**What the numbers say.** This arm produced the largest FAR reduction ever measured on this protocol
+(pooled -8.11 pp; 0034 0.2302 -> 0.0997, 0065 0.2033 -> 0.0467, 0018 0.0873 -> 0.0476) and, in the same
+runs, gave the TSR back (-8.87 pp). The trade is once more symmetric: E089 bought +2.91 pp of TSR for
+-3.83 pp of FAR, E092 buys -8.11 pp of FAR for -8.87 pp of TSR. The identity line is a *Pareto surface*,
+not a point to be improved -- every mechanism that changes which candidates are admitted moves the
+operating point along it.
+
+**Mechanism diagnosis (why the TSR loss is so large).** The commit rule is a strict consecutive-frame
+streak with IoU >= 0.3 against the *previous provisional box*. Detection jitter and alternating
+target/distractor boxes reset the counter, so a legitimate re-acquisition of a fast-moving or partially
+occluded target can be deferred indefinitely -- the cost lands exactly where the re-acquisition was real
+(0034, 0018). A temporal qualifier needs a commit rule that tolerates gaps (e.g. N hits in M frames, or
+IoU against the predicted box rather than the previous provisional box); the strict streak is too brittle
+to be a usable discriminator. Recorded as the next candidate refinement, not as a measured result.
+
+**Files.** `src/tgtrack/config.py` (`reacquire_confirm_frames`, `reacquire_confirm_iou`),
+`src/tgtrack/target_tracker.py` (`_provisional_reacquire_ok`, hook in `step()`),
+`scripts/run_target.py` (group `reacquire`), `scripts/vote_sweep.py` (arms),
+`tests/test_reacquire_confirm.py` (6 tests), `_x/e092_screen.py`, `logs/e092_screen.txt`.
+
+### E092b -- gap tolerance does not repair the temporal qualifier (KILL)
+
+*Preregistration*: docs/NEXT_ROUND.md round 37. *Runner*: `_x/e092b_screen.py`, log
+`logs/e092b_screen.txt`, wall 2536.2 s, five sequences, reference = shipped (`ceil_lost_1.25`).
+Control `reacq_window_2of2` reproduced `reacq_confirm_2` exactly on `dancetrack0018`
+(TSR 0.2857 / FAR 0.0476).
+
+
+| seq | ship TSR | w2of4 | w3of6 | ship FAR | w2of4 | w3of6 |
+|---|---|---|---|---|---|---|
+| 0034 | 0.3911 | 0.1653 | 0.1169 | 0.2302 | 0.0997 | 0.0103 |
+| 0065 | 0.0433 | 0.0667 | 0.0567 | 0.2033 | 0.0367 | 0.1700 |
+| 0077 | 0.2700 | 0.3233 | 0.0533 | 0.2367 | 0.1633 | 0.0133 |
+| 0097 | 0.1599 | 0.1599 | 0.1599 | 0.0000 | 0.0000 | 0.0000 |
+| 0018 | 0.5675 | 0.2698 | 0.4960 | 0.0873 | 0.0238 | 0.3135 |
+| pooled | - | dTSR -8.16 | dTSR -11.00 | - | dFAR -8.73 | dFAR -5.82 |
+
+
+**Verdict KILL.** Both window arms fall the same three clauses E092 fell: pooled TSR is down
+(-8.16 / -11.00 pp), individual sequences lose far more than 3 pp (0034 -22.58, 0018 -29.76,
+0077 -21.67 for 3of6), and only the FAR clause is met (-8.73 / -5.82 pp, the best FAR numbers
+this protocol has produced).
+
+**All four preregistered predictions are refuted or empty.** P1 expected 0034 and 0018 to recover
+their TSR: they fell *further* (0034 0.3911 -> 0.1653, versus E092's 0.1573; 0018 0.5675 -> 0.2698,
+versus E092's 0.2857). P2 (0065 keeps its FAR win) holds weakly: 0.2033 -> 0.0367 at 2of4, better
+than E092's 0.0467. P3 (0097 bit-identical) holds. P4 (control equality) holds.
+
+**The lesson is the important part.** E092's failure was attributed to the strictness of the
+consecutive-frame streak, and the repair was designed, implemented, unit-tested and pre-registered
+as a direct consequence. It made things *worse* on exactly the two sequences it was built to
+rescue. So the strictness was not the defect: any rule that delays the identity decision while the
+target is lost buys false-acquisition reduction and pays for it in target loss at close to 1:1.
+Combined with E089 (spatial) and E082 (pooled), the identity layer is now measured as a **Pareto
+surface with a near-unit exchange rate** -- TSR and FAR trade along it, and every arm that moves
+one moves the other. That is a structural statement about the *objective*, not about a knob: the
+two metrics are computing the same decisions from opposite sides.
+
+**Architectural reading.** The tracker has one candidate set and one decision per frame, so a missed
+report and a false report are two sides of the same commit. The only way out of a 1:1 exchange rate
+is a second, independent decision channel -- e.g. a per-frame *verification* pass that can refute a
+committed box using evidence the identity layer does not have (temporal consistency of the follow
+trajectory, motion of the box relative to the background, or a second detector at a different
+scale). Recorded as the E095 direction; not started.
+
+### E093 -- the two Pareto points do not stack (KILL, and the identity budget is spent)
+
+*Preregistration*: docs/NEXT_ROUND.md round 39. *Arm*: `stack_contrast_1.25` = E082's contrast vote
+(`anchor_vote="contrast"`, `anchor_vote_contrast=0.10`) on top of the shipped E089 ceiling
+(`anchor_band_lost_scale=1.25`). *Protocol*: 22 held-out sequences, 6181 frame-decisions per point,
+wall 5934.4 s. Reference no-op verified: `vote_off`/`ceil_lost_1.25` reproduce the E089 records
+22/22 exactly (max |dTSR| = 0.0).
+
+| arm | TSR [CI] | FAR [CI] | idcons | blind&present |
+|---|---|---|---|---|
+| `vote_off` (pre-E089) | 0.2104 [0.1157, 0.3254] | 0.2472 [0.1489, 0.3487] | 0.4358 | 0.4913 |
+| **shipped** (`ceil_lost_1.25`) | **0.2395 [0.1385, 0.3586]** | **0.2089 [0.1170, 0.3078]** | 0.4790 | 0.5157 |
+| **`stack_contrast_1.25`** | **0.2688 [0.1380, 0.4129]** | **0.2037 [0.1034, 0.3222]** | 0.4805 | 0.4495 |
+| stack vs shipped | **+2.93 pp [-2.24, +8.94]** | **-0.52 pp** | +0.15 pp | -6.62 pp |
+
+**Verdict KILL.** The stack is the best pooled point the campaign has ever measured on both axes
+(0.2688 / 0.2037 versus the shipped 0.2395 / 0.2089), and it still fails the pre-committed rule: the
+paired dTSR CI includes 0, and P4 (no sequence worse than -2 pp) fails on four sequences.
+
+Per-sequence: 4 up / 4 down / 11 exact. Gains `0018` +43.25 (TSR 0.5675 -> **1.0000**, FAR 0.0873 ->
+0.0000, idcons 0.8650 -> 1.0000), `0077` +34.00 (0.2700 -> 0.6100, FAR 0.2367 -> 0.0000), `0034`
++21.77, `0094` +7.67. Losses `0010` -23.53 (0.2831 -> 0.0478, FAR 0.6800 -> 0.4167), `0081` -11.42,
+`0097` -3.40, `0058` -2.36. The blind&present share gets *worse* than shipped (-6.62 pp), which is the
+E079 diagnostic for "engaged on the wrong thing".
+
+**Preregistered predictions.** P1 (pooled dTSR in [+2, +8]) MET at +2.93. P2 (FAR no worse) MET pooled
+(-0.52 pp) but with two hard per-sequence violations the rule does not see: `0058` FAR 0.0933 -> 0.9000
+and `0065` 0.2033 -> 0.3867. **P3 (substitute vs additive) resolves to SUBSTITUTE, and negatively so:**
+against the same `vote_off` reference, E082's contrast arm alone scored +6.83 pp while the stack scores
+**+5.83 pp** -- one full point *lower*. Adding E089's widening to the contrast vote did not add; it
+slightly interfered. P4 REFUTED.
+
+**Why this closes the identity layer.** Three independently motivated levers now measure as points on
+the same Pareto surface with a near-unit exchange rate:
+
+| lever | dTSR | dFAR |
+|---|---|---|
+| E082 contrast vote (vs `vote_off`) | +6.83 | -6.42 |
+| E089 widened lost ceiling (shipped, vs `vote_off`) | +2.91 | -3.83 |
+| E092/E092b temporal hold (vs shipped) | -8.16 / -11.00 | -8.73 / -5.82 |
+| E093 stack (vs shipped) | +2.93 | -0.52 |
+
+Every row trades one metric for the other at roughly 1:1, and combining the two recall-side levers
+subtracts rather than adds. The pre-committed reading of round 39 P3 is therefore in force: **the
+identity budget is spent.** Another identity knob cannot reach criterion 2 (TSR 0.55 at FAR < 0.20);
+the gap is 0.28 of TSR, not the 0.03-0.07 the frontier moves. The frontier itself is worth reporting --
+0.2688 / 0.2037 is the Pareto point to quote for the identity layer -- but it is not shippable under
+the campaign's own rule, and shipping it without the rule would contradict docs/METHOD.md.
+
+**Architectural conclusion for the next phase.** The tracker commits from one candidate set with one
+decision per frame, so a missed report and a false report are the same event; that is *why* the
+exchange rate is 1. The way out is not a knob but a second, independent decision channel (E095): a
+per-frame verification/refutation pass using evidence the identity layer does not have. That, plus
+detector-side work for criterion 1, is where the remaining headroom is.

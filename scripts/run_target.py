@@ -153,6 +153,8 @@ GROUPS = (
     "vote",
     "mh",
     "ceiling_lost",
+    "ceiling_geom",
+    "reacquire",
 )
 
 DEFAULT_MARGINS = (0.0, 0.06, 0.12)
@@ -932,6 +934,82 @@ def build_variants(
                     g,
                     {"cost.anchor_vote": "off", "cost.anchor_band_lost_scale": 1.0},
                     "control: scale 1.0, must be bit-identical to vote_off",
+                )
+            )
+        elif g == "ceiling_geom":
+            # E091: the E089/E090 lesson is that widening the lost-regime ceiling for
+            # EVERY candidate buys TSR on ceiling-dominated sequences and pays it back
+            # as false acquisitions elsewhere (the 0.0 arm cost 0034 +7.6, 0065 +17.7,
+            # 0081 +27.0 pp of FAR).  While the tracker is `searching` the motion gate is
+            # not applied, so a widened appearance ceiling can admit a box the motion
+            # model has already ruled out.  These arms widen FURTHER but only for
+            # candidates already inside the motion gate (`norm_centre <= 1.0`).
+            for _gs in (1.50, 2.50):
+                out.append(
+                    Variant(
+                        "geom_widen_%.2f" % _gs,
+                        g,
+                        {
+                            "cost.anchor_vote": "off",
+                            "cost.anchor_band_lost_geom_scale": float(_gs),
+                        },
+                        "band x%.2f while lost, only for candidates inside the motion gate" % _gs,
+                    )
+                )
+            out.append(
+                Variant(
+                    "geom_widen_1.00",
+                    g,
+                    {"cost.anchor_vote": "off", "cost.anchor_band_lost_geom_scale": 1.0},
+                    "control: geom scale 1.0, must be bit-identical to the shipped default",
+                )
+            )
+        elif g == "reacquire":
+            # E092: the E091 lesson -- while the target is lost the dangerous candidate
+            # is the NEAR wrong one, and no spatial threshold separates it from the near
+            # right one.  Time does: require the same candidate (IoU >= 0.3) to be offered
+            # on N consecutive frames before it may take the identity.
+            for _n in (2, 3):
+                out.append(
+                    Variant(
+                        "reacq_confirm_%d" % _n,
+                        g,
+                        {"cost.anchor_vote": "off",
+                         "state.reacquire_confirm_frames": int(_n)},
+                        "re-acquisition needs %d consecutive frames of the same candidate" % _n,
+                    )
+                )
+            out.append(
+                Variant(
+                    "reacq_confirm_1",
+                    g,
+                    {"cost.anchor_vote": "off", "state.reacquire_confirm_frames": 1},
+                    "control: confirm frames 1, must be bit-identical to the shipped default",
+                )
+            )
+            # E092b: E092's strict streak is reset by one jittered box or one alternating
+            # distractor, which is why it cost 23-28 pp of TSR where the re-acquisition was
+            # real.  These arms ask "have N of the last M candidates agreed" instead.
+            for _n, _m in ((2, 4), (3, 6)):
+                out.append(
+                    Variant(
+                        "reacq_window_%dof%d" % (_n, _m),
+                        g,
+                        {"cost.anchor_vote": "off",
+                         "state.reacquire_confirm_frames": int(_n),
+                         "state.reacquire_confirm_window": int(_m)},
+                        "%d agreeing candidates within %d frames confirms a re-acquisition"
+                        % (_n, _m),
+                    )
+                )
+            out.append(
+                Variant(
+                    "reacq_window_2of2",
+                    g,
+                    {"cost.anchor_vote": "off",
+                     "state.reacquire_confirm_frames": 2,
+                     "state.reacquire_confirm_window": 0},
+                    "control: window 0 == E092's strict streak (must equal reacq_confirm_2)",
                 )
             )
         elif g == "mh":
