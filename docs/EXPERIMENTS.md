@@ -4261,3 +4261,36 @@ value` (5 sequences x 2 variants wasted, ~35 min GPU). Moved after stage 2: `ok=
 variants TSR 0.3250 on the 40-frame smoke, so the diagnostic is provably inert on the metric path.
 Lesson: a diagnostic that reads a variable produced later in the same function must be inserted at the
 producer, not at the nearest semantically-similar line.
+
+## E099 -- putting the selector inside the tracker (round 43): KILL by clause (b)
+
+Screen on the five E097 informative sequences against the shipped `ceil_lost_1.25` records
+(`_x/e099_screen.py`, wall 745.1 s, 300 frames, subsample 2, shipped detector):
+
+| seq | shipped TSR | pool TSR | dTSR | shipped FAR | pool FAR | dFAR | dID |
+|---|---|---|---|---|---|---|---|
+| 0010 | 0.2831 | 0.0441 | **-23.90** | 0.6800 | 0.6667 | -1.33 | -23.31 |
+| 0073 | 0.2400 | 0.2240 | -1.60 | 0.5800 | 0.3833 | **-19.67** | +6.71 |
+| 0077 | 0.2700 | 0.3333 | **+6.33** | 0.2367 | 0.3633 | +12.67 | -5.44 |
+| 0081 | 0.1324 | 0.0228 | **-10.96** | 0.4700 | 0.3900 | -8.00 | -4.32 |
+| 0097 | 0.1599 | 0.3912 | **+23.13** | 0.0000 | 0.1000 | +10.00 | -20.69 |
+
+Pooled: **dTSR -1.40 pp, dFAR -1.27 pp, dID -9.41 pp, worst -23.90 pp -> KILL on clause (b)**
+(no sequence worse than -3.0 pp).
+
+Interpretation, and the reason this is the last appearance-anchored selector experiment:
+
+- The selector *does* work exactly where E095 said it would: `0097` +23.13 pp (the same +23 pp that
+  E095's 3-frame window produced offline) and `0077` +6.33 pp.  The mechanism is not inert.
+- It is destroyed by the sequences where the shipped path is already close to its ceiling: `0010`
+  (shipped 0.2831 is the E089-widened value) falls to 0.0441, and `0081` falls to 0.0228.  On those
+  sequences re-attribution *replaces a correct identity with a cheaper-looking one*, because the field
+  term prefers motion-cheap candidates regardless of who they are.
+- So the intervention is a **bifurcation, not a monotone improvement**: over five sequences the
+  effect ranges from -23.9 to +23.1 pp.  This is the third independent instance of the same pattern
+  (E090's margin knob: -29.0 to +8.7; E098's dose: slope sign flips per sequence), and it is the
+  strongest evidence yet that the identity layer's scores are **sequence-adapted quantities**: any
+  fixed field/weight/threshold computed across sequences moves sequences in opposite directions.
+- Consequence: the family "choose among the pre-veto pool by an appearance-anchored score" is closed.
+  E100 goes after the *scale problem itself* (prequential per-sequence normalisation) offline on the
+  E097 dumps before any GPU time is spent.

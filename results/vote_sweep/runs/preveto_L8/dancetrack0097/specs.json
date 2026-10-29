@@ -1,0 +1,12 @@
+[
+  {
+    "seq_name": "dancetrack0097",
+    "variant": "preveto_L8",
+    "overrides": {
+      "cost.anchor_vote": "off",
+      "state.preveto_window": 8
+    },
+    "mask": "none",
+    "target_id": 3
+  }
+]

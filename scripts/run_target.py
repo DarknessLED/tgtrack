@@ -154,6 +154,7 @@ GROUPS = (
     "mh",
     "ceiling_lost",
     "refute",
+    "preveto",
     "ceiling_geom",
     "reacquire",
 )
@@ -1038,6 +1039,28 @@ def build_variants(
                     g,
                     {"cost.anchor_vote": "off", "state.decision_lag": 0},
                     "control: refutation off, must be bit-identical to the shipped default",
+                )
+            )
+        elif g == "preveto":
+            # E099 (docs/E099_PLAN.md): re-attribute over the PRE-veto candidate pool
+            # with a bounded window DP.  E097 measured the headroom (pool recall
+            # 65.84 % vs shipped 22.02 %, +43.82 pp) and an offline copy of this
+            # selector captured 44 % of it.  ``preveto_L0`` is the mandatory control.
+            for _win in (8, 4):
+                out.append(
+                    Variant(
+                        f"preveto_L{_win}",
+                        g,
+                        {"cost.anchor_vote": "off", "state.preveto_window": int(_win)},
+                        f"re-attribute over the pre-veto pool using a {_win}-frame window",
+                    )
+                )
+            out.append(
+                Variant(
+                    "preveto_L0",
+                    g,
+                    {"cost.anchor_vote": "off", "state.preveto_window": 0},
+                    "control: pre-veto re-attribution off, must be bit-identical to the shipped default",
                 )
             )
         elif g == "mh":

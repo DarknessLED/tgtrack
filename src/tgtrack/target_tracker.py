@@ -66,6 +66,19 @@ from .motion import MotionModel
 from .parts import crop_quality, estimate_partial_state, part_boxes, visible_ratio
 from .types import PART_KEYS, Detection, TargetEvent, TargetStatus, clip_xyxy, cosine_distance_matrix, iou_matrix
 
+
+def _iou1(a: Any, b: Any) -> float:
+    """Scalar IoU of two ``xyxy`` boxes -- E099's "different person" test."""
+    ax1, ay1, ax2, ay2 = (float(v) for v in np.asarray(a, float).ravel()[:4])
+    bx1, by1, bx2, by2 = (float(v) for v in np.asarray(b, float).ravel()[:4])
+    ix = min(ax2, bx2) - max(ax1, bx1)
+    iy = min(ay2, by2) - max(ay1, by1)
+    if ix <= 0.0 or iy <= 0.0:
+        return 0.0
+    inter = ix * iy
+    area = max((ax2 - ax1) * (ay2 - ay1), 0.0) + max((bx2 - bx1) * (by2 - by1), 0.0)
+    return float(inter / max(area - inter, 1e-9))
+
 #: A candidate whose appearance distance to the target is below this is
 #: "confusable" and gets memorized as a hard negative after a successful match.
 #: Kept deliberately tight 鈥?a loose threshold poisons the negative bank with
@@ -202,6 +215,16 @@ class TargetTracker:
         #: E097 -- per-candidate appearance cost, logged beside the boxes so an
         #: offline selector can weigh look against motion.
         self._refute_app_by_frame: dict[int, list[float]] = {}
+        #: E099 -- pre-veto re-attribution.  ``_preveto_on`` is false unless
+        #: ``state.preveto_window > 0``, so the shipped path stores nothing.
+        self._preveto_on: bool = int(getattr(self.cfg.state, "preveto_window", 0) or 0) > 0
+        #: frame -> {"dets", "boxes", "app", "shipped"}: the pre-veto pool retained
+        #: for the DP, pruned to ``preveto_window`` frames.
+        self._preveto_hist: dict[int, dict[str, Any]] = {}
+        #: (dets, appearance costs) of the frame currently being associated; paired
+        #: with the shipped choice in ``step()`` once the decision is known.
+        self._preveto_pending: tuple[list[Detection], np.ndarray] | None = None
+        self._preveto_switches: int = 0
         self._deferred_frame: bool = False
         #: Per-frame scratch used by the hard-negative bookkeeping.
         self._frame_dets: list[Detection] = []
@@ -1087,6 +1110,9 @@ class TargetTracker:
         self._vote_sample()
 
         result, breakdown, chosen = self._associate(frame_bgr, dets, h, w)
+        if self._preveto_on:
+            # E099: retain the pre-veto pool with the shipped choice as its prior.
+            self._preveto_record(chosen)
 
         if result.accepted and chosen is not None:
             if self._provisional_reacquire_ok(chosen, prev_state):
@@ -1107,6 +1133,14 @@ class TargetTracker:
             self._on_consensus_pending()
         else:
             self._on_miss(prev_state, result)
+            # E099: the shipped tracker just refused every candidate while coasting.
+            # That is exactly the regime E097 measured 65.84 % pool recall in, so let
+            # the bounded window over the pre-veto pool speak -- but only for a
+            # different person, never for a near variant of the committed box.
+            if self._preveto_on and fsu_before >= int(
+                getattr(self.cfg.state, "lost_short_after", 12) or 12
+            ):
+                self._preveto_try_reattribute(frame_bgr, result, h, w)
         # ---- out-of-frame bookkeeping (independent of detection) --------
         self._update_out_of_frame(w, h)
         if self._box is not None and h and w:
@@ -1248,6 +1282,13 @@ class TargetTracker:
             self._refute_app_by_frame[int(self.frame_idx)] = [
                 float(v) for v in np.asarray(full.appearance, np.float64).ravel()
             ]
+        # E099: hand the pre-veto pool to ``step()``, which is where the shipped
+        # choice becomes known (the DP needs it as its switching prior).
+        if self._preveto_on:
+            self._preveto_pending = (
+                list(sub),
+                np.asarray(full.appearance, np.float64).ravel().copy(),
+            )
         # E059: motion-signature evidence, applied as a soft cost and ONLY while
         # searching.  During normal tracking the motion model already owns this
         # information; the point is to give the search path a channel that does not
@@ -1945,6 +1986,115 @@ class TargetTracker:
         self._pending_hist = hist
         self._deferred_frame = True
         return False
+
+    # ------------------------------------------------------------------ #
+    # E099 -- pre-veto re-attribution
+    # ------------------------------------------------------------------ #
+    def _preveto_record(self, chosen: Detection | None) -> None:
+        """Retain this frame's pre-veto pool; a no-op unless ``preveto_window > 0``.
+
+        The pool is the survivor set of the encoding stage -- the candidates the
+        identity ceiling/band/vote have *not* scored away yet.  E097 measured that
+        this set contains the true target far more often than the committed
+        identity (65.84 % vs 22.02 % of visible frames on five informative
+        sequences), which is why re-attribution looks here instead of at the
+        post-veto set E095 used.
+        """
+        pending = self._preveto_pending
+        self._preveto_pending = None
+        window = int(getattr(self.cfg.state, "preveto_window", 0) or 0)
+        if not self._preveto_on or window <= 0 or pending is None:
+            return
+        dets, app = pending
+        n = len(dets)
+        if n == 0 or app.size != n:
+            return
+        boxes = np.asarray([np.asarray(d.xyxy, float).ravel()[:4] for d in dets], float)
+        shipped = -1
+        if chosen is not None:
+            cb = np.asarray(chosen.xyxy, float).ravel()[:4]
+            ious = np.asarray([_iou1(cb, b) for b in boxes], float)
+            if ious.size:
+                j = int(np.argmax(ious))
+                if float(ious[j]) >= 0.9:
+                    shipped = j
+        self._preveto_hist[int(self.frame_idx)] = {
+            "dets": list(dets),
+            "boxes": boxes,
+            "app": np.asarray(app, float).copy(),
+            "shipped": int(shipped),
+        }
+        cutoff = int(self.frame_idx) - window + 1
+        for key in [k for k in self._preveto_hist if k < cutoff]:
+            self._preveto_hist.pop(key, None)
+
+    def _preveto_pick(self) -> Detection | None:
+        """Run the E097 window DP over the retained pool; return the last-frame pick.
+
+        Emission: ``w_app * appearance_cost + w_switch * [not the shipped choice]``;
+        transition: ``w_mot * min(centre displacement / box scale, 5)``.  The DP is
+        solved forwards only -- the answer we need is the best chain's *current*
+        candidate, so no backtracking is required.
+        """
+        frames = sorted(self._preveto_hist)
+        if len(frames) < 2 or frames[-1] != int(self.frame_idx):
+            return None
+        st = self.cfg.state
+        w_app = float(getattr(st, "preveto_app_weight", 2.0))
+        w_mot = float(getattr(st, "preveto_motion_weight", 1.0))
+        w_sw = float(getattr(st, "preveto_switch_penalty", 0.25))
+        first = frames[0]
+        e0 = self._preveto_hist[first]
+        idx0 = np.arange(e0["app"].size)
+        prev_cost = w_app * e0["app"] + np.where(idx0 == e0["shipped"], 0.0, w_sw)
+        for f_prev, f in zip(frames, frames[1:]):
+            prev_e = self._preveto_hist[f_prev]
+            cur = self._preveto_hist[f]
+            pb, cb = prev_e["boxes"], cur["boxes"]
+            if pb.shape[0] == 0 or cb.shape[0] == 0:
+                return None
+            pc = (pb[:, :2] + pb[:, 2:]) / 2.0
+            cc = (cb[:, :2] + cb[:, 2:]) / 2.0
+            scale = np.maximum(
+                np.sqrt(np.maximum((pb[:, 2] - pb[:, 0]) * (pb[:, 3] - pb[:, 1]), 1.0)), 8.0
+            )
+            d = np.linalg.norm(cc[None, :, :] - pc[:, None, :], axis=2) / scale[:, None]
+            total = prev_cost[:, None] + w_mot * np.minimum(d, 5.0)
+            arg = np.argmin(total, axis=0)
+            n = cb.shape[0]
+            cur_idx = np.arange(n)
+            prev_cost = (
+                total[arg, cur_idx]
+                + w_app * cur["app"]
+                + np.where(cur_idx == cur["shipped"], 0.0, w_sw)
+            )
+        best = int(np.argmin(prev_cost))
+        dets = self._preveto_hist[frames[-1]]["dets"]
+        return dets[best] if best < len(dets) else None
+
+    def _preveto_try_reattribute(
+        self, frame_bgr: np.ndarray | None, result: MatchResult, h: int, w: int
+    ) -> None:
+        """Accept the pool's current pick, but only as an outright person replacement."""
+        det = self._preveto_pick()
+        if det is None:
+            return
+        committed = self._box
+        if committed is not None and _iou1(committed, det.xyxy) >= 0.3:
+            # The pool agrees with what we already report (or a near variant of it):
+            # identity stays put.  Only a *different person* may be adopted.
+            return
+        self._preveto_switches += 1
+        shim = MatchResult(
+            index=None,
+            cost=float(result.cost),
+            accepted=True,
+            reason="preveto:reattributed",
+        )
+        self._on_match(frame_bgr, det, shim, h, w)
+        self._check_drift(det)
+        self._last_diag["preveto_switched"] = 1
+        self._last_diag["preveto_window_used"] = len(self._preveto_hist)
 
     def _on_match(
         self,

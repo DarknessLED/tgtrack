@@ -843,6 +843,19 @@ frames where the shipped tracker is provably blind and only when the window evid
 person outright, so a frame the tracker gets right cannot move.
 
 
+
+### E099: the selector works, and that is the problem
+
+Integrating the offline pre-veto selector into the tracker (8-frame window, appearance-anchored field)
+was implemented behind an inert knob and measured on the five E097 sequences: pooled dTSR **-1.40 pp**,
+dFAR -1.27 pp, dID -9.41 pp, worst **-23.90 pp** -> killed by the pre-registered clause. The spread is
+the finding: `dancetrack0097` gains **+23.13 pp** (the same gain the offline window selector predicted)
+and `0077` +6.33 pp, while `dancetrack0010` loses 23.90 pp and `0081` loses 10.96 pp. Re-attribution
+replaces a correct identity on sequences that were already succeeding, so the intervention behaves as
+a bifurcation per sequence rather than an improvement in the mean. Third independent instance of the
+pattern (after E090's margin knob and E098's dose), and the reason the next step attacks the
+**scale** of appearance costs (prequential normalisation) offline instead of adding another selector.
+
 ## Corrections after the first independent audit (round A)
 
 An independent audit re-derived 24 numeric claims in this file from the `results/` artifacts and found

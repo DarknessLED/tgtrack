@@ -1,6 +1,6 @@
 # MANIFEST — what is in this package
 
-Generated 2026-10-29 21:48 中国标准时间 by `scripts/build_handoff.py`. 4180 files, 76.83 MB uncompressed.
+Generated 2026-10-30 01:00 中国标准时间 by `scripts/build_handoff.py`. 4211 files, 77.06 MB uncompressed.
 
 This file is generated; do not edit by hand.
 
@@ -14,10 +14,10 @@ This file is generated; do not edit by hand.
 | `docs/` | 45 | 1.36 MB | reports, the experiment ledger, surveys, plans, external reviews |
 | `pytest.ini/` | 1 | 0.00 MB | — |
 | `requirements.txt/` | 1 | 0.00 MB | — |
-| `results/` | 4019 | 73.24 MB | the measured numbers as markdown/csv/small json summaries |
+| `results/` | 4049 | 73.44 MB | the measured numbers as markdown/csv/small json summaries |
 | `scripts/` | 53 | 1.01 MB | every reproducible entry point; each experiment cites one |
-| `src/` | 20 | 0.64 MB | the library itself (`tgtrack`) |
-| `tests/` | 27 | 0.49 MB | the guarantees: 470+ tests encoding every measured behaviour |
+| `src/` | 20 | 0.65 MB | the library itself (`tgtrack`) |
+| `tests/` | 28 | 0.50 MB | the guarantees: 470+ tests encoding every measured behaviour |
 | root files | 4 | — | README, pytest config, requirements |
 
 ## Deliberately EXCLUDED (and how to regenerate)
@@ -36,7 +36,7 @@ First 40 files by path, with sha256 prefix (12 hex), so a copy can be verified:
 
 | path | bytes | sha256[:12] |
 |---|---|---|
-| `README.md` | 78371 | `d9f755b9fed3` |
+| `README.md` | 79354 | `27a832d79a9f` |
 | `configs/bs_reid.yaml` | 254 | `96710faf56f6` |
 | `configs/ch_1280.yaml` | 97 | `1b237aa3b148` |
 | `configs/ch_960.yaml` | 96 | `6d55902072cb` |
@@ -62,13 +62,13 @@ First 40 files by path, with sha256 prefix (12 hex), so a copy can be verified:
 | `docs/E086_PLAN.md` | 9026 | `de23bd7d9b3c` |
 | `docs/E090_PLAN.md` | 3731 | `713ea92eab0b` |
 | `docs/E095_PLAN.md` | 6861 | `0ffaa01d6c84` |
-| `docs/E099_PLAN.md` | 3195 | `1a73baeed6de` |
-| `docs/EXPERIMENTS.md` | 278915 | `fa2711710c2e` |
+| `docs/E099_PLAN.md` | 4103 | `b1eee0199e91` |
+| `docs/EXPERIMENTS.md` | 281204 | `4f6f760bb82a` |
 | `docs/EXPLORATION_TREE.md` | 17127 | `e05ff6c14385` |
 | `docs/HANDOFF.md` | 9722 | `554d51d0a89d` |
 | `docs/HANDOFF.md` | 9722 | `554d51d0a89d` |
 | `docs/METHOD.md` | 18428 | `e2caab5705c0` |
-| `docs/NEXT_ROUND.md` | 52127 | `fd42cfafb92a` |
+| `docs/NEXT_ROUND.md` | 53306 | `5b8b27614136` |
 | `docs/PARETO.md` | 5002 | `876748a48bd0` |
 | `docs/REPORT.md` | 51018 | `e7100a476936` |
 | `docs/REPORT_v1_chronological.md` | 18078 | `539368cad236` |

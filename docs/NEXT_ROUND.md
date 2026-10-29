@@ -696,3 +696,19 @@ dTSR bootstrap CI excluding 0; P2 idcons may not drop more than 0.05 where it wa
 worse than -3.0 pp). Predictions: P1 pooled TSR >= +5 pp; P2 the offline headroom correlates with the
 gain (0081/0097/0077 gain most); P3 locked frames bit-identical; P4 FAR may rise but not beyond the
 E089 envelope (<= +3 pp pooled).
+
+### Round 43 -- E099 screened and closed (2026-10-30 01:10)
+
+E099 (8-frame pre-veto re-attribution, appearance-anchored field) was implemented, unit-tested
+(10 tests, control `preveto_L0` bit-identical to shipped: `dancetrack0018` 0.5675 / 0.0873), the full
+suite stayed green, and the five-sequence screen came back **KILL**: pooled dTSR -1.40 pp, dFAR
+-1.27 pp, dID -9.41 pp, worst -23.90 pp.  The interesting part is the spread: `0097` +23.13 pp and
+`0077` +6.33 pp against `0010` -23.90 pp and `0081` -10.96 pp.  A mechanism that rescores a window of
+candidates flips sign per sequence, so it cannot be shipped from a pooled mean, and the appearance-
+anchored selector family is closed.
+
+Next (E100, offline first): the E098 dose result and this screen both point at *scale*, not at the
+mechanism -- appearance costs are not comparable across sequences.  E100 will screen selector variants
+that normalise appearance **prequentially within the sequence** (median/A-MAD over the trailing
+window, cost relative to the sequence's own recent distribution) directly on the five E097 dumps, with
+offline TSR/FAR as the criterion, before touching the tracker again.

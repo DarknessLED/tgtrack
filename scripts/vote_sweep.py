@@ -515,6 +515,35 @@ ARMS["stack_contrast_1.25"] = {
 }
 ARM_ORDER += ["stack_contrast_1.25"]
 
+#: E099 (docs/E099_PLAN.md): re-attribute over the PRE-veto candidate pool.  E097 measured the
+#: headroom (pool recall 65.84 % vs shipped 22.02 % on the five informative sequences) and an
+#: offline copy of this selector captured 44 % of it.  ``preveto_L0`` is the mandatory control.
+ARMS["preveto_L8"] = {
+    "overrides": {"cost.anchor_vote": "off", "state.preveto_window": 8},
+    "variant": "preveto_L8",
+    "reference": False,
+    "k": 0,
+    "lost_scale": 1.25,
+    "label": "E099: pre-veto re-attribution, 8-frame window",
+}
+ARMS["preveto_L4"] = {
+    "overrides": {"cost.anchor_vote": "off", "state.preveto_window": 4},
+    "variant": "preveto_L4",
+    "reference": False,
+    "k": 0,
+    "lost_scale": 1.25,
+    "label": "E099: pre-veto re-attribution, 4-frame window",
+}
+ARMS["preveto_L0"] = {
+    "overrides": {"cost.anchor_vote": "off", "state.preveto_window": 0},
+    "variant": "preveto_L0",
+    "reference": False,
+    "k": 0,
+    "lost_scale": 1.25,
+    "label": "E099 control: pre-veto re-attribution off (must be bit-identical)",
+}
+ARM_ORDER += ["preveto_L8", "preveto_L4", "preveto_L0"]
+
 
 # --------------------------------------------------------------------------- #
 # Arms

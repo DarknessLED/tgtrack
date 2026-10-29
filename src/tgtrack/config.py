@@ -922,6 +922,26 @@ class StateCfg:
     #: distractor no longer resets the count.  E092's screen showed the strict streak
     #: is what cost 23-28 pp of TSR on sequences whose re-acquisition was real.
     reacquire_confirm_window: int = 0
+    #: E099 -- pre-veto re-attribution.  ``preveto_window = 0`` (default) keeps the
+    #: shipped tracker bit-identical.  When ``M > 0`` the tracker retains the
+    #: *pre-veto* candidate pool (the survivors of the encoding gate, i.e. the set the
+    #: identity ceiling has not scored away yet) for the last M frames and, on a frame
+    #: where it has been coasting blind (``frames_since_update >= lost_short_after``),
+    #: runs a bounded dynamic program over that pool.  It accepts the winning chain's
+    #: current-frame candidate only if that candidate is a *different person* from the
+    #: committed box (IoU < 0.3) -- an outright replacement, never a margin, because a
+    #: margin is the E082/E096 failure mode.  Motivation is E097: the pool contains the
+    #: true target on 65.84 % of visible frames while the shipped tracker is correct on
+    #: 22.02 %, and an offline copy of this selector recovered 44 % of that headroom.
+    preveto_window: int = 0
+    #: DP emission weight on the candidate's appearance cost to the click reference.
+    preveto_app_weight: float = 2.0
+    #: DP transition weight on centre displacement from the previous frame's pick,
+    #: normalised by the candidate's own size (offline optimum of E097).
+    preveto_motion_weight: float = 1.0
+    #: DP emission penalty applied to any candidate that is not what the shipped
+    #: tracker would have chosen on that frame (keeps the selector conservative).
+    preveto_switch_penalty: float = 0.25
     #: E095 -- bounded-lag refutation.  ``0`` (default) keeps the shipped path
     #: bit-identical: the tracker reports frame by frame and no offline pass runs.
     #: ``L > 0`` turns on the second decision channel: after the sequence is

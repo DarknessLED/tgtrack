@@ -50,3 +50,18 @@ which is exactly the guard the identity-layer levers could not offer.
 - The offline selector used GT only for scoring, not for selection, so the +19.25 pp should transfer --
   but the offline DP saw the *entire* 300-frame trajectory, while the online version sees only `W = 8`.
 - FAR is unmeasured offline; the ~1:1 exchange of the identity layer is the prior that it will rise.
+
+## Screen bar (declared 2026-10-30 01:15, before the screen ran)
+
+Run the screen on the five E097 informative sequences (0010 / 0073 / 0077 / 0081 / 0097), which are
+exactly the sequences where the measured pool headroom is +12 to +82 pp, against the shipped
+`ceil_lost_1.25` records.  Promote to the 22-sequence protocol only if over these five:
+
+- (a) pooled dTSR >= +3.0 pp versus shipped (the offline signal on this set is +19.25 pp, so +3.0 pp
+  is a deliberately low bar for an online version that sees only 8 frames of history);
+- (b) no sequence loses more than 3.0 pp of TSR;
+- (c) pooled dFAR <= +3.0 pp (the pre-registered P4 envelope).
+
+If the screen fails (a) the mechanism is inert online even though it is decisive offline, and the
+right conclusion is that the DP needs the full trajectory, not an 8-frame window -- which is a
+finding about the *selector*, not about the pool.
