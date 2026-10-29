@@ -629,6 +629,99 @@ Consequences that are now stated plainly: criterion ② is **0.21 [0.12, 0.33] o
 0.512; the dev-split intervals were ±0.394 (TSR) and ±0.708 (FAR), so those three sequences never
 certified anything; and E022/E029/E031b/E038/E041 are **unvalidated** on held-out data.
 
+**After E089 (below) the shipped default measures TSR 0.2395 / FAR 0.2089 on the same 22
+sequences** - the losing half moves, and the diagnosis (losing, not mis-following) does not.
+
+## The best arm we have measured — and why it is not the default
+
+E082 swept a **contrast gate** on the reference vote: admit an anchor-vetoed candidate only when
+`d(R1) - min(d(R2), d(R3)) >= delta`, i.e. only when the frozen click crop is the odd one out.
+22 held-out sequences, 132 pairs, 300 frames, subsample 2, mask none (`results/vote_sweep/REPORT.md`):
+
+| arm | TSR [95% CI] | FAR [95% CI] | dTSR vs shipped |
+|---|---|---|---|
+| `vote_off` (pre-E089 epoch) | 0.2104 [0.1157, 0.3254] | 0.2472 [0.1489, 0.3487] | — |
+| `vote_majority` (E079) | 0.2668 [0.1423, 0.4040] | 0.1912 [0.0927, 0.3080] | +5.88 [−1.85, +15.04] |
+| **`vote_contrast_0.10`** | **0.2770 [0.1442, 0.4237]** | **0.1830 [0.0830, 0.3014]** | +6.83 [−0.46, +15.93] |
+| `vote_contrast_0.20` | 0.2568 [0.1317, 0.4015] | 0.2072 [0.1101, 0.3224] | +4.95 [−1.63, +13.42] |
+
+`contrast_0.10` is the best arm measured on **both** pooled axes, and the **first configuration to
+put FAR below the 0.20 criterion barrier** (0.2472 → 0.1830), while shrinking the worst case
+(sequences losing > 2 pp: 2 → 1; total loss −44.5 → −23.5 pp). It is nevertheless
+**not shipped**: the pre-registered rule (paired dTSR CI must exclude 0) misses by 0.46 pp. The
+reason is structural, not noise — 15 of 22 sequences are *exactly* unchanged, so a 22-sequence
+bootstrap has almost no power and the interval is set by whether the 5 informative sequences land in
+the resample. `E082b` (600 frames, same sequences, `contrast_0.10` vs `vote_off` only) is
+pre-registered in [docs/EXPERIMENTS.md](docs/EXPERIMENTS.md) to buy power rather than relax the rule.
+
+Two later measurements bounded this family from below and above, and together they say *why* the
+contrast gate is the only arm that never traded one axis for the other:
+
+- **`E082b` falsified its own premise.** At 600 frames the shipped arm *falls* from TSR 0.2104 to
+  **0.1512** (FAR 0.2388 → 0.2725) and the sequences pinned at the floor stay pinned (**7 of 22**):
+  a longer horizon adds drift, it does not lift anything off the floor. Power was not bought, so the
+  contrast arm was never spent.
+- **`E084` measured who the identity ceiling actually refuses**, then killed its own mechanism. Of
+  1690 refusals over the six informative sequences, **67 %** are genuine distractors, 7 % background
+  and **3.96 %** the true target — below the pre-registered 5 % bar, so the multi-part reference bank
+  was not built. The distribution is the finding: target refusals are **0 %** on the sequences where
+  the vote loses and **18–33 %** on three where it wins, and among them one bed alone would have
+  rescued every case — the gallery **18 times**, the EMA anchor **0 times**.
+- **`E084b` therefore measured the one missing point of that axis, `k = 1`** (`vote_any`): mean TSR
+  **0.5406** / FAR **0.2287** vs shipped 0.3495 / 0.4064 on those six sequences — but dominated by
+  `contrast_0.10` (0.5926 / 0.1282) and it *breaks* the strong sequence `dancetrack0079`
+  (0.9133 → 0.6800, FAR 0.023 → 0.217) where the contrast gate is bit-identical to the shipped arm.
+  Absolute closeness to a single bed admits similar-looking strangers; only the **relative** question
+  ("is the click crop worse than both refreshed beds, by a margin") separates *the look changed* from
+  *this is a different person*.
+
+## The first arm that changed a criterion: E089, shipped
+
+E088 attributed the target loss frame by frame and found where it actually happens: **0 of 1482**
+visible frames went unreported, **91.2 %** of the loss is a box coasted onto the wrong person
+(`frames_since_update >= 60` on 55 % of it), and the largest single refusal reason is the identity
+ceiling (**41 %** `all_gated:anchor_ceiling`). While the target is lost the ceiling keeps vetoing the
+one candidate that would re-acquire it, because the only reference it can compare against is a crop
+from before the loss.
+
+E089 therefore moves one number: once the target has been lost for more than `lost_short_after` frames,
+the anchor band is multiplied by `cost.anchor_band_lost_scale` (1.25 shipped; 1.0 is a bit-identical
+pre-E089 control; <= 0 drops the ceiling while lost). The preregistered wiring check came first: on
+`dancetrack0097` ceiling refusals fall **285 -> 96 (-66.3 %)** and correct frames rise **47 -> 196**
+(TSR 0.1599 -> 0.6667), while `dancetrack0035`, where the ceiling never fired, is bit-identical.
+
+22 held-out sequences, 66 pairs (`results/vote_sweep/REPORT.md`):
+
+| arm | TSR [95% CI] | FAR [95% CI] | idcons | paired dTSR [CI] |
+|---|---|---|---|---|
+| `vote_off` (pre-E089, scale 1.0) | 0.2104 [0.1157, 0.3254] | 0.2472 [0.1489, 0.3487] | 0.4358 | - |
+| **`ceil_lost_1.25` (shipped)** | **0.2395 [0.1385, 0.3586]** | **0.2089 [0.1170, 0.3078]** | 0.4790 | **+2.91 [+0.13, +6.64]** |
+| `ceil_lost_off` (ceiling off while lost) | 0.2661 [0.1496, 0.3939] | 0.1844 [0.1023, 0.2825] | 0.4824 | +5.57 [+0.02, +11.93] |
+
+The reference arm reproduces the E070 records **22/22 exactly** (TSR, FAR and target id; max |d| 0.0),
+so the comparison is anchored. `1.25` passes the campaign rule (paired CI excludes 0), breaks no
+sequence by more than 2.0 pp, changes nothing on **13 of 22** sequences, and leaves the partial-view
+criterion untouched (`MOT17-02-FRCNN`, upper mask: 0.8545 / 0.000 / 1.000 in all four configurations).
+
+The aggressive arm is better on both pooled axes and is **not** shipped, for the reason E083 predicted
+one family earlier:
+
+- it **violates P2** on the sequence it helps most - `dancetrack0097` gains +50.7 pp of TSR but loses
+  7.1 pp of identity consistency on a sequence that was at 1.000 - and
+- it costs **-21.0 pp** on `dancetrack0077`.
+
+Two preregistered predictions were scored honestly and did not land. P1 asked for +3 pp pooled and the
+shipped arm delivered **+2.91 pp, 0.09 pp short**. P4 predicted the gain would concentrate on the
+sequences E087/E088 identified as unlocked-loss-dominated, and that is **refuted**: the gain lands on
+`0018/0034/0081/0077`, with only `0081` overlapping that floor set. The mechanism helps a different
+population than the diagnostic predicted, which is worth more than the 2.91 pp - the identity ceiling
+is not only a re-acquisition problem, it also fires on sequences that look healthy.
+
+Epoch discipline matters from here on, because these numbers are comparable history: `vote_sweep.py`'s
+`vote_off` arm **pins** `anchor_band_lost_scale: 1.0`, so every E070/E079/E082/E084 record stays
+bit-comparable, and a new `shipped` arm tracks the config default (`run_target.py` gains the
+`shipped_e089` variant, which spells out no scale).
+
 ## Corrections after the first independent audit (round A)
 
 An independent audit re-derived 24 numeric claims in this file from the `results/` artifacts and found
@@ -644,7 +737,9 @@ being silently edited, so the record shows what was believed and why it did not 
   `--target-id 2` forced on `dancetrack0005`; today's automatic pick yields 0.4138/0.3833. Both are
   now quoted together with their target id, and the criterion is scored on the target-2 basis.
 - **The lone-bound cost of 3.6 pp is retracted**: `results/target_obs19_shipped` contains no armed
-  variant, so 0.7164 is that grid's own baseline, not a measurement of the bound.
+  variant, so 0.7164 is that grid's own baseline, not a measurement of the bound. It is superseded
+  by the controlled six-sequence pair of **E086-r** (`results/lone_guard/report.md`), which measures
+  the real price as **-4 to -5 pp TSR for -16 to -19 pp FAR**.
 - **The lone-bound sweep reaches 1/4 hijacks at <= 0.4, not 0/4.**
 - **The 448 resolution pair is 0.655 -> 0.780 clean and 0.921 -> 0.985 occluded**, not the spliced
   0.886/1.000 and 0.780/0.989, which mixed the resolution axis with the part-aware strategy axis.
@@ -658,7 +753,7 @@ being silently edited, so the record shows what was believed and why it did not 
 
 ## Two criteria we did not reach, and the measurements that say why
 
-Criterion ② asked for DanceTrack TSR >= 0.55 with FAR < 0.20. The best figure is **0.512 / 0.280**,
+Criterion ② asked for DanceTrack TSR >= 0.55 with FAR < 0.20. The best dev-split figure is **0.512 / 0.280**,
 measured with `--target-id 2` forced on `dancetrack0005` (E041). **The benchmark is not stable across
 runs:** under today's automatic target pick the harness selects id 0 for that sequence and the pooled
 figure becomes **0.4138 / 0.3833** (E063b), so the two numbers are different people, not a regression.
@@ -670,6 +765,34 @@ below chance — an added motion axis (0.000 joint movement, E032b), pose skelet
 -0.0035, E045b). The earlier "appearance ranked the true target >= 2 in 74/111 wrong frames" evidence
 (E020) was **RETRACTED in E062**: that probe read the wrong GT identity, and with the correct mapping
 the true target was detected in **108 of the 113** wrong frames.
+
+**And most of that gap is not an identity problem at all (E087 / E088).** Decomposing the
+shipped target loss: only **30 %** of it happens while the tracker holds a lock on the wrong
+identity; **70 %** happens while it is not locked. E088 then dumped per-frame records on three
+of the worst sequences — reproducing their reference summaries exactly (`dancetrack0097`
+0.1599 / 0.0000 / 1.0000, `0081` 0.0274 / 0.2000, `0035` 0.0219 / 0.0572) — and found the
+unlocked term is **not** "not reporting": the tracker emits a box on **100 %** of visible frames
+(**0** of 1482 visible frames had `reported = False`). **91 % of the loss is a reported box that
+is neither the target nor locked to anyone** — dead-reckoned coasting, with 55 % of those frames
+last updated **60+ frames** earlier. On `dancetrack0097` it never locks a stranger at all
+(`id_consistency` 1.000, FAR 0.000) and still reports the right person on only 47 of 294 visible
+frames. During the missed frames it was in `lost_short` (31 %) or `lost_long` (55 %), and a
+candidate existed on **every** one of them (`ch_app_valid` = 100 %): it was refused, 41 % of the
+time by `all_gated:anchor_ceiling` and most of the rest by `ambiguous: margin < 0.060`.
+
+So the loss is a **sustained localisation failure with the target visible and a candidate in
+hand**: the tracker knows it is lost and still refuses to accept, because the click-crop anchor
+ceiling — whose purpose is to prevent an identity switch *while tracking* — keeps vetoing
+candidates when there is no remaining identity to protect. E089 scaled that ceiling while lost and
+**is shipped**: on the 22-sequence held-out protocol TSR goes 0.2104 -> **0.2395** and FAR
+0.2472 -> **0.2089** (paired dTSR +2.91 pp, CI [+0.13, +6.64]; 13 of 22 sequences unchanged;
+partial-view guard bit-identical at 0.8545). That is the first arm in the campaign to move a
+criterion, and it is still **31 pp short of the TSR half and 0.9 pp short of the FAR half** — the
+ceiling was one refusal reason (41 % of missed frames), and the remainder is `ambiguous: margin`, so
+the rest of this gap is a reporting/coasting problem, not an identity one. Residual caveat:
+"unlocked" is measured as a residual and includes occluded frames; only the ceiling statement is
+claimed, not that the whole 70 % is recoverable.
+
 Criterion ① asked for MOT17 HOTA 0.55; the detector caps DetA at 0.4609, and every route to more
 recall was measured and rejected (tiling E001, threshold E002, capacity E003, temporal promotion
 E004/E005, stitching E007, gating E010, ensemble E011, Hybrid-SORT E012, box fusion E055). Both
@@ -732,14 +855,25 @@ ceilings are documented in `docs/EXPERIMENTS.md` with reproduction commands.
   vs `results/target_obs19` — identical command, MOT17-02, target id 19, 300 frames, subsample 2)
   the comparison originally quoted here — **3.6 pp of target success on the upper-body-only mask
   (0.7527 → 0.7164) — is RETRACTED**: `results/target_obs19_shipped` contains no armed variant, so
-  0.7164 is that grid's own baseline and the two figures are not a controlled pair. What is actually
-  established is weaker: the armed rule has a measured synthetic cost (**2.6 pp** of clean-family
-  success at 0.5) and **no controlled real-data benefit has ever been demonstrated**. On that
-  evidence the shipped default stays `None`; the knob, the
-  100-run sweep and the negative result are all kept. `CostCfg.missing_appearance_cost` is the
-  remaining lever: once the lone rule is armed its low side (≤ 0.25) closes the handover
-  completely on a 30-frame stub world (TSR 0.43 → 0.97 / FAR 0.73 → 0.23), but with the rule off
-  price only moves the *recovery*, never the handover itself — both facts are pinned by tests.
+  0.7164 is that grid's own baseline and the two figures are not a controlled pair. That
+  retraction left the question genuinely open, and **E086-r has now closed it with a
+  controlled pair** (`results/lone_guard/report.md`): same protocol, six held-out
+  DanceTrack sequences, shipped (`None`) vs armed `{0.30, 0.40, 0.50}`. The rule is
+  **not inert on real data** — pooled FAR **0.4064 → 0.2442 / 0.2562 / 0.2162**
+  (-16.2 / -15.0 / -19.0 pp) and pooled `id_consistency` **0.4397 → 0.5612** at 0.30 —
+  but it is not free: pooled TSR **0.3495 → 0.3092 / 0.3005 / 0.2991** (-4.0 / -4.9 /
+  -5.1 pp), with `0077` losing 15.7 pp and `0018`/`0073` 8.7–12.0 pp while `0034`
+  *gains* 11.3 pp TSR and 7.6 pp FAR at 0.30. The pre-registered ship rule fails on
+  its pooled-TSR and worst-case clauses, and the arm is **dominated on the same six
+  sequences by `anchor_vote="contrast"` at δ = 0.10**, which buys -27.8 pp FAR while
+  gaining +24.3 pp TSR (0.5926 / 0.1282). The shipped default therefore stays
+  `None` — now as a *measured* decision, with the one thing the retracted claim had
+  right (the guard really does stop strangers being latched) finally backed by a
+  controlled pair. `CostCfg.missing_appearance_cost` is **not** the remaining lever:
+  it is bit-identical at every price from 0.0 to 1.0
+  (`results/motion_ablation/unid_cost.md`), because the handover happens with
+  `n_dets = 1`, where `select_candidate` leaves `margin = inf` and price never enters
+  the decision — price only moves the *recovery*, never the handover itself.
   This is the sharpest remaining gap against requirement 4 and it is stated, not hidden.
 - **The end-to-end path is strongly target-size dependent, and on a small person it fails.**
   `scripts/demo_click.py` on MOT17-02 clicking the most persistent identity in the sequence

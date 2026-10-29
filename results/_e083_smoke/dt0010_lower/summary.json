@@ -1,0 +1,391 @@
+{
+  "meta": {
+    "data_root": "data\\raw\\dancetrack\\val\\dancetrack0010",
+    "dry_run": false,
+    "detector": "gt",
+    "embedder": "fallback",
+    "masks": [
+      "lower"
+    ],
+    "ablate": "mh",
+    "jobs": 1,
+    "subsample": 1,
+    "max_frames": 40,
+    "target_strategy": "stressed",
+    "target_ids": {
+      "dancetrack0010": 0
+    },
+    "variants": [
+      "baseline",
+      "mh_off",
+      "mh_dual",
+      "mh_dual_frozen"
+    ],
+    "guard": {
+      "min_visible_h": 80.0,
+      "min_visible_area": 0.0,
+      "masks": [
+        "lower"
+      ]
+    },
+    "allow_invisible_target": false,
+    "target_decisions": {
+      "dancetrack0010": {
+        "target_id": 0,
+        "reason": "observable",
+        "invisible": false,
+        "control": "partial-view",
+        "guard_passed": true,
+        "guard": {
+          "min_visible_h": 80.0,
+          "min_visible_area": 0.0,
+          "masks": [
+            "lower"
+          ]
+        },
+        "observability": {
+          "0": {
+            "target_id": 0,
+            "masks": {
+              "lower": {
+                "mode": "lower",
+                "frames": 40,
+                "first": 0,
+                "median_w": 132.5,
+                "median_h": 127.0,
+                "median_area": 17205.75,
+                "min_h": 113.0,
+                "min_area": 14136.0,
+                "visible_fraction": 0.5
+              }
+            },
+            "worst_mask": "lower",
+            "median_w": 132.5,
+            "median_h": 127.0,
+            "median_area": 17205.75,
+            "frames": 40
+          },
+          "1": {
+            "target_id": 1,
+            "masks": {
+              "lower": {
+                "mode": "lower",
+                "frames": 40,
+                "first": 0,
+                "median_w": 94.0,
+                "median_h": 174.5,
+                "median_area": 16356.0,
+                "min_h": 168.0,
+                "min_area": 14280.0,
+                "visible_fraction": 0.5
+              }
+            },
+            "worst_mask": "lower",
+            "median_w": 94.0,
+            "median_h": 174.5,
+            "median_area": 16356.0,
+            "frames": 40
+          },
+          "2": {
+            "target_id": 2,
+            "masks": {
+              "lower": {
+                "mode": "lower",
+                "frames": 40,
+                "first": 0,
+                "median_w": 144.0,
+                "median_h": 141.25,
+                "median_area": 21225.75,
+                "min_h": 122.0,
+                "min_area": 15351.0,
+                "visible_fraction": 0.5
+              }
+            },
+            "worst_mask": "lower",
+            "median_w": 144.0,
+            "median_h": 141.25,
+            "median_area": 21225.75,
+            "frames": 40
+          },
+          "3": {
+            "target_id": 3,
+            "masks": {
+              "lower": {
+                "mode": "lower",
+                "frames": 40,
+                "first": 0,
+                "median_w": 114.0,
+                "median_h": 170.0,
+                "median_area": 19277.5,
+                "min_h": 164.0,
+                "min_area": 16550.0,
+                "visible_fraction": 0.5
+              }
+            },
+            "worst_mask": "lower",
+            "median_w": 114.0,
+            "median_h": 170.0,
+            "median_area": 19277.5,
+            "frames": 40
+          },
+          "4": {
+            "target_id": 4,
+            "masks": {
+              "lower": {
+                "mode": "lower",
+                "frames": 40,
+                "first": 0,
+                "median_w": 133.0,
+                "median_h": 131.0,
+                "median_area": 16856.0,
+                "min_h": 109.5,
+                "min_area": 14300.0,
+                "visible_fraction": 0.5
+              }
+            },
+            "worst_mask": "lower",
+            "median_w": 133.0,
+            "median_h": 131.0,
+            "median_area": 16856.0,
+            "frames": 40
+          },
+          "5": {
+            "target_id": 5,
+            "masks": {
+              "lower": {
+                "mode": "lower",
+                "frames": 40,
+                "first": 0,
+                "median_w": 132.5,
+                "median_h": 133.5,
+                "median_area": 17403.75,
+                "min_h": 120.5,
+                "min_area": 15252.0,
+                "visible_fraction": 0.5
+              }
+            },
+            "worst_mask": "lower",
+            "median_w": 132.5,
+            "median_h": 133.5,
+            "median_area": 17403.75,
+            "frames": 40
+          }
+        },
+        "selected": {
+          "target_id": 0,
+          "masks": {
+            "lower": {
+              "mode": "lower",
+              "frames": 40,
+              "first": 0,
+              "median_w": 132.5,
+              "median_h": 127.0,
+              "median_area": 17205.75,
+              "min_h": 113.0,
+              "min_area": 14136.0,
+              "visible_fraction": 0.5
+            }
+          },
+          "worst_mask": "lower",
+          "median_w": 132.5,
+          "median_h": 127.0,
+          "median_area": 17205.75,
+          "frames": 40
+        },
+        "message": ""
+      }
+    },
+    "wall_seconds": 8.61
+  },
+  "n_runs": 4,
+  "n_errors": 0,
+  "n_headline_runs": 4,
+  "n_invisible_runs": 0,
+  "headline": [
+    {
+      "n_sequences": 1,
+      "n_frames": 40,
+      "n_visible_frames": 40,
+      "n_report_frames": 40,
+      "target_success_rate": 1.0,
+      "loss_rate": 0.0,
+      "target_precision": 1.0,
+      "reacquire_events": 0,
+      "reacquire_ok": 0,
+      "reacquire_rate": null,
+      "reacquire_latency": null,
+      "false_acquisition_rate": 0.0,
+      "false_acquisition_frames": 0,
+      "false_acquisition_events": 0,
+      "n_locked_frames": 40,
+      "n_reported_locked": 40,
+      "false_acquisition_frames_locked": 0,
+      "false_acquisition_rate_locked": 0.0,
+      "false_acquisition_events_locked": 0,
+      "loss_frames_locked": 0,
+      "loss_rate_locked": 0.0,
+      "id_consistency": 1.0,
+      "id_consistency_frames": 40,
+      "id_consistency_denominator": 40,
+      "target_switch_count": 0,
+      "fragmentation": 0,
+      "variant": "baseline",
+      "group": "baseline",
+      "mask": "lower",
+      "control": "partial-view",
+      "ms_per_frame": 28.71216248604469,
+      "visibility_mean": 0.5,
+      "longest_correct_streak": 40,
+      "mean_correct_streak": 40.0,
+      "target_success_rate_fullgt": 1.0,
+      "reacquire_latency_p90": null,
+      "reacquire_latency_max": null,
+      "sequences": [
+        "dancetrack0010"
+      ]
+    },
+    {
+      "n_sequences": 1,
+      "n_frames": 40,
+      "n_visible_frames": 40,
+      "n_report_frames": 40,
+      "target_success_rate": 1.0,
+      "loss_rate": 0.0,
+      "target_precision": 1.0,
+      "reacquire_events": 0,
+      "reacquire_ok": 0,
+      "reacquire_rate": null,
+      "reacquire_latency": null,
+      "false_acquisition_rate": 0.0,
+      "false_acquisition_frames": 0,
+      "false_acquisition_events": 0,
+      "n_locked_frames": 40,
+      "n_reported_locked": 40,
+      "false_acquisition_frames_locked": 0,
+      "false_acquisition_rate_locked": 0.0,
+      "false_acquisition_events_locked": 0,
+      "loss_frames_locked": 0,
+      "loss_rate_locked": 0.0,
+      "id_consistency": 1.0,
+      "id_consistency_frames": 40,
+      "id_consistency_denominator": 40,
+      "target_switch_count": 0,
+      "fragmentation": 0,
+      "variant": "mh_dual",
+      "group": "mh",
+      "mask": "lower",
+      "control": "partial-view",
+      "ms_per_frame": 39.31097500608303,
+      "visibility_mean": 0.5,
+      "longest_correct_streak": 40,
+      "mean_correct_streak": 40.0,
+      "target_success_rate_fullgt": 1.0,
+      "reacquire_latency_p90": null,
+      "reacquire_latency_max": null,
+      "sequences": [
+        "dancetrack0010"
+      ]
+    },
+    {
+      "n_sequences": 1,
+      "n_frames": 40,
+      "n_visible_frames": 40,
+      "n_report_frames": 40,
+      "target_success_rate": 1.0,
+      "loss_rate": 0.0,
+      "target_precision": 1.0,
+      "reacquire_events": 0,
+      "reacquire_ok": 0,
+      "reacquire_rate": null,
+      "reacquire_latency": null,
+      "false_acquisition_rate": 0.0,
+      "false_acquisition_frames": 0,
+      "false_acquisition_events": 0,
+      "n_locked_frames": 40,
+      "n_reported_locked": 40,
+      "false_acquisition_frames_locked": 0,
+      "false_acquisition_rate_locked": 0.0,
+      "false_acquisition_events_locked": 0,
+      "loss_frames_locked": 0,
+      "loss_rate_locked": 0.0,
+      "id_consistency": 1.0,
+      "id_consistency_frames": 40,
+      "id_consistency_denominator": 40,
+      "target_switch_count": 0,
+      "fragmentation": 0,
+      "variant": "mh_dual_frozen",
+      "group": "mh",
+      "mask": "lower",
+      "control": "partial-view",
+      "ms_per_frame": 55.21791246137582,
+      "visibility_mean": 0.5,
+      "longest_correct_streak": 40,
+      "mean_correct_streak": 40.0,
+      "target_success_rate_fullgt": 1.0,
+      "reacquire_latency_p90": null,
+      "reacquire_latency_max": null,
+      "sequences": [
+        "dancetrack0010"
+      ]
+    },
+    {
+      "n_sequences": 1,
+      "n_frames": 40,
+      "n_visible_frames": 40,
+      "n_report_frames": 40,
+      "target_success_rate": 1.0,
+      "loss_rate": 0.0,
+      "target_precision": 1.0,
+      "reacquire_events": 0,
+      "reacquire_ok": 0,
+      "reacquire_rate": null,
+      "reacquire_latency": null,
+      "false_acquisition_rate": 0.0,
+      "false_acquisition_frames": 0,
+      "false_acquisition_events": 0,
+      "n_locked_frames": 40,
+      "n_reported_locked": 40,
+      "false_acquisition_frames_locked": 0,
+      "false_acquisition_rate_locked": 0.0,
+      "false_acquisition_events_locked": 0,
+      "loss_frames_locked": 0,
+      "loss_rate_locked": 0.0,
+      "id_consistency": 1.0,
+      "id_consistency_frames": 40,
+      "id_consistency_denominator": 40,
+      "target_switch_count": 0,
+      "fragmentation": 0,
+      "variant": "mh_off",
+      "group": "mh",
+      "mask": "lower",
+      "control": "partial-view",
+      "ms_per_frame": 33.944737509591505,
+      "visibility_mean": 0.5,
+      "longest_correct_streak": 40,
+      "mean_correct_streak": 40.0,
+      "target_success_rate_fullgt": 1.0,
+      "reacquire_latency_p90": null,
+      "reacquire_latency_max": null,
+      "sequences": [
+        "dancetrack0010"
+      ]
+    }
+  ],
+  "control": [],
+  "targets": {
+    "dancetrack0010": {
+      "target_id": 0,
+      "reason": "observable",
+      "control": "partial-view",
+      "guard_passed": true,
+      "visible_median_w": 132.5,
+      "visible_median_h": 127.0,
+      "visible_median_area": 17205.75,
+      "detection_rate": 1.0,
+      "wrong_identity_locked": 0,
+      "coasting_correct_frames": 0,
+      "onsets_agree": true,
+      "message": ""
+    }
+  }
+}

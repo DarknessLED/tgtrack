@@ -1,0 +1,11 @@
+[
+  {
+    "seq_name": "dancetrack0079",
+    "variant": "mh_dual",
+    "overrides": {
+      "cost.mh_mode": "dual"
+    },
+    "mask": "none",
+    "target_id": 2
+  }
+]

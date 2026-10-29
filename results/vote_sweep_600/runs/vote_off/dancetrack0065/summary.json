@@ -1,0 +1,241 @@
+{
+  "meta": {
+    "data_root": "C:\\Projects\\track\\data\\raw\\dancetrack\\val\\dancetrack0065",
+    "dry_run": false,
+    "detector": "yolo",
+    "embedder": "real",
+    "masks": [
+      "none"
+    ],
+    "ablate": "vote",
+    "jobs": 1,
+    "subsample": 2,
+    "max_frames": 600,
+    "target_strategy": "stressed",
+    "target_ids": {
+      "dancetrack0065": 0
+    },
+    "variants": [
+      "vote_off"
+    ],
+    "guard": {
+      "min_visible_h": 80.0,
+      "min_visible_area": 0.0,
+      "masks": [
+        "none"
+      ]
+    },
+    "allow_invisible_target": false,
+    "target_decisions": {
+      "dancetrack0065": {
+        "target_id": 0,
+        "reason": "observable",
+        "invisible": false,
+        "control": "partial-view",
+        "guard_passed": true,
+        "guard": {
+          "min_visible_h": 80.0,
+          "min_visible_area": 0.0,
+          "masks": [
+            "none"
+          ]
+        },
+        "observability": {
+          "0": {
+            "target_id": 0,
+            "masks": {
+              "none": {
+                "mode": "none",
+                "frames": 351,
+                "first": 0,
+                "median_w": 160.0,
+                "median_h": 340.0,
+                "median_area": 51810.0,
+                "min_h": 110.0,
+                "min_area": 13824.0,
+                "visible_fraction": 1.0
+              }
+            },
+            "worst_mask": "none",
+            "median_w": 160.0,
+            "median_h": 340.0,
+            "median_area": 51810.0,
+            "frames": 351
+          },
+          "1": {
+            "target_id": 1,
+            "masks": {
+              "none": {
+                "mode": "none",
+                "frames": 351,
+                "first": 0,
+                "median_w": 165.0,
+                "median_h": 353.0,
+                "median_area": 57340.0,
+                "min_h": 166.0,
+                "min_area": 21000.0,
+                "visible_fraction": 1.0
+              }
+            },
+            "worst_mask": "none",
+            "median_w": 165.0,
+            "median_h": 353.0,
+            "median_area": 57340.0,
+            "frames": 351
+          },
+          "2": {
+            "target_id": 2,
+            "masks": {
+              "none": {
+                "mode": "none",
+                "frames": 350,
+                "first": 0,
+                "median_w": 152.0,
+                "median_h": 318.0,
+                "median_area": 49946.0,
+                "min_h": 159.0,
+                "min_area": 19971.0,
+                "visible_fraction": 1.0
+              }
+            },
+            "worst_mask": "none",
+            "median_w": 152.0,
+            "median_h": 318.0,
+            "median_area": 49946.0,
+            "frames": 350
+          },
+          "3": {
+            "target_id": 3,
+            "masks": {
+              "none": {
+                "mode": "none",
+                "frames": 351,
+                "first": 0,
+                "median_w": 170.0,
+                "median_h": 345.0,
+                "median_area": 54560.0,
+                "min_h": 85.0,
+                "min_area": 18360.0,
+                "visible_fraction": 1.0
+              }
+            },
+            "worst_mask": "none",
+            "median_w": 170.0,
+            "median_h": 345.0,
+            "median_area": 54560.0,
+            "frames": 351
+          },
+          "4": {
+            "target_id": 4,
+            "masks": {
+              "none": {
+                "mode": "none",
+                "frames": 350,
+                "first": 0,
+                "median_w": 175.0,
+                "median_h": 337.0,
+                "median_area": 58350.0,
+                "min_h": 123.0,
+                "min_area": 19845.0,
+                "visible_fraction": 1.0
+              }
+            },
+            "worst_mask": "none",
+            "median_w": 175.0,
+            "median_h": 337.0,
+            "median_area": 58350.0,
+            "frames": 350
+          }
+        },
+        "selected": {
+          "target_id": 0,
+          "masks": {
+            "none": {
+              "mode": "none",
+              "frames": 351,
+              "first": 0,
+              "median_w": 160.0,
+              "median_h": 340.0,
+              "median_area": 51810.0,
+              "min_h": 110.0,
+              "min_area": 13824.0,
+              "visible_fraction": 1.0
+            }
+          },
+          "worst_mask": "none",
+          "median_w": 160.0,
+          "median_h": 340.0,
+          "median_area": 51810.0,
+          "frames": 351
+        },
+        "message": ""
+      }
+    },
+    "wall_seconds": 43.29
+  },
+  "n_runs": 1,
+  "n_errors": 0,
+  "n_headline_runs": 1,
+  "n_invisible_runs": 0,
+  "headline": [
+    {
+      "n_sequences": 1,
+      "n_frames": 351,
+      "n_visible_frames": 351,
+      "n_report_frames": 351,
+      "target_success_rate": 0.042735042735042736,
+      "loss_rate": 0.9572649572649573,
+      "target_precision": 0.0425565451969979,
+      "reacquire_events": 0,
+      "reacquire_ok": 0,
+      "reacquire_rate": null,
+      "reacquire_latency": null,
+      "false_acquisition_rate": 0.022792022792022793,
+      "false_acquisition_frames": 8,
+      "false_acquisition_events": 6,
+      "n_locked_frames": 34,
+      "n_reported_locked": 34,
+      "false_acquisition_frames_locked": 8,
+      "false_acquisition_rate_locked": 0.23529411764705882,
+      "false_acquisition_events_locked": 6,
+      "loss_frames_locked": 19,
+      "loss_rate_locked": 0.05413105413105413,
+      "id_consistency": 0.6521739130434783,
+      "id_consistency_frames": 15,
+      "id_consistency_denominator": 23,
+      "target_switch_count": 9,
+      "fragmentation": 6,
+      "variant": "vote_off",
+      "group": "vote_sweep",
+      "mask": "none",
+      "control": "partial-view",
+      "ms_per_frame": 115.65797521064106,
+      "visibility_mean": 1.0,
+      "longest_correct_streak": 6,
+      "mean_correct_streak": 2.142857142857143,
+      "target_success_rate_fullgt": 0.042735042735042736,
+      "reacquire_latency_p90": null,
+      "reacquire_latency_max": null,
+      "sequences": [
+        "dancetrack0065"
+      ]
+    }
+  ],
+  "control": [],
+  "targets": {
+    "dancetrack0065": {
+      "target_id": 0,
+      "reason": "observable",
+      "control": "partial-view",
+      "guard_passed": true,
+      "visible_median_w": 160.0,
+      "visible_median_h": 340.0,
+      "visible_median_area": 51810.0,
+      "detection_rate": 1.0,
+      "wrong_identity_locked": 11,
+      "coasting_correct_frames": 0,
+      "onsets_agree": true,
+      "message": ""
+    }
+  }
+}

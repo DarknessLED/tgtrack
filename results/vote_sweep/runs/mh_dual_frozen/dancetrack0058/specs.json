@@ -1,0 +1,11 @@
+[
+  {
+    "seq_name": "dancetrack0058",
+    "variant": "mh_dual_frozen",
+    "overrides": {
+      "cost.mh_mode": "dual_frozen"
+    },
+    "mask": "none",
+    "target_id": 1
+  }
+]

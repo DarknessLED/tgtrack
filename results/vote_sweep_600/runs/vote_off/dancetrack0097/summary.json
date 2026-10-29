@@ -1,0 +1,220 @@
+{
+  "meta": {
+    "data_root": "C:\\Projects\\track\\data\\raw\\dancetrack\\val\\dancetrack0097",
+    "dry_run": false,
+    "detector": "yolo",
+    "embedder": "real",
+    "masks": [
+      "none"
+    ],
+    "ablate": "vote",
+    "jobs": 1,
+    "subsample": 2,
+    "max_frames": 600,
+    "target_strategy": "stressed",
+    "target_ids": {
+      "dancetrack0097": 2
+    },
+    "variants": [
+      "vote_off"
+    ],
+    "guard": {
+      "min_visible_h": 80.0,
+      "min_visible_area": 0.0,
+      "masks": [
+        "none"
+      ]
+    },
+    "allow_invisible_target": false,
+    "target_decisions": {
+      "dancetrack0097": {
+        "target_id": 2,
+        "reason": "observable",
+        "invisible": false,
+        "control": "partial-view",
+        "guard_passed": true,
+        "guard": {
+          "min_visible_h": 80.0,
+          "min_visible_area": 0.0,
+          "masks": [
+            "none"
+          ]
+        },
+        "observability": {
+          "0": {
+            "target_id": 0,
+            "masks": {
+              "none": {
+                "mode": "none",
+                "frames": 573,
+                "first": 0,
+                "median_w": 231.0,
+                "median_h": 620.0,
+                "median_area": 145750.0,
+                "min_h": 277.0,
+                "min_area": 31857.0,
+                "visible_fraction": 1.0
+              }
+            },
+            "worst_mask": "none",
+            "median_w": 231.0,
+            "median_h": 620.0,
+            "median_area": 145750.0,
+            "frames": 573
+          },
+          "1": {
+            "target_id": 1,
+            "masks": {
+              "none": {
+                "mode": "none",
+                "frames": 575,
+                "first": 0,
+                "median_w": 236.0,
+                "median_h": 572.0,
+                "median_area": 134995.0,
+                "min_h": 376.0,
+                "min_area": 48645.0,
+                "visible_fraction": 1.0
+              }
+            },
+            "worst_mask": "none",
+            "median_w": 236.0,
+            "median_h": 572.0,
+            "median_area": 134995.0,
+            "frames": 575
+          },
+          "2": {
+            "target_id": 2,
+            "masks": {
+              "none": {
+                "mode": "none",
+                "frames": 594,
+                "first": 0,
+                "median_w": 254.0,
+                "median_h": 595.5,
+                "median_area": 155166.0,
+                "min_h": 364.0,
+                "min_area": 40768.0,
+                "visible_fraction": 1.0
+              }
+            },
+            "worst_mask": "none",
+            "median_w": 254.0,
+            "median_h": 595.5,
+            "median_area": 155166.0,
+            "frames": 594
+          },
+          "3": {
+            "target_id": 3,
+            "masks": {
+              "none": {
+                "mode": "none",
+                "frames": 586,
+                "first": 0,
+                "median_w": 202.5,
+                "median_h": 572.0,
+                "median_area": 114374.0,
+                "min_h": 381.0,
+                "min_area": 35728.0,
+                "visible_fraction": 1.0
+              }
+            },
+            "worst_mask": "none",
+            "median_w": 202.5,
+            "median_h": 572.0,
+            "median_area": 114374.0,
+            "frames": 586
+          }
+        },
+        "selected": {
+          "target_id": 2,
+          "masks": {
+            "none": {
+              "mode": "none",
+              "frames": 594,
+              "first": 0,
+              "median_w": 254.0,
+              "median_h": 595.5,
+              "median_area": 155166.0,
+              "min_h": 364.0,
+              "min_area": 40768.0,
+              "visible_fraction": 1.0
+            }
+          },
+          "worst_mask": "none",
+          "median_w": 254.0,
+          "median_h": 595.5,
+          "median_area": 155166.0,
+          "frames": 594
+        },
+        "message": ""
+      }
+    },
+    "wall_seconds": 54.74
+  },
+  "n_runs": 1,
+  "n_errors": 0,
+  "n_headline_runs": 1,
+  "n_invisible_runs": 0,
+  "headline": [
+    {
+      "n_sequences": 1,
+      "n_frames": 600,
+      "n_visible_frames": 594,
+      "n_report_frames": 600,
+      "target_success_rate": 0.5521885521885522,
+      "loss_rate": 0.4478114478114478,
+      "target_precision": 0.5086443835382427,
+      "reacquire_events": 3,
+      "reacquire_ok": 3,
+      "reacquire_rate": 1.0,
+      "reacquire_latency": 20.666666666666668,
+      "false_acquisition_rate": 0.26,
+      "false_acquisition_frames": 156,
+      "false_acquisition_events": 16,
+      "n_locked_frames": 432,
+      "n_reported_locked": 432,
+      "false_acquisition_frames_locked": 130,
+      "false_acquisition_rate_locked": 0.30092592592592593,
+      "false_acquisition_events_locked": 20,
+      "loss_frames_locked": 134,
+      "loss_rate_locked": 0.2255892255892256,
+      "id_consistency": 0.675,
+      "id_consistency_frames": 324,
+      "id_consistency_denominator": 480,
+      "target_switch_count": 21,
+      "fragmentation": 14,
+      "variant": "vote_off",
+      "group": "vote_sweep",
+      "mask": "none",
+      "control": "partial-view",
+      "ms_per_frame": 86.97626000386663,
+      "visibility_mean": 1.0,
+      "longest_correct_streak": 118,
+      "mean_correct_streak": 21.866666666666667,
+      "target_success_rate_fullgt": 0.5521885521885522,
+      "reacquire_latency_p90": 42.400000000000006,
+      "reacquire_latency_max": 50.0,
+      "sequences": [
+        "dancetrack0097"
+      ]
+    }
+  ],
+  "control": [],
+  "targets": {
+    "dancetrack0097": {
+      "target_id": 2,
+      "reason": "observable",
+      "control": "partial-view",
+      "guard_passed": true,
+      "visible_median_w": 254.0,
+      "visible_median_h": 595.5,
+      "visible_median_area": 155166.0,
+      "detection_rate": 1.0,
+      "wrong_identity_locked": 138,
+      "coasting_correct_frames": 34,
+      "onsets_agree": true,
+      "message": ""
+    }
+  }
+}

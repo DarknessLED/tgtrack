@@ -81,6 +81,14 @@ MAX_ENCODE = 64
 #: the string lives here instead of being spelled out twice.
 REASON_CONSENSUS_PENDING = "consensus_pending"
 
+#: E082 -- contrast thresholds at which the engagement counters report how many
+#: ELIGIBLE candidates the gate would retain.  These are REPORTING probes, not
+#: knobs: they never change what the vote admits.  They exist so the delta grid can
+#: be chosen from a measured retention curve instead of from the shape of a number,
+#: and so a grid of identical arms can be diagnosed ("the contrast axis is empty")
+#: rather than reported as a null result.
+_CONTRAST_PROBES: tuple[float, ...] = (0.0, 0.02, 0.05, 0.10, 0.20, 0.30)
+
 
 class TargetState(str, Enum):
     """States of the clicked target's life.
@@ -225,12 +233,23 @@ class TargetTracker:
         #: a return-on-zero: the veto block computes exactly the same ``total`` array
         #: it computed before E079, which is what keeps the shipped path identical.
         self._vote_mode: str = str(getattr(cfg.cost, "anchor_vote", "off") or "off").strip().lower()
-        if self._vote_mode not in ("off", "majority", "unanimous", "adaptive"):
+        if self._vote_mode not in ("off", "majority", "unanimous", "adaptive", "contrast", "any"):
             raise ValueError(
                 f"unknown cost.anchor_vote {self._vote_mode!r}; "
-                "expected 'off', 'majority', 'unanimous' or 'adaptive'"
+                "expected 'off', 'majority', 'unanimous', 'adaptive', 'contrast' or 'any'"
             )
-        self._vote_k: int = {"majority": 2, "unanimous": 3, "adaptive": 2}.get(self._vote_mode, 0)
+        #: E084b -- ``any`` is k = 1, the ONLY point of the k-axis the campaign never
+        #: measured (E079 ran k = 2, E081/E082 k = 2, ``unanimous`` k = 3).  The E084
+        #: step-0 audit showed why it matters: of the ceiling refusals that were the
+        #: TRUE target, R3 alone would have rescued 18 and R2 alone 0 -- so the two-bed
+        #: majority is refusing targets for the sake of a reference that never helps.
+        self._vote_k: int = {
+            "majority": 2,
+            "unanimous": 3,
+            "adaptive": 2,
+            "contrast": 2,
+            "any": 1,
+        }.get(self._vote_mode, 0)
         self._vote_alpha: float = float(getattr(cfg.cost, "anchor_vote_alpha", 0.1))
         #: E081 -- distress gate.  Sampled once per frame from the state the frame
         #: ENTERED in, i.e. strictly trailing and causal.  A plain list is used
@@ -238,6 +257,23 @@ class TargetTracker:
         self._vote_dw: int = max(1, int(getattr(cfg.cost, "anchor_vote_distress_window", 50) or 50))
         self._vote_tau: float = float(getattr(cfg.cost, "anchor_vote_distress_tau", 0.35))
         self._vote_hist: list[int] = []
+        #: E082 -- the contrast gate.  ``_vote_delta < 0`` disables the gate (and is
+        #: bit-identical to 'majority'), so the shipped default costs nothing.  The
+        #: counters below describe the ELIGIBLE population, i.e. exactly the
+        #: candidates the blanket vote would have rescued: the retention curve over
+        #: ``_CONTRAST_PROBES`` is what the deltas are chosen from, and it is reported
+        #: whether or not the gate is on, so "the contrast axis is empty" is a
+        #: measurement rather than an assumption.
+        self._vote_delta: float = float(getattr(cfg.cost, "anchor_vote_contrast", -1.0))
+        self._vote_contrast_n: int = 0
+        self._vote_contrast_sum: float = 0.0
+        self._vote_contrast_min: float = float("inf")
+        self._vote_contrast_max: float = float("-inf")
+        self._vote_contrast_ge: dict[str, int] = {f"{t:.2f}": 0 for t in _CONTRAST_PROBES}
+        #: Eligible candidates the contrast gate REMOVED.  Zero here with a non-zero
+        #: ``vote_rescued`` would mean the gate never bound, i.e. the E082 arm is the
+        #: E079 arm wearing a different name.
+        self._vote_contrast_blocked: int = 0
         #: Frames on which the distress gate suppressed the vote.  Distinguishes
         #: "the gate is doing work" from "the gate is never reached", which is the
         #: distinction E081's pre-registered kill criterion depends on.
@@ -260,6 +296,18 @@ class TargetTracker:
         #: Per-frame indices of the candidates the vote admitted (used to report
         #: whether the res admitted on this frame was one of them).
         self._vote_rescued_idx: set[int] = set()
+        #: E084 step 0 -- opt-in JSONL log of ceiling-refused candidates.  ``None``
+        #: means off, and then no code below does anything different.
+        self._bed_log_path: str = str(getattr(cfg.cost, "anchor_bed_log", "") or "")
+        self._bed_log = None
+        self._bed_last: dict | None = None
+        if self._bed_log_path:
+            try:
+                from pathlib import Path as _P
+                _P(self._bed_log_path).parent.mkdir(parents=True, exist_ok=True)
+                self._bed_log = open(self._bed_log_path, "a", encoding="utf-8")
+            except OSError:
+                self._bed_log = None
         #: E079 measurement of the E029 band: how often ``_anchor_limit`` is pinned
         #: at its ceiling, i.e. how often the "adaptive" band is really an absolute
         #: distance cut.  Independent of the vote, so both arms report it.
@@ -402,6 +450,31 @@ class TargetTracker:
             # cannot be mistaken for "the gate never helped".
             "vote_distress": float(self._vote_distress()),
             "vote_gated": int(self._vote_gated),
+            # E082 -- the contrast axis, reported in every arm.  ``n`` / ``mean`` /
+            # ``min`` / ``max`` describe the ELIGIBLE population (candidates the
+            # blanket vote would rescue); ``ge_*`` is the same population's retention
+            # curve, so the delta grid is chosen from data.  ``blocked`` counts the
+            # eligible candidates the gate removed: if it stays 0 while ``rescued``
+            # moves, the gate never bound and the arm is E079 under another name.
+            "anchor_vote_contrast": float(self._vote_delta),
+            "vote_contrast_n": int(self._vote_contrast_n),
+            "vote_contrast_mean": (
+                float(self._vote_contrast_sum) / float(self._vote_contrast_n)
+                if self._vote_contrast_n else None
+            ),
+            "vote_contrast_min": (
+                float(self._vote_contrast_min)
+                if self._vote_contrast_n and np.isfinite(self._vote_contrast_min) else None
+            ),
+            "vote_contrast_max": (
+                float(self._vote_contrast_max)
+                if self._vote_contrast_n and np.isfinite(self._vote_contrast_max) else None
+            ),
+            "vote_contrast_blocked": int(self._vote_contrast_blocked),
+            **{
+                f"vote_contrast_ge_{key}": int(n)
+                for key, n in self._vote_contrast_ge.items()
+            },
             "anchor_band_frames": int(self._band_frames),
             "anchor_band_saturated": int(self._band_saturated),
             "anchor_band_saturation": (
@@ -694,6 +767,56 @@ class TargetTracker:
         out[usable] = np.asarray(dists, dtype=np.float32)
         return out
 
+    @staticmethod
+    def _vote_contrast(
+        dist_r1: np.ndarray,
+        dist_r2: np.ndarray,
+        dist_r3: np.ndarray,
+    ) -> np.ndarray:
+        """E082 -- distance to the click crop minus distance to the best refreshed ref.
+
+        ``contrast > 0`` means the candidate looks MORE like the refreshed references
+        (the EMA anchor R2 and the long-term gallery R3) than like the frozen click
+        crop R1: the crop, not the candidate, is the stale reference.  That is the
+        quantity E082 gates on, and it is deliberately a bare difference of three
+        distances the vote already computes, so no new scale or constant enters.
+
+        Non-finite inputs propagate.  A candidate the gallery cannot score keeps
+        ``+inf`` and gets ``-inf``/NaN contrast, and ``inf - inf`` becomes NaN; the
+        gate rejects every non-finite contrast rather than reading it as a huge
+        margin.
+        """
+        with np.errstate(invalid="ignore"):
+            return np.asarray(dist_r1, np.float64) - np.minimum(
+                np.asarray(dist_r2, np.float64), np.asarray(dist_r3, np.float64)
+            )
+
+    def _vote_note_contrast(self, contrast: np.ndarray, eligible: np.ndarray) -> None:
+        """E082 -- accumulate the contrast retention curve over ELIGIBLE candidates.
+
+        ``eligible`` is the PRE-gate admission mask (the blanket k-of-3 answer), so the
+        curve answers exactly the question the delta grid asks: of the candidates E079
+        would have rescued, how many still clear each contrast threshold?  Reported in
+        every mode so the grid can be chosen from data and an arm where the gate never
+        binds is visible as ``vote_contrast_blocked == 0``.
+        """
+        mask = np.asarray(eligible, dtype=bool)
+        if not bool(np.any(mask)):
+            return
+        c = np.asarray(contrast, np.float64)[mask]
+        finite = c[np.isfinite(c)]
+        self._vote_contrast_n += int(c.size)
+        if finite.size:
+            self._vote_contrast_sum += float(np.sum(finite))
+            lo = float(np.min(finite))
+            hi = float(np.max(finite))
+            self._vote_contrast_min = min(self._vote_contrast_min, lo)
+            self._vote_contrast_max = max(self._vote_contrast_max, hi)
+            self._last_diag["vote_contrast_min"] = lo
+            self._last_diag["vote_contrast_max"] = hi
+        for key, thr in zip(self._vote_contrast_ge, _CONTRAST_PROBES):
+            self._vote_contrast_ge[key] += int(np.count_nonzero(finite >= thr))
+
     def _vote_admit(
         self,
         feats: np.ndarray,
@@ -734,21 +857,61 @@ class TargetTracker:
         self._vote_n += int(idx.size)
 
         r1 = np.asarray(dist_r1, np.float64)[idx] <= float(limit)
-        r2 = np.zeros(idx.size, dtype=bool)
+        #: d2/d3 are kept as float64 so the E082 contrast is computed from exactly the
+        #: numbers the vote compared against the band.  A missing R2 or an unscorable
+        #: gallery entry stays +inf, which fails ``<= limit`` exactly like the all-False
+        #: masks they produced before -- bit-identical for the E079/E081 arms.
+        d2 = np.full(idx.size, np.inf, dtype=np.float64)
         if self._vote_r2 is not None:
-            d2 = cosine_distance_matrix(feats[idx], self._vote_r2).ravel()
-            r2 = np.asarray(d2, np.float64) <= float(limit)
-        d3 = self._vote_gallery_distances(feats[idx])
-        r3 = np.isfinite(d3) & (np.asarray(d3, np.float64) <= float(limit))
+            d2 = np.asarray(cosine_distance_matrix(feats[idx], self._vote_r2).ravel(), np.float64)
+        r2 = d2 <= float(limit)
+        d3 = np.asarray(self._vote_gallery_distances(feats[idx]), np.float64)
+        r3 = np.isfinite(d3) & (d3 <= float(limit))
 
         passes = r1.astype(np.int8) + r2.astype(np.int8) + r3.astype(np.int8)
         ok = passes >= int(self._vote_k)
         self._vote_r1_pass += int(np.count_nonzero(r1))
         self._vote_r2_pass += int(np.count_nonzero(r2))
         self._vote_r3_pass += int(np.count_nonzero(r3))
+
+        # E082 -- the contrast gate.  Instrumented in EVERY mode (the curve is a
+        # measurement), applied only by 'contrast'.  At delta = 0 the gate cannot
+        # remove a candidate the vote admitted: such a candidate has R1 in the
+        # minority, i.e. d_R1 > limit >= min(d_R2, d_R3), so contrast > 0 and the
+        # gate is a no-op.  That is what pins 'contrast' delta = 0 to 'majority'
+        # bit-for-bit, and it is the experiment's plumbing falsifier.
+        #
+        # Non-finite contrast obeys the plan literally: NaN compares False and is
+        # rejected (an unusable R1 distance is not evidence that the refs are right),
+        # +inf passes every delta (an infinitely stale crop IS the strongest evidence
+        # for the refreshed refs) and -inf never passes.  The only place delta = 0
+        # could differ from 'majority' is therefore a NaN R1 distance, which needs a
+        # NaN descriptor; the sweep's per-sequence identity check pins that it never
+        # happens.
+        contrast = self._vote_contrast(np.asarray(dist_r1, np.float64)[idx], d2, d3)
+        self._vote_note_contrast(contrast, ok)
+        if self._vote_mode == "contrast" and self._vote_delta >= 0.0:
+            gate = contrast >= float(self._vote_delta)
+            blocked = int(np.count_nonzero(ok & ~gate))
+            self._vote_contrast_blocked += blocked
+            self._last_diag["vote_contrast_blocked"] = blocked
+            ok = ok & gate
+
         self._vote_rescued += int(np.count_nonzero(ok))
         admitted[idx] = ok
         self._vote_rescued_idx = {int(k) for k in idx[ok]}
+        if self._bed_log is not None:
+            # E084 step 0: keep the per-candidate bed numbers so the caller can log
+            # them together with the candidate boxes that only it knows about.
+            self._bed_last = {
+                "idx": idx,
+                "d1": np.asarray(dist_r1, np.float64)[idx],
+                "d2": d2,
+                "d3": d3,
+                "limit": float(limit),
+                "passes": passes,
+                "ok": ok,
+            }
 
         self._last_diag["vote_n"] = int(idx.size)
         self._last_diag["vote_r1"] = int(np.count_nonzero(r1))
@@ -756,6 +919,35 @@ class TargetTracker:
         self._last_diag["vote_r3"] = int(np.count_nonzero(r3))
         self._last_diag["vote_rescued"] = int(np.count_nonzero(ok))
         return admitted
+
+    def _bed_log_frame(self, sub: list, veto) -> None:
+        """E084 step 0: one JSONL line per ceiling-refused candidate (opt-in, off by default)."""
+        last = self._bed_last
+        if self._bed_log is None or last is None or not bool(np.any(veto)):
+            return
+        import json as _json
+
+        def _num(x) -> float | None:
+            v = float(x)
+            if v != v or v == float("inf") or v == float("-inf"):
+                return None
+            return v
+
+        for pos, cand in enumerate(last["idx"]):
+            det = sub[int(cand)]
+            box = [round(float(v), 2) for v in np.asarray(det.xyxy, dtype=float).ravel()[:4]]
+            self._bed_log.write(_json.dumps({
+                "frame": int(self.frame_idx),
+                "cand": int(cand),
+                "box": box,
+                "d1": _num(last["d1"][pos]),
+                "d2": _num(last["d2"][pos]),
+                "d3": _num(last["d3"][pos]),
+                "limit": last["limit"],
+                "passes": int(last["passes"][pos]),
+                "admitted": bool(last["ok"][pos]),
+            }) + "\n")
+        self._bed_log.flush()
 
     def _vote_update_r2(self, cfg: Any, feat: np.ndarray | None) -> None:
         """Move the refreshed anchor R2 towards an accepted crop -- if R1 and R3 agree.
@@ -1052,6 +1244,9 @@ class TargetTracker:
         search_only = bool(getattr(cfg, "anchor_ceiling_search_only", False))
         if limit is not None:
             self._vote_note_band(cfg, float(limit))
+        # E089: the band above is recorded at its while-tracking value; the veto below
+        # uses the lost-widened one.  Identical to `limit` at the default scale 1.0.
+        limit = self._lost_scaled_limit(cfg, limit)
         if limit is not None and (searching or not search_only) and self._anchor_feat is not None and len(sub):
             feats = [d.feat for d in sub]
             if all(f is not None for f in feats):
@@ -1076,6 +1271,12 @@ class TargetTracker:
                         for i in range(len(veto))
                     ]
                     self._last_diag["anchor_rejected"] = int(veto.sum())
+                    # E084 step 0: opt-in record of EVERY ceiling-refused candidate
+                    # (the `over` mask, not the vote's residual veto) together with the
+                    # three bed distances, so the ceiling itself can be audited against
+                    # GT offline -- the question is "which bed refuses the true target",
+                    # which is about `over`, and the vote only ever sees its remainder.
+                    self._bed_log_frame(sub, over)
         # E032: adaptive motion band, applied as a veto exactly like the appearance
         # band.  ``maha`` is inf when no motion model exists, so it is naturally inert
         # before the filter has started.
@@ -1742,6 +1943,42 @@ class TargetTracker:
         if pts is None:
             return None
         return trail_descriptor(pts, steps=steps)
+
+    def _lost_scaled_limit(self, cfg: Any, limit: float | None) -> float | None:
+        """E089: widen (or drop) the anchor ceiling while the target is lost.
+
+        The ceiling is applied as a veto over candidates that already carry a
+        measurement, and it exists to prevent an identity switch while the tracker is
+        watching the target.  E088's audit showed that on the frames where the shipped
+        tracker misses a *visible* target, 41 % are refused by this gate while the
+        tracker is already in ``lost_short`` / ``lost_long`` -- there is no identity left
+        to protect, so the veto buys nothing and costs a recoverable reacquisition.
+
+        ``cost.anchor_band_lost_scale`` is the knob, shipped at 1.25 (E089): 1.0 is the
+        pre-E089 behaviour and returns the limit untouched (bit-identical control), > 1
+        multiplies the band, and a value <= 0 drops the ceiling entirely (returns
+        ``None``) once the target is lost.
+        """
+        if limit is None:
+            return None
+        # Accept either the whole Config or just its cost section: `_associate` hands in
+        # `cfg.cost`, while tests and future callers may hold the Config itself.
+        cost_cfg = getattr(cfg, "cost", cfg)
+        try:
+            scale = float(getattr(cost_cfg, "anchor_band_lost_scale", 1.0))
+        except (TypeError, ValueError):
+            return limit
+        if scale == 1.0:
+            return limit
+        # `lost_short_after` lives in the state section, not in cost (cfg here is CostCfg).
+        state_cfg = getattr(getattr(self, "cfg", None), "state", None)
+        after = int(getattr(state_cfg, "lost_short_after", 12))
+        if int(getattr(self, "frames_since_update", 0)) <= after:
+            return limit
+        self._last_diag["anchor_band_lost_scale"] = scale
+        if scale <= 0.0:
+            return None
+        return float(limit) * scale
 
     def _anchor_limit(self, cfg: Any) -> float | None:
         """Distance ceiling against the frozen click crop (E027 fixed, E029 adaptive).

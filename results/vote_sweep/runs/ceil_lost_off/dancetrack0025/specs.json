@@ -1,0 +1,12 @@
+[
+  {
+    "seq_name": "dancetrack0025",
+    "variant": "ceil_lost_off",
+    "overrides": {
+      "cost.anchor_vote": "off",
+      "cost.anchor_band_lost_scale": 0.0
+    },
+    "mask": "none",
+    "target_id": 6
+  }
+]

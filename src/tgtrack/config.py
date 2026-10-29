@@ -752,6 +752,119 @@ class CostCfg:
     #: stays 'off'.
     anchor_vote_distress_window: int = 50
     anchor_vote_distress_tau: float = 0.35
+    #: E082 -- gate the E079 vote by CONTRAST instead of by distress
+    #: (docs/E082_PLAN.md).  E079's blanket vote is the campaign's best single-target
+    #: signal (+5.88 pp paired TSR, -5.65 pp paired FAR over 22 held-out DanceTrack-val
+    #: sequences) but its TSR CI crosses zero; E081 gated the vote on tracker distress
+    #: and falsified itself -- the gate kept 85-102 % of the FAR gain but only 7-45 %
+    #: of the TSR gain, so the useful rescues happen in CONFIDENT frames.  E082
+    #: therefore stops asking "when is the tracker uncertain" and asks "when is the
+    #: click crop the wrong reference":
+    #:
+    #:   contrast = d_R1 - min(d_R2, d_R3)
+    #:
+    #: i.e. how much closer the candidate looks to the refreshed references (R2, R3)
+    #: than to the frozen click crop (R1).  ``anchor_vote='contrast'`` uses k = 2 and
+    #: admits a vetoed candidate iff the majority vote already admits it AND
+    #: contrast >= ``anchor_vote_contrast``.  At delta = 0.0 the gate is a no-op --
+    #: a candidate that reaches the vote has R1 in the minority, so contrast > 0 for
+    #: every candidate the vote admits -- and 'contrast' with delta = 0 is
+    #: bit-identical to 'majority' (pinned by tests).  That is the plumbing
+    #: falsifier: if delta = 0 does not reproduce E079 bit-for-bit, the gate is
+    #: wired wrong and no non-zero delta means anything.
+    #: Negative disables the gate (treated as unreachable, so 'contrast' with
+    #: delta < 0 is also bit-identical to 'majority'); inert while ``anchor_vote``
+    #: stays 'off'.
+    anchor_vote_contrast: float = -1.0
+
+    #: E084 step 0 -- per-bed rejection log.  Path to a JSONL file, or "" (default)
+    #: to disable.  When set, every candidate refused by the identity ceiling is
+    #: written out with its distances to R1 / R2 / R3, the band limit and the vote
+    #: verdict, so an offline join against GT can answer the only question worth
+    #: asking before building a per-part ceiling: *was the refused candidate the
+    #: true target, and which bed refused it?*  Off by default because it is pure
+    #: I/O on the measurement path -- the bit-identity controls must not see it.
+    anchor_bed_log: str = ""
+
+    #: E089 -- widen (or drop) the identity ceiling while the target is LOST.
+    #:
+    #: The E027/E029 ceiling against the frozen click crop exists to stop an identity
+    #: switch *while we are watching the target*.  E088's per-frame audit found that
+    #: 41 % of the frames on which the shipped tracker misses a visible target are
+    #: refused by exactly this gate (`all_gated:anchor_ceiling`) while the tracker is
+    #: already in ``lost_short`` / ``lost_long`` -- i.e. there is no identity left to
+    #: protect and the veto only converts a recoverable candidate into another coasted
+    #: box (91 % of the shipped target loss is such a box).  This multiplier is applied
+    #: to the band limit only after ``lost_short_after`` frames without an accepted
+    #: update: 1.0 is the pre-E089 behaviour and stays bit-identical, > 1 widens the band,
+    #: and 0.0 (or any negative value) drops the ceiling entirely while lost.  Inert while
+    #: the tracker has a fresh measurement.
+    #:
+    #: SHIPPED at 1.25 (E089, docs/EXPERIMENTS.md): on the 22-sequence held-out protocol
+    #: pooled TSR 0.2104 -> 0.2395 (+2.91 pp, paired CI [+0.13, +6.64]) and FAR 0.2472 ->
+    #: 0.2089 (-3.83 pp paired), with no sequence losing more than 2.0 pp of TSR, no
+    #: ``id_consistency`` violation on a >= 0.90 sequence (P2) and the partial-view
+    #: criterion-3 guard bit-identical at 0.8545.  The stronger 0.0 arm scored higher
+    #: pooled (+5.57 pp) but broke ``dancetrack0077`` (-21.0 pp) and P2 on
+    #: ``dancetrack0097``, so the relaxer shipped in the mild setting.
+    anchor_band_lost_scale: float = 1.25
+    #: E083 -- run two structurally different hypotheses instead of one tracker
+    #: (docs/E083_PLAN.md).  The amendment in docs/EXPERIMENTS.md replaces the
+    #: plan's K clones with K = 2 hypotheses that differ in exactly one thing:
+    #: which reference set they trust.
+    #:
+    #:   H_crop     the shipped tracker, one frozen reference: the click crop (R1);
+    #:   H_gallery  the E079 k = 2 arm: the refreshed anchor R2 and the
+    #:              long-term gallery R3 (``anchor_vote='majority'``).
+    #:
+    #: Both run as real ``TargetTracker`` instances on the same frames and the same
+    #: detections, and one of them reports the box.  The deciding score is NOT a
+    #: comparison against a reference set -- that would be circular, since any score
+    #: against R1 favours H_crop and any score against R2/R3 favours H_gallery.  It is
+    #: a test of temporal generalisation: at the first disagreement the two
+    #: reference sets are frozen, and over the next ``mh_validate_frames`` frames each
+    #: hypothesis is scored on how well its own frozen set predicts the crops THAT
+    #: hypothesis goes on to accept (``d_own``) relative to the other set
+    #: (``d_other``).  The drift ratio ``mean(d_own) / (mean(d_other) + eps)`` is the
+    #: statistic; a low ratio means "this reference set still predicts what this
+    #: hypothesis will see", which is the property that matters, and it is measured
+    #: symmetrically on both sides.  Full derivation and the pre-registered ship rule
+    #: are in the plan; ``src/tgtrack/hypotheses.py`` is the implementation.
+    #:
+    #: "off"        shipped value: one tracker, no pair, arithmetic unchanged.
+    #:              With it, E083's machinery is never constructed.
+    #: "dual"       both hypotheses run; the reported box is switched only on a
+    #:              margin-confirmed posterior.
+    #: "dual_frozen" control: both hypotheses run and pay the compute, but the
+    #:              reported hypothesis is pinned to H_crop after frame 0.  It
+    #:              isolates "two boxes cost time" from "the posterior can switch".
+    mh_mode: str = "off"
+    #: E083 -- posterior margin required before the reported hypothesis may switch
+    #: (``w_win - w_lose >= mh_commit_margin``), i.e. how sure the temporal
+    #: validation must be.  0.15 is a weak bar on purpose: the window only contains
+    #: ``mh_validate_frames`` frames, and a strong bar would turn the arm into a
+    #: no-op that cannot be told apart from a broken one.  0.0 switches on ANY
+    #: non-tie (the "eager" arm); 1.0 makes switching impossible (a control that
+    #: must be bit-identical to "off" in the reported box, modulo the pair's compute).
+    mh_commit_margin: float = 0.15
+    #: E083 -- consecutive decisions the winning hypothesis must win by the margin
+    #: before the reported box actually moves, via ``ChallengeTracker``'s
+    #: consecutive-frame logic (reused rather than rewritten).  One window is one
+    #: decision, so 3 means "three agreeing window closes"; a one-frame fluke of the
+    #: ratio cannot flip the reported box.
+    mh_commit_frames: int = 3
+    #: E083 -- length of the temporal-validation window opened by a disagreement,
+    #: in frames.  12 (~0.4 s at 30 fps) is long enough for an appearance change to
+    #: show up in the accepted crops and short enough that a wrong lock does not own
+    #: four seconds of the sequence.  While a disagreement persists with no commit,
+    #: a fresh window re-opens every ``mh_validate_frames`` frames.
+    mh_validate_frames: int = 12
+    #: E083 -- scale of the log-posterior, ``logw_h = -mh_drift_lambda * r_h``.  At
+    #: 2.0 a ratio gap of 0.5 (one reference set twice as far as the other) gives
+    #: roughly 0.73 / 0.27, i.e. a decisive but not absolute posterior; the log-sum-
+    #: exp normalisation makes lambda a pure sharpness parameter, not a threshold.
+    #: 0.0 is the flat control (weights 0.5 / 0.5, so the margin can never be met).
+    mh_drift_lambda: float = 2.0
 
 
 @dataclass

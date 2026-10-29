@@ -79,7 +79,16 @@ from typing import Any, Sequence
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
-VAL_ROOT = ROOT / "data" / "raw" / "dancetrack" / "val"
+#: E085 -- cohort override.  Criterion 2's effect is sparse over 22 sequences (15 of
+#: them bit-unchanged), which is why E082's pooled CI cannot certify it.  The only
+#: honest way to buy power is a FRESH, pre-declared cohort, so the root is an
+#: environment variable: the default epoch stays ``.../dancetrack/val``, and E085 runs
+#: ``.../dancetrack/train`` with its own E079_OUT so the two epochs never pool.
+VAL_ROOT = Path(os.environ.get("VOTE_DATA_ROOT") or (ROOT / "data" / "raw" / "dancetrack" / "val"))
+#: E085 -- val and train share the ``dancetrack00XX`` numbering, so the val dev-split
+#: name check cannot mean anything on the train cohort; the epoch sets this to 0 and
+#: the run prints the fact instead of silently trusting a collision.
+DEV_CHECK = os.environ.get("VOTE_DEV_CHECK", "1") != "0"
 OUT_ROOT = Path(os.environ.get("E079_OUT") or (ROOT / "results" / "vote_sweep"))
 REPORT_JSON = OUT_ROOT / "summary.json"
 REPORT_MD = OUT_ROOT / "REPORT.md"
@@ -115,11 +124,25 @@ POOL_KEYS = METRICS + ("blind_present_share",)
 
 ARMS: dict[str, dict[str, Any]] = {
     "vote_off": {
-        "overrides": {"cost.anchor_vote": "off", "cost.anchor_vote_alpha": 0.1},
+        # E089 shipped a non-1.0 default for `anchor_band_lost_scale`; the reference arm
+        # pins the OLD value explicitly so the 22-sequence records of the E070/E079/E082
+        # epoch (and the margin_0.20 no-op check) stay comparable bit for bit.
+        "overrides": {
+            "cost.anchor_vote": "off",
+            "cost.anchor_vote_alpha": 0.1,
+            "cost.anchor_band_lost_scale": 1.0,
+        },
         "variant": "vote_off",
         "reference": True,
         "k": 0,
-        "label": "anchor veto OFF (shipped behaviour): one reference, R1 only",
+        "label": "anchor veto OFF, pre-E089 epoch (lost-scale pinned to 1.0)",
+    },
+    "shipped": {
+        "overrides": {"cost.anchor_vote": "off"},
+        "variant": "shipped_e089",
+        "reference": False,
+        "k": 0,
+        "label": "the shipped default after E089 (lost-scale 1.25)",
     },
     "vote_majority": {
         "overrides": {"cost.anchor_vote": "majority", "cost.anchor_vote_alpha": 0.1},
@@ -199,18 +222,147 @@ ARMS: dict[str, dict[str, Any]] = {
         "k": 2,
         "label": "E081 CONTROL: gate never opens -> must reproduce vote_off",
     },
+    # E083 (docs/E083_PLAN.md + its AMENDMENT in docs/EXPERIMENTS.md): dual hypothesis tracking.
+    # H_crop = shipped tracker (anchor_vote off); H_gallery = the E079 arm (anchor_vote majority).
+    # `mh_off` is the structural falsifier (mode off builds a plain TargetTracker, so it must equal
+    # `vote_off` bit-for-bit); `mh_dual_frozen` is the control that runs both hypotheses but pins
+    # the reported box to H_crop, isolating "spends compute" from "posterior really switches".
+    "mh_off": {
+        "overrides": {"cost.mh_mode": "off"},
+        "variant": "mh_off",
+        "reference": False,
+        "k": 0,
+        "label": "E083 FALSIFIER: dual machinery off -> must equal vote_off bit-for-bit",
+    },
+    "mh_dual": {
+        "overrides": {"cost.mh_mode": "dual"},
+        "variant": "mh_dual",
+        "reference": False,
+        "k": 2,
+        "label": "E083: H_crop + H_gallery both alive; posterior commits on a 0.15 margin x 3 frames",
+    },
+    "mh_dual_frozen": {
+        "overrides": {"cost.mh_mode": "dual_frozen"},
+        "variant": "mh_dual_frozen",
+        "reference": False,
+        "k": 2,
+        "label": "E083 CONTROL: both hypotheses run, reported box pinned to H_crop",
+    },
 }
+
+#: E082 (docs/E082_PLAN.md): the E079 majority vote is admitted only where the
+#: candidate looks MORE like the refreshed references than like the frozen click
+#: crop, i.e. where ``contrast = d_R1 - min(d_R2, d_R3) >= delta``.  A candidate
+#: reaches the vote only because R1 already refused it, so contrast > 0 for every
+#: candidate the vote would rescue; ``delta = 0`` therefore admits exactly what
+#: `vote_majority` admits and is the bit-identical control that falsifies the
+#: plumbing.  Two delta sets are registered, because the plan fixes
+#: {0.10, 0.20, 0.30} while the contrast scale is unknown: the finer {0.02, 0.05}
+#: probes the same axis near zero.  Both are registered BEFORE any E082 number
+#: exists, so neither the plan nor the sharpened set can be chosen after the fact;
+#: the report prints the measured retention curve next to the grid.
+E082_DELTAS: tuple[float, ...] = (0.00, 0.02, 0.05, 0.10, 0.20, 0.30)
+
+for _delta in E082_DELTAS:  # noqa: WPS440 - loop-local name, module-level table
+    _arm_id = "vote_contrast_%.2f" % _delta
+    ARMS[_arm_id] = {
+        "overrides": {
+            "cost.anchor_vote": "contrast",
+            "cost.anchor_vote_alpha": 0.1,
+            "cost.anchor_vote_contrast": float(_delta),
+        },
+        "variant": _arm_id,
+        "reference": False,
+        "k": 2,
+        "label": (
+            "E082: k = 2 vote, admitted only while d_R1 - min(d_R2, d_R3) >= %.2f"
+            % _delta
+        ) + (
+            "  (CONTROL: must be bit-identical to vote_majority)"
+            if _delta == 0.0 else ""
+        ),
+    }
+
+#: E084b -- k = 1, registered after the E084 step-0 audit (not after any k=1 number,
+#: which does not exist): the audit found that among ceiling refusals that were the
+#: TRUE target, R3 alone would rescue 18 and R2 alone 0, so the k = 2 majority refuses
+#: real targets to satisfy a reference that never contributes.
+ARMS["vote_any"] = {
+    "overrides": {"cost.anchor_vote": "any", "cost.anchor_vote_alpha": 0.1},
+    "variant": "vote_any",
+    "reference": False,
+    "k": 1,
+    "label": "E084b: k = 1, admit when ANY of R1/R2/R3 passes (unmeasured corner of the axis)",
+}
+
+#: E086-r: the lone-candidate guard -- the OTHER knob in the handover hole.  Shipped
+#: default is ``None`` (off); the armed values refuse an association whose only
+#: candidate costs more than the bound.  The synthetic rig measured a 3/4 -> 1/4
+#: handover cut at a 2.6 pp success price (``results/motion_ablation/lone_bound.md``),
+#: but no controlled REAL-data pair has ever existed -- the claim that circulated in
+#: the README compared against ``target_obs19_shipped``, which has no armed variant,
+#: and was retracted.  See ``docs/E086_PLAN.md`` (revision) for the pre-registration.
+for _lone in (0.30, 0.40, 0.50):
+    ARMS["vote_lone_%.2f" % _lone] = {
+        "overrides": {
+            "cost.anchor_vote": "off",
+            "cost.lone_candidate_accept_cost": float(_lone),
+        },
+        "variant": "vote_lone_%.2f" % _lone,
+        "reference": False,
+        # k = 0: no vote is involved here.  The field is required by the run record
+        # (the vote arms carry k = 1/2/3) and 0 keeps "no vote" distinguishable from
+        # "k = 1" in every downstream table.
+        "k": 0,
+        "lone_bound": float(_lone),
+        "label": "E086-r: lone-candidate guard armed at %.2f (shipped: None)" % _lone,
+    }
 
 ARM_ORDER = [
     "vote_off",
     "vote_majority",
+    "vote_any",
     "vote_unanimous",
     "vote_adaptive_0.20",
     "vote_adaptive_0.35",
     "vote_adaptive_0.50",
     "vote_adaptive_0.65",
     "vote_adaptive_1.00",
-]
+] + ["vote_contrast_%.2f" % _d for _d in E082_DELTAS] + ["vote_lone_%.2f" % _l for _l in (0.30, 0.40, 0.50)]
+
+#: E089: widen (or drop) the identity ceiling while the target is LOST.  E088 measured
+#: who the loss belongs to -- 91 % of it is a reported box that is neither the target nor
+#: locked to anyone, 41 % of the missed frames are refused by `all_gated:anchor_ceiling`
+#: while the tracker is already in lost_short / lost_long, and a candidate existed every
+#: time.  The ceiling exists to stop a switch while watching; while lost there is nothing
+#: left to protect.  `ceil_lost_1.00` is the plumbing control (must be bit-identical to
+#: `vote_off`); 0.0 means "ceiling off while lost".
+for _scale in (1.25, 1.50, 2.00, 0.0):
+    _name = "ceil_lost_%s" % ("off" if _scale == 0.0 else ("%.2f" % _scale))
+    ARMS[_name] = {
+        "overrides": {
+            "cost.anchor_vote": "off",
+            "cost.anchor_band_lost_scale": float(_scale),
+        },
+        "variant": _name,
+        "reference": False,
+        "k": 0,
+        "lost_scale": float(_scale),
+        "label": "E089: anchor ceiling scale %s while lost (shipped: 1.00)" % (
+            "OFF" if _scale == 0.0 else "%.2f" % _scale),
+    }
+ARM_ORDER += ["ceil_lost_%.2f" % _s for _s in (1.25, 1.50, 2.00)] + ["ceil_lost_off", "ceil_lost_1.00"]
+
+#: E089's built-in plumbing control: scale 1.0 spells out the shipped behaviour, so it must
+#: be bit-identical to `vote_off` on every sequence.  Same pattern as `vote_contrast_0.00`.
+ARMS["ceil_lost_1.00"] = {
+    "overrides": {"cost.anchor_vote": "off", "cost.anchor_band_lost_scale": 1.0},
+    "variant": "ceil_lost_1.00",
+    "reference": False,
+    "k": 0,
+    "lost_scale": 1.0,
+    "label": "E089 control: scale 1.0, must be bit-identical to vote_off",
+}
 REFERENCE_ARM = "vote_off"
 
 
@@ -301,7 +453,9 @@ def _run_child() -> int:
         "--data-root", str(VAL_ROOT / seq),
         "--out", str(out_dir),
         "--mask", PROTOCOL["mask"],
-        "--max-frames", str(PROTOCOL["max_frames"]),
+        # E082b: the CHILD is a separate process, so a PROTOCOL override made in the
+        # parent after parse_args does not reach it -- it must travel by env.
+        "--max-frames", str(int(os.environ.get("E079_MAX_FRAMES") or PROTOCOL["max_frames"])),
         "--subsample", str(PROTOCOL["subsample"]),
         "--jobs", str(PROTOCOL["jobs"]),
         # Recorded, never used for selection: build_variants is pinned above.
@@ -326,8 +480,9 @@ def heldout_sequences(data_root: Path) -> list[str]:
         name for name in found
         if (data_root / name / "gt" / "gt.txt").is_file() or (data_root / name / "img1").is_dir()
     ]
-    seqs = [name for name in present if name not in DEV_SEQUENCES]
-    leaked = sorted(DEV_SEQUENCES & set(seqs))
+    dev = DEV_SEQUENCES if DEV_CHECK else set()
+    seqs = [name for name in present if name not in dev]
+    leaked = sorted(dev & set(seqs))
     if leaked:
         raise SystemExit("[vote_sweep] FATAL: dev sequence(s) %s in held-out selection" % leaked)
     if not seqs:
@@ -610,7 +765,9 @@ def _vote_counters(stats: dict[str, Any] | None) -> dict[str, Any]:
         return {"available": False, "vote_mode": None, "vote_alpha": None,
                 "vote_frames": -1, "vote_n": -1, "vote_r1": -1, "vote_r2": -1, "vote_r3": -1,
                 "vote_rescued": -1, "vote_rescued_accepted": -1, "vote_r2_updates": -1,
-                "band_frames": -1, "band_saturated": -1, "band_saturation": None}
+                "band_frames": -1, "band_saturated": -1, "band_saturation": None,
+                "vote_contrast_n": -1, "vote_contrast_blocked": -1,
+                "vote_contrast_mean": None}
     sat = stats.get("anchor_band_saturation")
     return {
         "available": True,
@@ -627,11 +784,31 @@ def _vote_counters(stats: dict[str, Any] | None) -> dict[str, Any]:
         "band_frames": int(stats.get("anchor_band_frames", -1)),
         "band_saturated": int(stats.get("anchor_band_saturated", -1)),
         "band_saturation": (None if sat is None else round(float(sat), 6)),
+        # E082: the contrast axis.  -1 means "this run predates the E082 counters"
+        # (E079/E081 summaries on disk), which is NOT the same as "the gate never
+        # bound" -- that is a 0.  The `vote_contrast_ge_*` retention counts are
+        # carried through as a dynamic key family so the probe grid lives in one
+        # place (`_CONTRAST_PROBES` in target_tracker.py).
+        "vote_contrast_n": int(stats.get("vote_contrast_n", -1)),
+        "vote_contrast_blocked": int(stats.get("vote_contrast_blocked", -1)),
+        "vote_contrast_mean": (None if stats.get("vote_contrast_mean") is None
+                               else round(float(stats["vote_contrast_mean"]), 6)),
+        **{str(k): int(v) for k, v in stats.items()
+           if str(k).startswith("vote_contrast_ge_")},
     }
 
 
 def _reference_check(seq: str, tsr: float, far: float, target_id: int | None) -> dict[str, Any] | None:
     """Compare one `vote_off` run against the E070 `margin_0.20` reference numbers."""
+    if os.environ.get("VOTE_DATA_ROOT"):
+        # E085 -- a custom root is a different corpus; ``REFERENCE_DIR`` holds val
+        # numbers under the same sequence NAMES, so comparing would be a name
+        # collision dressed up as a reproduction check.
+        return None
+    if PROTOCOL["max_frames"] != 300:
+        # E082b's 600-frame epoch has no 300-frame counterpart to reproduce, so a
+        # comparison here would report a mismatch that means nothing.
+        return None
     ref_path = REFERENCE_DIR / ("%s.json" % seq)
     if not ref_path.is_file():
         return None
@@ -796,6 +973,25 @@ def pool_arm(rows: Sequence[dict[str, Any]]) -> dict[str, Any]:
     for key in ("vote_frames", "vote_n", "vote_r1", "vote_r2", "vote_r3", "vote_rescued",
                 "vote_rescued_accepted", "vote_r2_updates", "band_frames", "band_saturated"):
         eng[key] = sum(max(0, int(r.get(key, -1) or 0)) for r in inc)
+    # E082 -- the contrast axis, pooled over the same population.  `contrast_n` is
+    # the number of ELIGIBLE candidates (those the blanket vote would rescue), so
+    # the `ge_*` counts divided by it are the retention curve the delta grid is
+    # read against, and `blocked / n` is the share of E079's rescues the gate
+    # removed.  blocked == 0 with a non-zero `vote_rescued` is the falsifier: the
+    # gate never bound and the arm is E079 under another name.
+    ge_keys = sorted({str(k) for r in inc for k in r
+                      if str(k).startswith("vote_contrast_ge_")})
+    eng["contrast_n"] = sum(max(0, int(r.get("vote_contrast_n", -1) or 0)) for r in inc)
+    eng["contrast_blocked"] = sum(
+        max(0, int(r.get("vote_contrast_blocked", -1) or 0)) for r in inc)
+    for key in ge_keys:
+        count = sum(max(0, int(r.get(key, 0) or 0)) for r in inc)
+        eng[key] = count
+        eng[key.replace("vote_contrast_ge_", "contrast_keep_")] = (
+            round(count / eng["contrast_n"], 6) if eng["contrast_n"] > 0 else None)
+    if eng["contrast_n"] > 0:
+        eng["contrast_blocked_share"] = round(
+            eng["contrast_blocked"] / eng["contrast_n"], 6)
     eng["sequences_with_any_veto"] = sum(1 for r in inc if int(r.get("vote_n", 0) or 0) > 0)
     eng["sequences_with_any_rescue"] = sum(1 for r in inc if int(r.get("vote_rescued", 0) or 0) > 0)
     eng["sequences_with_any_r2_update"] = sum(
@@ -948,9 +1144,156 @@ def control_check(arm_entry: dict[str, Any], ref_entry: dict[str, Any]) -> dict[
     }
 
 
+def verdict_contrast(
+    arm_entry: dict[str, Any],
+    ref_entry: dict[str, Any],
+    majority_entry: dict[str, Any] | None = None,
+    *,
+    sequences: Sequence[str] | None = None,
+) -> dict[str, Any]:
+    """E082's own pre-registered rule -- NOT the E079 rule above.
+
+    ``docs/E082_PLAN.md`` asks a different question from E079 (when is the click crop
+    the wrong reference, rather than when is the tracker uncertain), so it states its
+    own bar, evaluated against ``vote_off``:
+
+      1. paired dTSR > 0 with the paired 95 % CI excluding 0; and
+      2. paired dFAR < 0 with the paired 95 % CI upper bound below +3 pp.
+
+    Clause 1 is deliberately weaker than E079's ``+3 pp`` bar: E079 already
+    established the point estimate (+5.88 pp) and missed only because its interval
+    reached below zero, so E082 is a PRECISION experiment -- it wins by keeping the
+    sign with a tighter interval, not by beating +3 pp a second time.
+
+    ``sequences`` restricts the paired bootstrap to a named half (the TEST half is the
+    one that may decide; the EXPLORE half is reported for the record).  ``None`` means
+    every paired sequence.  ``majority_entry`` adds the mechanism falsifier: an arm
+    bit-identical to ``vote_majority`` means the contrast never bound.
+    """
+    out: dict[str, Any] = {
+        "arm": arm_entry["arm"],
+        "delta": arm_entry["overrides"].get("cost.anchor_vote_contrast"),
+        "subset": ("all" if sequences is None else "%d sequences" % len(sequences)),
+        "rule": ("E082: SHIP iff (1) paired dTSR > 0 with the 95 %% CI excluding 0 AND "
+                 "(2) paired dFAR < 0 with the paired 95 %% CI upper bound < +%.1f pp, "
+                 "versus `%s`" % (FAR_MAX_PP, REFERENCE_ARM)),
+    }
+    if not arm_entry.get("pooled") or not ref_entry.get("pooled"):
+        out.update(verdict="KILL", text="KILL: no complete pool (excluded/errored pairs).")
+        return out
+    want = None if sequences is None else {str(s) for s in sequences}
+    arm_rows = [r for r in arm_entry["rows"] if want is None or r.get("sequence") in want]
+    ref_rows = [r for r in ref_entry["rows"] if want is None or r.get("sequence") in want]
+    # The identity check is a property of the whole arm, not of the subset, so it is
+    # recorded even when the subset is too small to carry a verdict.
+    if majority_entry is not None and majority_entry.get("pooled"):
+        ident = control_check(arm_entry, majority_entry)
+        out["identical_to_majority"] = bool(ident["identical"])
+        out["n_compared_to_majority"] = int(ident["n_compared"])
+        out["max_abs_dtsr_vs_majority"] = ident["max_abs_dtsr"]
+        out["max_abs_dfar_vs_majority"] = ident["max_abs_dfar"]
+        out["max_abs_did_vs_majority"] = ident["max_abs_did"]
+        out["per_sequence_vs_majority"] = ident["per_sequence"]
+    pb = {key: paired_bootstrap(arm_rows, ref_rows, key=key) for key in POOL_KEYS}
+    if not pb["tsr"].get("n_paired"):
+        out.update(verdict="KILL", n_paired=0,
+                   text="KILL: no paired sequence in this subset.")
+        return out
+    if int(pb["tsr"]["n_paired"]) < 3:
+        # A bootstrap over one or two sequences has no interval worth quoting; the
+        # E081 close-out learned this the hard way (a 1-sequence "CI" printed as if it
+        # were evidence).  Refuse to claim a verdict rather than overstate one.
+        out.update(verdict="INSUFFICIENT", n_paired=int(pb["tsr"]["n_paired"]),
+                   text="INSUFFICIENT: only %d paired sequence(s) in this subset; a verdict "
+                        "needs at least 3." % int(pb["tsr"]["n_paired"]))
+        return out
+    tsr, far, dis = pb["tsr"], pb["far"], pb["id_consistency"]
+    dtsr = float(tsr["delta_mean"]) * 100.0
+    dfar = float(far["delta_mean"]) * 100.0
+    tsr_ci = (float(tsr["p2.5"]) * 100.0, float(tsr["p97.5"]) * 100.0)
+    far_ci = (float(far["p2.5"]) * 100.0, float(far["p97.5"]) * 100.0)
+    ok_tsr = bool(dtsr > 0.0 and tsr_ci[0] > 0.0)
+    ok_far = bool(dfar < 0.0 and far_ci[1] < FAR_MAX_PP)
+    ship = bool(ok_tsr and ok_far)
+    out.update(
+        verdict="SHIP" if ship else "KILL",
+        n_paired=int(tsr["n_paired"]),
+        paired_dtsr_mean_pp=round(dtsr, 3),
+        paired_dtsr_ci_pp=[round(tsr_ci[0], 3), round(tsr_ci[1], 3)],
+        paired_dtsr_excludes_zero=bool(tsr.get("excludes_zero")),
+        paired_dfar_mean_pp=round(dfar, 3),
+        paired_dfar_ci_pp=[round(far_ci[0], 3), round(far_ci[1], 3)],
+        paired_dfar_excludes_zero=bool(far.get("excludes_zero")),
+        paired_did_mean_pp=round(float(dis["delta_mean"]) * 100.0, 3),
+        paired_did_ci_pp=[round(float(dis["p2.5"]) * 100.0, 3),
+                          round(float(dis["p97.5"]) * 100.0, 3)],
+        tsr_ok=ok_tsr,
+        far_ok=ok_far,
+        sequences_up_tsr=int(tsr["sequences_up"]),
+        sequences_down_tsr=int(tsr["sequences_down"]),
+        sequences_flat_tsr=int(tsr["sequences_flat"]),
+        sequences_up_far=int(far["sequences_up"]),
+        sequences_down_far=int(far["sequences_down"]),
+        sequences_flat_far=int(far["sequences_flat"]),
+        per_sequence_tsr=tsr["per_sequence"],
+    )
+    if majority_entry is not None and majority_entry.get("pooled"):
+        ident = control_check(arm_entry, majority_entry)
+        out["identical_to_majority"] = bool(ident["identical"])
+        out["n_compared_to_majority"] = int(ident["n_compared"])
+        out["max_abs_dtsr_vs_majority"] = ident["max_abs_dtsr"]
+        out["max_abs_dfar_vs_majority"] = ident["max_abs_dfar"]
+        out["max_abs_did_vs_majority"] = ident["max_abs_did"]
+        out["per_sequence_vs_majority"] = ident["per_sequence"]
+    if ship:
+        why = ("paired dTSR %+.2f pp [%+.2f, %+.2f] excludes 0, paired dFAR %+.2f pp "
+               "[%+.2f, %+.2f] with upper bound %+.2f pp < +%.1f pp"
+               % (dtsr, tsr_ci[0], tsr_ci[1], dfar, far_ci[0], far_ci[1], far_ci[1], FAR_MAX_PP))
+    else:
+        bad = []
+        if not ok_tsr:
+            bad.append("paired dTSR %+.2f pp [%+.2f, %+.2f] does not keep a positive sign with a "
+                       "CI excluding 0" % (dtsr, tsr_ci[0], tsr_ci[1]))
+        if not ok_far:
+            bad.append("paired dFAR %+.2f pp [%+.2f, %+.2f] is not a gain with an upper bound "
+                       "< +%.1f pp" % (dfar, far_ci[0], far_ci[1], FAR_MAX_PP))
+        why = "; ".join(bad)
+    out["text"] = "%s: %s." % (out["verdict"], why)
+    return out
+
+
+def contrast_split(seqs: Sequence[str]) -> tuple[list[str], list[str]]:
+    """The EXPLORE / TEST halves, exactly as `scripts/vote_analyze.py` prints them.
+
+    EXPLORE is the ODD positions of the sorted held-out list, TEST the EVEN ones;
+    the same 11/11 split E081 selected on, so the E082 arms are scored on a half the
+    deltas were not chosen from.
+    """
+    ordered = sorted(seqs)
+    explore = [s for i, s in enumerate(ordered) if i % 2 == 1]
+    test = [s for i, s in enumerate(ordered) if i % 2 == 0]
+    return explore, test
+
+
 # --------------------------------------------------------------------------- #
 # Markdown
 # --------------------------------------------------------------------------- #
+def _num(value: Any, digits: int = 2) -> str:
+    """A signed pp value, or ``n/a`` when the subset had no usable interval."""
+    if value is None:
+        return "n/a"
+    v = float(value)
+    if v != v:  # NaN -- an INSUFFICIENT subset has no delta to quote
+        return "n/a"
+    return "%+.*f" % (digits, v)
+
+
+def _ci(lo: Any, hi: Any, digits: int = 2) -> str:
+    if lo is None or hi is None:
+        return ""
+    return " [%s, %s]" % (_num(lo, digits), _num(hi, digits))
+
+
 def _fmt(value: float | None, boot: dict[str, Any] | None, digits: int = 4) -> str:
     if value is None:
         return "n/a"
@@ -1087,6 +1430,72 @@ def write_markdown(payload: dict[str, Any]) -> str:
                    v.get("sequences_flat_" + up, 0),
                  "yes" if v.get("paired_d%s_excludes_zero" % up) else "no"))
     a("")
+
+    e082 = payload.get("e082")
+    if e082:
+        a("## E082 -- the contrast gate, judged by its own pre-registered rule")
+        a("")
+        a("> %s" % e082["rule_text"])
+        a("")
+        a("`vote_contrast_0.00` is a **CONTROL**: a candidate only reaches the vote because R1 "
+          "refused it, so its contrast is > 0 and a delta = 0 gate removes nothing -- it must "
+          "reproduce `vote_majority` bit-for-bit. If it does not, the gate is wired wrong and no "
+          "non-zero delta means anything.")
+        a("")
+        a("| arm | delta | eligible candidates | gate blocked | TEST dTSR (11 seqs) | TEST dFAR "
+          "(11 seqs) | TEST verdict | all-22 dTSR | dID (all) | identical to `vote_majority` |")
+        a("|---|---|---|---|---|---|---|---|---|---|")
+        for arm in payload["order"]:
+            entry = e082["arms"].get(arm)
+            if not entry:
+                continue
+            eng = entry.get("engagement") or {}
+            t = entry["test"]
+            u = entry["all"]
+            a("| `%s` | %.2f | %d | %d | %s pp%s | %s pp%s | **%s** | %s pp%s | %s pp | %s |"
+              % (arm, entry["delta"], int(eng.get("contrast_n", -1)),
+                 int(eng.get("contrast_blocked", -1)),
+                 _num(t.get("paired_dtsr_mean_pp")),
+                 _ci(*(t.get("paired_dtsr_ci_pp") or [None, None])),
+                 _num(t.get("paired_dfar_mean_pp")),
+                 _ci(*(t.get("paired_dfar_ci_pp") or [None, None])),
+                 t.get("verdict", "n/a"),
+                 _num(u.get("paired_dtsr_mean_pp")),
+                 _ci(*(u.get("paired_dtsr_ci_pp") or [None, None])),
+                 _num(u.get("paired_did_mean_pp")),
+                 ("YES" if u.get("identical_to_majority") else "no")
+                 if "identical_to_majority" in u else "n/a"))
+        a("")
+        probe = next((e082["arms"][a_] for a_ in e082["arms"]
+                      if int((e082["arms"][a_].get("engagement") or {}).get("contrast_n", 0)) > 0),
+                     None)
+        if probe:
+            eng = probe["engagement"]
+            keys = sorted(k for k in eng if str(k).startswith("contrast_keep_"))
+            if keys:
+                a("Retention curve of the gate, measured on the ELIGIBLE population (the "
+                  "candidates the blanket vote would rescue), which is what the delta grid is "
+                  "read against:")
+                a("")
+                a("| `contrast >=` | candidates kept | share of eligible |")
+                a("|---|---|---|")
+                for key in keys:
+                    thr = key.replace("contrast_keep_", "")
+                    a("| %s | %d | %.1f %% |"
+                      % (thr, int(eng.get("vote_contrast_ge_" + thr, -1) or 0),
+                         100.0 * float(eng[key] or 0.0)))
+                a("")
+        for arm in payload["order"]:
+            entry = e082["arms"].get(arm)
+            if not entry:
+                continue
+            ex = entry["explore"]
+            a("- `%s` EXPLORE half: dTSR %s pp %s, dFAR %s pp %s (%s, reported, does not decide)."
+              % (arm, _num(ex.get("paired_dtsr_mean_pp")),
+                 _ci(*(ex.get("paired_dtsr_ci_pp") or [None, None])),
+                 _num(ex.get("paired_dfar_mean_pp")),
+                 _ci(*(ex.get("paired_dfar_ci_pp") or [None, None])), ex.get("verdict", "n/a")))
+        a("")
 
     a("## Mechanism engagement (a veto that never fires is not a result)")
     a("")
@@ -1244,10 +1653,27 @@ def main(argv: Sequence[str] | None = None) -> int:
     p.add_argument("--limit-seqs", type=int, default=None, help="debug: only the first N sequences")
     p.add_argument("--run-only", default=None, help="debug: restrict to one sequence name")
     p.add_argument("--force", action="store_true", help="re-run pairs that already have a summary")
+    p.add_argument("--max-frames", type=int, default=None,
+                   help="E082b: override PROTOCOL max_frames (needs E079_OUT to a separate dir)")
     p.add_argument("--report-only", action="store_true",
                    help="rebuild summary.json / REPORT.md from the cached per-pair records "
                         "without running anything (missing pairs are counted as NOT_RUN)")
     args = p.parse_args(list(argv) if argv is not None else None)
+    if args.max_frames is not None:
+        # E082b (docs/EXPERIMENTS.md): the power-buying run doubles the source
+        # frames.  Overriding PROTOCOL here keeps the stamp, the validator and
+        # the report header consistent.  The two epochs must never share an
+        # output directory, or a 600-frame pair could be pooled with a
+        # 300-frame one silently -- exactly the kind of cross-epoch arithmetic
+        # that has already produced two false "improvements" in this campaign.
+        if int(args.max_frames) != 300 and not os.environ.get("E079_OUT"):
+            print("[vote_sweep] refusing --max-frames != 300 without E079_OUT set "
+                  "to a separate output directory", flush=True)
+            return 2
+        PROTOCOL["max_frames"] = int(args.max_frames)
+        # E082b: children re-import this module and would otherwise see the 300 default,
+        # write max_frames=300 into their meta, and fail the parent's protocol guard.
+        os.environ["E079_MAX_FRAMES"] = str(PROTOCOL["max_frames"])
 
     print("[vote_sweep] FROZEN DEV SPLIT (never swept, never reported): %s"
           % ", ".join(sorted(DEV_SEQUENCES)), flush=True)
@@ -1267,10 +1693,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         seqs = seqs[: int(args.limit_seqs)]
         partial = len(seqs) < len(all_seqs)
         partial_reason = partial_reason or "--limit-seqs"
-    leaked = sorted(DEV_SEQUENCES & set(seqs))
-    if leaked:
-        raise SystemExit("[vote_sweep] FATAL: dev sequence(s) %s in the run set; refusing." % leaked)
-    assert not (DEV_SEQUENCES & set(seqs)), "dev split leaked into the sweep"
+    if DEV_CHECK:
+        leaked = sorted(DEV_SEQUENCES & set(seqs))
+        if leaked:
+            raise SystemExit("[vote_sweep] FATAL: dev sequence(s) %s in the run set; refusing." % leaked)
+        assert not (DEV_SEQUENCES & set(seqs)), "dev split leaked into the sweep"
+    else:
+        print("[vote_sweep] dev-split NAME check DISABLED (VOTE_DEV_CHECK=0): this epoch is the "
+              "train cohort, whose sequence names collide with the val dev split by number only",
+              flush=True)
 
     arms = all_arms(args.arms)
     if REFERENCE_ARM not in arms:
@@ -1353,6 +1784,41 @@ def main(argv: Sequence[str] | None = None) -> int:
             "rule by construction."
             % ("bit-identical" if control["identical"] else "NOT identical", control["n_compared"]))
 
+    # E082 -- the contrast arms are judged by their OWN pre-registered rule.  E079's
+    # rule (pooled TSR >= +3 pp) is still computed for them above so the two bars can
+    # be read against each other, but it is not the bar `docs/E082_PLAN.md` set: E079
+    # already established the point estimate, and E082 is a precision experiment.
+    e082: dict[str, Any] | None = None
+    contrast_arms = [arm for arm in arms if arm.startswith("vote_contrast_")]
+    if contrast_arms:
+        explore, test = contrast_split(all_seqs)
+        majority = arms_payload.get("vote_majority")
+        e082 = {
+            "experiment": "E082",
+            "source": "docs/E082_PLAN.md (pre-registered)",
+            "rule_text": (
+                "E082: SHIP `anchor_vote = \"contrast\"` at some delta iff, versus `vote_off` "
+                "on the TEST half, (1) the paired dTSR is > 0 with the paired 95 %% CI "
+                "excluding 0 AND (2) the paired dFAR is < 0 with the paired 95 %% CI upper "
+                "bound below +%.1f pp. KILL if no delta achieves both, or if every delta is "
+                "bit-identical to `vote_majority` (the contrast never binds: the axis is "
+                "empty). `vote_contrast_0.00` is a control." % FAR_MAX_PP),
+            "explore_sequences": explore,
+            "test_sequences": test,
+            "arms": {},
+        }
+        for arm in contrast_arms:
+            e = arms_payload[arm]
+            entry = {
+                "delta": float(e["overrides"].get("cost.anchor_vote_contrast", -1.0)),
+                "all": verdict_contrast(e, ref_entry, majority),
+                "explore": verdict_contrast(e, ref_entry, majority, sequences=explore),
+                "test": verdict_contrast(e, ref_entry, majority, sequences=test),
+                "engagement": dict(e.get("engagement") or {}),
+            }
+            e082["arms"][arm] = entry
+            e["verdict_e082"] = entry["test"]
+
     noop = _reference_noop_block(rows)
 
     notes = [
@@ -1398,6 +1864,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "arms": arms_payload,
         "verdicts": {arm: arms_payload[arm]["verdict"] for arm in arms},
         "control": control,
+        "e082": e082,
         "reference_noop": noop,
         "excluded": [r for r in rows if r.get("status") != "INCLUDED"],
         "coverage": {arm: {"included": int(arms_payload[arm]["pooled"]["n_included"]) if

@@ -3148,3 +3148,688 @@ with delta = 0 pinned bit-identical to E079's `vote_majority`.
 fields unconditionally. Fixed with `.get(...)` fallbacks (a missing arm now renders `nan`
 instead of aborting the whole report), and the analysis moved out of `_x/` into the tracked
 `scripts/vote_analyze.py`. `results/vote_sweep/summary.json` and `REPORT.md` were regenerated.
+
+### E083 — PRE-REGISTRATION (written 2026-10-28, before implementation or measurement)
+
+Multi-hypothesis tracking with calibrated commitment. Full plan: `docs/E083_PLAN.md`.
+
+Premise: E076 splits the held-out loss into 51 % blindness, **24 % wrong-while-tracking**, 2 %
+other. The wrong-while-tracking class is invisible to every downstream test (E075: wrong
+detections cost 0.019 vs 0.006 for correct ones) because the tracker has already **committed** —
+the motion filter holds one state, so the identity that was right one frame earlier is discarded
+rather than kept as a competitor. Every single-frame identity mechanism tried so far (12 of them)
+failed; the ones that shipped all changed *how the tracker decides*, not what it measures.
+
+Mechanism: K hypotheses, each a full `TargetTracker` with its own motion state sharing the
+appearance memory, forced onto different people (boxes claimed by a sibling are masked out),
+scored by an appearance log-likelihood plus a blind penalty, emitted by `argmax` weight, with a
+switch reported only after `commit_margin = 0.15` holds for `commit_frames = 3`.
+
+Pre-registered ship rule (all four must hold): (1) paired dTSR > 0 with CI excluding 0;
+(2) paired dFAR CI not worsening > 3 pp; (3) the `mh_k3_random` control must NOT also pass;
+(4) wall <= 2.5x the k=1 arm.
+
+Pre-registered kill criteria: hypotheses degenerate (distinct-box share < 0.30) -> inert, no
+tuning; `mh_k = 1` not bit-identical to the shipped tracker -> plumbing wrong, nothing quotable;
+engagement counters must show `n_commits > 0`.
+
+Controls: `mh_k1` (bit-identity falsifier), `mh_k2`, `mh_k3`, `mh_k3_random` (same K, random
+tie-break -- separates "more hypotheses" from "calibrated hypotheses").
+
+Not started. E082's verdict comes first.
+
+### E082 — INTERIM OBSERVATION (2026-10-28 22:35, sweep at 14/22 of the first contrast point)
+
+Reading the per-sequence records rather than the pooled number produced the campaign's most useful
+structural finding so far. `results/vote_sweep/logs/<arm>__dancetrack0010.log`:
+
+| arm | TSR | FAR | id_consistency |
+|---|---|---|---|
+| `vote_off` | **0.2831** | 0.6800 | 0.2527 |
+| `vote_majority` | **0.0478** | 0.4167 | 0.0385 |
+| `vote_contrast_0.00` | 0.0478 | 0.4167 | 0.0385 |
+| `vote_contrast_0.10` | 0.0478 | 0.4167 | 0.0385 |
+
+Two things, both important:
+
+1. **The vote is sequence-bimodal, not candidate-bimodal.** On `dancetrack0010` the blanket vote
+   destroys success (0.2831 -> 0.0478, a factor of six) while cutting FAR; on `dancetrack0018` the
+   same arm scores TSR 1.000 / FAR 0.000. The pooled +5.88 pp mean is the sum of large wins and
+   large losses, which is exactly why its CI spans [-1.61, +14.79].
+2. **A candidate-level gate cannot fix that.** On 0010 the contrast gate at 0.10 is a near-no-op —
+   it admits 177 of 179 eligible candidates, and its numbers are digit-identical to the blanket arm
+   (as are `contrast_0.00`'s, which is the pre-registered plumbing falsifier doing its job). The
+   harmful decisions on this sequence are *not* characterised by low contrast; they are
+   characterised by "this whole sequence's click crop is or is not the right reference".
+
+That retroactively explains both E081 and E082's likely verdict, and it is a stronger result than
+either: **the vote's sign is a property of the sequence (how fast the click crop goes stale), not
+of the candidate.** Any per-candidate gate — distress (E081) or contrast (E082) — is therefore
+selecting on the wrong axis. This is the third time the programme has learned the same shape of
+lesson at a different altitude (E021/E025: per-candidate adaptivity inert; E032: per-candidate
+motion band inert).
+
+### E083 — AMENDMENT to the pre-registration (recorded BEFORE implementation and before any E083
+### measurement, as required; the original text in `docs/E083_PLAN.md` is left untouched)
+
+The bimodality finding changes what the hypotheses in E083 should be. K *independent clones* of the
+tracker would have to discover the crop-staleness question from scratch. Instead E083 will run
+**K = 2 structurally different hypotheses**:
+
+- **H_crop**: anchored on the frozen click crop (the original, conservative reference) — behaves
+  like the shipped tracker.
+- **H_gallery**: anchored on the refreshed references R2/R3 (the vote's position) — behaves like
+  `vote_majority`.
+
+Both remain alive; the posterior decides *per sequence and per stretch of time* which reference set
+is currently right, and a switch is committed only when the evidence separates (`commit_margin`,
+`commit_frames`). This is exactly the decision E081's and E082's gates try to make per candidate
+with the wrong information, made instead with the accumulated evidence of both interpretations
+running in parallel.
+
+Revised activation axis (replaces `mh_k` clone counts): `mh_mode in {"off", "dual"}` with
+`mh_hypotheses = ("crop", "gallery")`; the falsifier becomes `mh_mode="off"` *not* bit-identical to
+the shipped tracker -> plumbing wrong. The `mh_k3_random` control is replaced by
+`mh_mode="dual_frozen"` (both hypotheses run, but the reported one is fixed to H_crop after the
+first frame) — that control isolates "spending compute on two boxes" from "letting the posterior
+switch". Ship rule and kill criteria unchanged in substance: paired dTSR > 0 with CI excluding 0,
+dFAR CI not worsening > 3 pp, the frozen control must not also pass, and wall <= 2.5x.
+
+Rationale for why this can work where the gates failed: the gate had to know, per candidate,
+whether the crop was stale. The dual tracker does not need to know — it *measures* which
+interpretation explains the frames, and the losing hypothesis costs only compute, not accuracy,
+because the reported box follows the committed one.
+
+### E082 — the vote is SPARSE and EXTREME, not "bimodal": per-sequence quantification
+
+Parsed from the existing per-sequence logs (`results/vote_sweep/logs/vote_{off,majority}__*.log`,
+`_x/bimodality.py`), n = 22:
+
+| sequence | TSR off | TSR majority | dTSR pp | dFAR pp |
+|---|---|---|---|---|
+| dancetrack0018 | 0.2579 | 1.0000 | **+74.2** | -58.7 |
+| dancetrack0034 | 0.1815 | 0.6089 | +42.7 | +14.4 |
+| dancetrack0077 | 0.2333 | 0.5733 | +34.0 | -41.0 |
+| dancetrack0073 | 0.2280 | 0.4120 | +18.4 | -55.3 |
+| dancetrack0094 | 0.8800 | 0.9567 | +7.7 | -7.0 |
+| dancetrack0019 | 0.2186 | 0.2258 | +0.7 | -0.3 |
+| dancetrack0065 | 0.0467 | 0.0500 | +0.3 | +36.0 |
+| dancetrack0014 / 0025 / 0026 / 0030 / 0035 / 0041 / 0043 / 0047 / 0090 / 0097 | - | - | **0.0** | 0.0 (0047: -37.7) |
+| dancetrack0081 | 0.0274 | 0.0183 | -0.9 | -14.7 |
+| dancetrack0058 | 0.0473 | 0.0338 | -1.4 | +56.0 |
+| dancetrack0063 | 0.0300 | 0.0100 | -2.0 | -7.0 |
+| dancetrack0079 | 0.9133 | 0.7033 | **-21.0** | +17.3 |
+| dancetrack0010 | 0.2831 | 0.0478 | **-23.5** | -26.3 |
+
+**gain > 2 pp: 5 sequences (+177.0 pp total) | loss > 2 pp: 2 sequences (-44.5 pp total) |
+UNCHANGED: 15 of 22 sequences (median dTSR = 0.00 pp).**
+
+The pooled mean (+5.88 pp) is therefore an average of a sparse, violent distribution: the vote is
+completely inert on 68 % of the held-out set, saves five sequences enormously (up to +74 pp) and
+destroys two (down to -23.5 pp). Any *pooled* CI over 22 sequences is dominated by whether those
+7 sequences happen to be in the draw — which is exactly why the bootstrap interval is
+[-1.61, +14.79] wide and why a pooled ship rule could never be satisfied.
+
+Consequences, now load-bearing for E083:
+
+1. **The mechanism only matters where the click crop is stale, which is rare and severe.** It is not
+   a small-everywhere effect; it is an all-or-nothing per-sequence effect.
+2. **A dual tracker is safe by construction on 15 of 22 sequences**: while the two hypotheses agree
+   (IoU >= 0.5) it reports H_crop, i.e. the shipped behaviour. The dual design can therefore only
+   change anything on the ~7 sequences where the vote moves the box — which is a far better
+   experimental target than a pooled mean.
+3. **E083's hypothesis is now per-sequence falsifiable**, not pooled: on 0010 and 0079 the dual
+   tracker must NOT end up on the vote's position (the crop was right), and on 0018/0034/0077/0073
+   it must adopt it (the crop was stale). That is the table to check first; the pooled dTSR is a
+   secondary readout.
+
+### E084 — PRE-REGISTRATION: is click-crop staleness detectable without ground truth?
+
+E082 quantified the vote's effect as sparse and extreme: 5 held-out sequences gain a lot
+(+177.0 pp total, up to +74.2 pp), 2 lose a lot (-44.5 pp total, down to -23.5 pp), and **15 of 22
+are bit-unchanged (median dTSR = 0.00)**. A pooled mean (+5.88 pp) is therefore the average of a
+distribution that is 68 % zeros. Any useful version of the vote must be **gated per sequence**, so
+the question that decides whether the vote can ever ship is:
+
+> **Is "the click crop went stale" observable at runtime, from features that do not require ground
+> truth?**
+
+This is the same question E025 answered *no* to at the per-frame level (its measurement was
+self-referential because the gallery had already absorbed the impostor). E084 re-poses it per
+sequence and with a signal E025 did not have: the *contrast* between reference beds.
+
+**Hypothesis H-E084.** In a stale-crop sequence, the frozen click crop drifts away from the person
+faster than the refreshed gallery does, so the per-frame contrast
+
+    contrast(t) = d_R1(t) - min(d_R2(t), d_R3(t))
+
+has a positive **trend** over the first W frames after the click, whereas in a fresh-crop sequence
+it stays flat around 0. Concretely: `spearman(contrast, frame_index)` over the first `W = 60`
+reportable frames, computed per sequence, should separate the 5 gain sequences (where the vote
+helped, i.e. the crop WAS stale) from the 2 loss sequences (crop was right) and the 15 flat ones.
+
+**Bar, declared before measuring.** AUC(gain vs loss, n = 5 vs 2) >= 0.85 **and** the gain
+sequences' median trend > 0 while the loss sequences' median trend <= 0. With n = 7 the AUC is a
+rank count with 35 pairs, so this is a feasibility gate, **not** a ship decision; its only purpose
+is to justify (or kill) E085.
+
+**What has to be built first (no GPU cost).** The per-frame anchor distances are not currently
+persisted: the debug CSV records the gate and cost breakdown but not `d_R1/d_R2/d_R3`. E084 step 1
+is therefore a **logging-only** change (add `anchor_r1`, `anchor_r2`, `anchor_r3`, `anchor_admit`,
+`vote_applied` to the per-frame diag) and a re-run of the 7 informative sequences under `vote_off`
+and `vote_majority` (~7 pairs, 300 frames, subsample 2, ~25 min). No behaviour changes: the
+falsifier is that `vote_off` runs reproduce their existing per-sequence TSR/FAR bit-for-bit.
+
+**Kill criteria.** If any `vote_off` re-run does not reproduce its recorded TSR/FAR exactly, the
+logging touched behaviour and the whole probe is void (fix and redo, do not analyse). If
+AUC < 0.85, criterion "the vote is ungateable without ground truth" is met and the vote family is
+closed **permanently**, to be recorded in `docs/METHOD.md` as a structural negative rather than a
+tuned-away one.
+
+**Why the answer matters either way.** Positive: E085 = per-sequence staleness gate, which is the
+only route by which the +177 pp is recoverable, and a genuinely under-used idea (a *reference-set
+self-diagnostic* rather than another similarity threshold). Negative: it retires the entire
+reference-voting family (E079/E081/E083/E084) with one measurement, which is exactly the kind of
+closure that lets the campaign spend its remaining budget on the untouched axes.
+
+### E082 — INTERIM (19/22 complete on contrast_0.20): the contrast gate at delta = 0.10 STRICTLY DOMINATES the bare vote
+
+Read from the completed per-sequence records (`_x/c20_read.py`), n = 22 for `majority` and
+`contrast_0.10`, n = 19 for `contrast_0.20`:
+
+| arm | gains > 2 pp | total gain | losses > 2 pp | total loss | mean dTSR |
+|---|---|---|---|---|---|
+| `vote_majority` | 5 | +177.0 pp | **2** | **-44.5 pp** | +5.88 pp |
+| **`vote_contrast_0.10`** | **5** | **+177.0 pp** | **1** | **-23.5 pp** | **+6.83 pp** |
+| `vote_contrast_0.20` (n=19) | 4 | +125.9 pp | 1 | -23.5 pp | +5.32 pp |
+
+Per sequence (TSR; `off` = shipped):
+
+| sequence | off | majority | contrast_0.10 | contrast_0.20 |
+|---|---|---|---|---|
+| dancetrack0018 | 0.2579 | 1.0000 | **1.0000** | **1.0000** |
+| dancetrack0034 | 0.1815 | 0.6089 | **0.6089** | **0.6089** |
+| dancetrack0077 | 0.2333 | 0.5733 | **0.5733** | 0.2633 |
+| dancetrack0073 | 0.2280 | 0.4120 | **0.4120** | 0.2880 |
+| dancetrack0094 | 0.8800 | 0.9567 | **0.9567** | (pending) |
+| dancetrack0079 | 0.9133 | **0.7033** | **0.9133** | 0.9133 |
+| dancetrack0010 | 0.2831 | 0.0478 | 0.0478 | 0.0478 |
+| dancetrack0081 | 0.0274 | 0.0183 | 0.0183 | 0.0274 |
+| dancetrack0065 | 0.0467 | 0.0500 | 0.0500 | 0.0600 |
+
+Two clean facts, both worth more than the pooled mean:
+
+1. **`delta = 0.10` keeps 100 % of the vote's gains and removes BOTH the 0079 regression and the
+   0081 regression entirely** (0079: -21.0 -> 0.0; 0081: -0.9 -> 0.0), for a better mean (+6.83 vs
+   +5.88 pp) and one fewer catastrophic loss. The mechanism is exactly the pre-registered one: when
+   R1 is the *right* reference (0079), the candidates it vetoes sit far from both R2 and R3, so a
+   0.10 contrast floor blocks the rescue; when R1 is stale (0018/0034/0077/0073), the vetoed
+   candidate is close to R2/R3 but far from R1, so the rescue passes.
+2. **`delta = 0.20` is dominated and must not be shipped**: it throws away most of two large gains
+   (0077 +34.0 -> +3.0, 0073 +18.4 -> +6.0) to buy recoveries that 0.10 already achieved.
+   The gain lost between 0.10 and 0.20 is ~43 pp on 2 sequences, i.e. the contrast distribution of
+   the *useful* rescues sits between 0.10 and 0.20 while the *harmful* ones sit below 0.10.
+
+**The one regression no contrast level touches is `dancetrack0010` (-23.5 pp at every delta).** That
+kills the "contrast alone is enough" story: on 0010 the vote's rescues are geometrically plausible
+(high contrast) and still wrong, which is precisely the case E083's dual-hypothesis temporal
+validation and E084's staleness statistic are for. Recorded as the residual to attack next.
+
+IMPORTANT CAVEAT, declared now: this is a mid-sweep read on deltas whose FAR columns are not yet
+pooled. The ship decision requires the pre-registered paired bootstrap (2000 cluster-bootstrap
+reps over sequences, seed 0) on `contrast_0.10` vs `vote_off` for BOTH dTSR and dFAR, plus the
+confirmatory check that `contrast_0.00` is bit-identical to `majority` (already verified on
+dancetrack0010: TSR 0.0478 both). No default changes until that lands.
+
+### E082 — FINAL: every contrast arm KILLs by the pooled rule, but `contrast_0.10` is a Pareto improvement on both axes
+
+22 held-out sequences, 300 frames, subsample 2, mask none, 6181 frames/point, 132 pairs, wall 4028.7 s
+(`results/vote_sweep/REPORT.md`). Reference no-op verified: 22/22 TSR and 22/22 FAR identical,
+max |dTSR| = max |dFAR| = 0.0.
+
+| arm | TSR [95 % CI] | FAR [95 % CI] | dTSR [CI] | dFAR [CI] |
+|---|---|---|---|---|
+| `vote_off` (shipped) | 0.2104 [0.1157, 0.3254] | 0.2472 [0.1489, 0.3487] | - | - |
+| `vote_majority` | 0.2668 [0.1423, 0.4040] | 0.1912 [0.0927, 0.3080] | +5.88 [-1.85, +15.04] | -5.65 [-16.20, +5.21] |
+| `vote_contrast_0.00` | 0.2668 [0.1423, 0.4040] | 0.1912 [0.0927, 0.3080] | +5.88 (bit-identical, as pre-registered) | -5.65 |
+| **`vote_contrast_0.10`** | **0.2770 [0.1442, 0.4237]** | **0.1830 [0.0830, 0.3014]** | +6.83 [-0.46, +15.93] | **-6.42 [-16.68, +4.20]** |
+| `vote_contrast_0.20` | 0.2568 [0.1317, 0.4015] | 0.2072 [0.1101, 0.3224] | +4.95 [-1.63, +13.42] | -4.15 [-13.30, +5.34] |
+| `vote_contrast_0.30` | 0.2493 [0.1366, 0.3786] | 0.2208 [0.1171, 0.3479] | +4.24 [-2.15, +12.65] | -2.88 [-10.83, +5.40] |
+
+**Verdicts: all five non-reference arms KILL** (the pre-registered rule needs the pooled paired dTSR CI
+to exclude 0; 0.10 misses by 0.46 pp on the upper side). **No default changes.**
+
+**But the descriptive ordering is monotone and not noise-shaped:**
+- pooled TSR: 0.10 (0.2770) > majority (0.2668) > off (0.2104) > 0.20 (0.2568) > 0.30 (0.2493);
+- pooled FAR: 0.10 (0.1830) < majority (0.1912) < 0.20 (0.2072) < 0.30 (0.2208) < off (0.2472).
+`contrast_0.10` is the **best arm on both pooled axes simultaneously**, and **0.1830 is the first FAR
+ever measured below the 0.20 criterion barrier** (shipped 0.2472). It is a Pareto improvement over the
+shipped default on the held-out set, with a *smaller* worst case (total loss on sequences that get
+worse: -44.5 -> -23.5 pp; number of sequences losing > 2 pp: 2 -> 1).
+
+**Methodological finding (the more important half).** Win/tie/loss counts are 7/4/11 for TSR and
+3/9/10 for FAR: the arm loses on *count* while winning on *magnitude*. Against a sparse effect
+(15 of 22 sequences exactly zero, 5 large gains, 1-2 large losses) a clustered-bootstrap CI over
+22 sequences has almost no power — the interval width is dominated by which of the 7 informative
+sequences the resample happens to draw. So the campaign's standard ship rule **cannot certify a
+mechanism whose effect is concentrated in a minority of sequences**, whatever its sign. That is a
+property of the rule, not evidence against the mechanism, and it must be fixed before the next
+comparison of this family, not argued away.
+
+**Consequence, pre-registered here (`E082b`).** Increase the power rather than relax the rule:
+`contrast_0.10` vs `vote_off` only, same 22 sequences, **`--max-frames 600`, `subsample 2`** (twice
+the source frames, which also lifts the many sequences currently pinned at TSR 0.02-0.08 off the
+floor and therefore makes the mechanism more likely to act). Ship rule unchanged (paired dTSR CI must
+exclude 0 and dFAR must not be significantly worse). Cost ~44 pairs, ~50 min. If 0.10 again improves
+both pooled axes and the CI again fails only because of sparsity, the correct conclusion is that this
+benchmark cannot decide the question and the decision must move to a decision-theoretic criterion
+recorded in `docs/METHOD.md` — not that the mechanism is wrong.
+
+## E083 — dual structured hypotheses: does a likelihood race adopt the vote only where it is right? (KILL)
+
+**Question.** E079's gallery vote gains on 5 sequences and loses on 2, netting +5.88 pp TSR /
+-5.65 pp FAR but failing its ship rule. Could a *second, structurally different hypothesis* be run
+alongside the shipped tracker and adopted only where the evidence favours it — keeping the gains and
+dropping the losses?
+
+**Design (pre-registered in `docs/E083_PLAN.md` and amended before measurement).** `mh_dual` runs the
+shipped tracker (H_crop) and a gallery-vote clone (H_gallery). While the two reported boxes overlap
+(IoU >= 0.5) it reports H_crop. At the first disagreement it opens a 12-frame window, freezes both
+reference beds, and for each future frame computes for each hypothesis `d_own` and `d_other`;
+`r_h = mean(d_own) / mean(d_other)`, `logw_h = -2 r_h`, and it commits to a hypothesis only when
+`w_win - w_lose >= 0.15` for 3 consecutive decisions. Controls: `mh_dual_frozen` runs both trackers
+but pins the reported box to H_crop (tests plumbing, not evidence), `mh_off` builds a plain tracker
+(structural falsifier).
+
+**Protocol.** 9 informative held-out DanceTrack-val sequences (the 5 vote winners, the 2 vote losers,
+and 3 FAR-only movers), 300 frames, subsample 2, mask none, `--jobs 1`, `scripts/vote_sweep.py
+--arms vote_off,mh_dual,mh_dual_frozen`. Screening run on the informative subset, not the full 22.
+
+| sequence | vote_off | mh_dual | mh_dual_frozen | dual - off |
+|---|---|---|---|---|
+| dancetrack0010 (vote lost) | 0.2831 | 0.1765 | 0.2831 | **-10.7 pp** |
+| dancetrack0079 (vote lost) | 0.9133 | 0.8300 | 0.9133 | **-8.3 pp** |
+| dancetrack0018 (vote won) | 0.2579 | 0.6706 | 0.2579 | +41.3 pp |
+| dancetrack0034 (vote won) | 0.1815 | 0.2581 | 0.1815 | +7.7 pp |
+| dancetrack0077 (vote won) | 0.2333 | 0.3900 | 0.2333 | +15.7 pp |
+| dancetrack0073 (vote won) | 0.2280 | 0.2880 | 0.2280 | +6.0 pp |
+| dancetrack0047 | 0.1462 | 0.1462 | 0.1462 | 0.0 pp |
+| dancetrack0065 | 0.0467 | 0.0467 | 0.0467 | 0.0 pp |
+| dancetrack0058 | 0.0473 | 0.0473 | 0.0473 | 0.0 pp |
+| **mean of 9** | **0.2597** | **0.3170** | 0.2597 | **+5.73 pp** |
+
+**Both controls are bit-identical, which is the useful part.**
+`mh_dual_frozen` equals `vote_off` on **9 of 9** sequences (0.0 pp everywhere) — the second tracker and
+the freeze/unfreeze machinery do not leak into the reported box. `mh_off` equals `vote_off` on both
+sequences where it was run (0010 0.2831, 0018 0.2579). So the dual machinery is *clean*; any difference
+in `mh_dual` is caused by the likelihood/commit rule and nothing else. That is a reusable harness
+asset even though the mechanism failed.
+
+**Verdict: KILL — dominated by E079 on the same subset.** The pre-declared direction expectations were
+met (0018/0034/0077/0073 do adopt the vote's side; 0010/0079 do not end up there), but the magnitude is
+strictly worse than simply turning the vote on. Mapping each sequence against E079's measured deltas:
+dual captures **56 %** of 0018's gain (+41.3 of +74.2), **18 %** of 0034's (+7.7 of +42.7), **46 %** of
+0077's (+15.7 of +34.0) and **33 %** of 0073's (+6.0 of +18.4), while still paying **46 %** of 0010's
+loss (-10.7 of -23.5) and **40 %** of 0079's (-8.3 of -21.0). Mean over the 9: dual **0.3170** vs
+`vote_majority` **0.3984**. It is approximately "half the vote, on every sequence" — which is exactly
+what a coin-flip discriminator looks like.
+
+**Mechanism reading (the lesson).** The failure is not in the machinery but in the discriminator: a
+12-frame window of `r_h = mean(d_own)/mean(d_other)` does not separate *"the look changed"* from
+*"this is a different person"*. That is the same wall E026 hit with frozen-anchor drift and E025 hit
+with adaptive half-life: every statistic built from the tracker's own observation history is
+self-referential, because the history is what got poisoned. E084 was therefore re-scoped: it must make
+the reference beds **structurally different** (a click-time multi-part bank instead of one full-body
+crop) rather than add another vote over the same evidence.
+
+## E084 step 0 - who does the identity ceiling actually refuse? (measurement only)
+
+**Question.** E083 established that a second *tracker* cannot beat simply turning the vote on, and the
+reading was that the discriminator, not the machinery, is the wall. E084 therefore starts from the one
+fact the campaign never measured: *of the candidates the identity ceiling refuses, how many are the
+true target, and which reference bed refuses them?* `docs/E084_PLAN.md` fixed the answer format and the
+kill criterion **before** any number existed: implement the multi-part-bank mechanism only if the
+ceiling refuses the TRUE target in at least ~5 % of the frames where it refuses anyone.
+
+**Instrument.** A JSONL log, opt-in behind `cost.anchor_bed_log` (default `""`), one line per
+ceiling-refused candidate: `frame`, `cand`, `box`, `d1`/`d2`/`d3` (distances to R1/R2/R3), `limit`, the
+per-bed `passes` vector and `admitted`. It is pure I/O on the measurement path and the shipped
+configuration never sets it, so the bit-identity controls are untouched. Runs: the six informative
+held-out sequences (the five E079 gainers and the two losers minus one duplicate), 300 frames, subsample
+2, GT detector, `--ablate vote`, one job.
+
+**Labels.** Each logged box is joined against `val/<seq>/gt/gt.txt` at IoU >= 0.5: **target** (the
+clicked id), **distractor** (any other person), **nobody** (no GT box above 0.3 IoU).
+
+| seq | refusals | frames | target | distractor | nobody | target % |
+|---|---|---|---|---|---|---|
+| dancetrack0010 | 3 | 2 | 0 | 3 | 0 | 0.0 |
+| dancetrack0018 | 3 | 1 | 1 | 2 | 0 | 33.3 |
+| dancetrack0034 | 105 | 34 | 21 | 79 | 5 | 20.0 |
+| dancetrack0073 | 792 | 111 | 11 | 451 | 94 | 1.4 |
+| dancetrack0077 | 189 | 40 | 34 | 153 | 1 | 18.0 |
+| dancetrack0079 | 598 | 223 | 0 | 445 | 21 | 0.0 |
+| **pooled** | **1690** | **411** | **67** | **1133** | **121** | **3.96** |
+
+**Result against the pre-registered bar: 3.96 % < 5 %, so the multi-part bank is NOT built.** That is
+recorded as a kill, not deferred: the bar was chosen before the measurement to make exactly this
+decision.
+
+**But the pooled number is the wrong summary, and the distribution is the finding** (the same lesson
+E082 taught about pooled CIs):
+
+1. **The ceiling is doing its job most of the time**: 67 % of refusals are genuine distractors and 7 %
+   are background. Only 4 % are the true target.
+2. **The target refusals are not spread out - they sit exactly on the sequences where the vote helps.**
+   `0010` and `0079` (the two where the vote *loses*) have **zero** target refusals; `0018`, `0034`,
+   `0077` (three of the five where it wins) have **18-33 %**. So on the sequences that decide the
+   metric, the ceiling is a real constraint on the true target, and on the others it is invisible.
+3. **A single bed would already have rescued them, and it is always the same bed**: among target
+   refusals, R3 (long-term gallery) alone passes in **18** cases and R2 (the EMA anchor) in **0**.
+   R2 never contributes a true-target rescue anywhere in the six sequences.
+
+**Consequence: E084b, the unmeasured corner of the k axis.** Reading (3) makes the k = 2 majority look
+over-specified: it refuses real targets on behalf of a reference that never helps. `k = 1` had never
+been measured in this campaign (E079 ran 2, E081/E082 ran 2, `unanimous` is 3). It is now implemented as
+`cost.anchor_vote="any"` (mapping `{"majority":2,"unanimous":3,"adaptive":2,"contrast":2,"any":1}`),
+registered in the sweep as `vote_any` and covered by three tests (`test_any_mode_is_k1`,
+`test_any_admits_when_only_the_gallery_passes`, `test_any_is_a_superset_of_majority_on_the_same_frame`);
+suite 596 passed. The screen runs `vote_any` against `vote_off` and `vote_contrast_0.10` on the same six
+sequences; only `vote_any` needs new runs, so it costs ~10 minutes.
+
+## E084b - the one corner of the k axis never measured: k = 1 (KILL, and it explains E082)
+
+**Why k = 1 exists as a question.** E084 step 0 found that among ceiling refusals that were the TRUE
+target, R3 (gallery) alone would have rescued 18 and R2 (EMA anchor) **0**. That makes the k = 2
+majority look over-specified: it refuses real targets on behalf of a reference that never contributes a
+true-target rescue anywhere in the six sequences. k = 1 had never been measured in this campaign --
+E079 ran k = 2, E081/E082 ran k = 2, `unanimous` is k = 3 -- so this is the cheapest possible test of
+the reference structure: same bed, same band, one fewer vote.
+
+**Implementation.** `cost.anchor_vote="any"` -> k = 1 (`{"majority":2,"unanimous":3,"adaptive":2,
+"contrast":2,"any":1}`), registered in the sweep as `vote_any`, three tests
+(`test_any_mode_is_k1`, `test_any_admits_when_only_the_gallery_passes`,
+`test_any_is_a_superset_of_majority_on_the_same_frame`), suite **596 passed**.
+
+**Result** (the same six informative held-out sequences, 300 frames, subsample 2, GT detector; only
+`vote_any` needed new runs because `vote_off` and `vote_contrast_0.10` already had summaries):
+
+| seq | off TSR | any TSR | contrast0.10 TSR | off FAR | any FAR | contrast0.10 FAR |
+|---|---|---|---|---|---|---|
+| 0010 (vote lost) | 0.2831 | 0.0478 | 0.0478 | 0.6800 | 0.4167 | 0.4167 |
+| 0018 (vote won) | 0.2579 | 1.0000 | 1.0000 | 0.5873 | 0.0000 | 0.0000 |
+| 0034 (vote won) | 0.1815 | 0.6089 | 0.6089 | 0.1546 | 0.2990 | 0.2990 |
+| 0073 (vote won) | 0.2280 | 0.2400 | 0.4120 | 0.5833 | 0.4400 | 0.0300 |
+| 0077 (vote won) | 0.2333 | 0.6667 | 0.5733 | 0.4100 | 0.0000 | 0.0000 |
+| 0079 (vote lost) | 0.9133 | 0.6800 | 0.9133 | 0.0233 | 0.2167 | 0.0233 |
+| **mean** | **0.3495** | **0.5406** | **0.5926** | **0.4064** | **0.2287** | **0.1282** |
+
+**Verdict KILL.** k = 1 beats the shipped arm on both pooled means on this subset (+19.10 pp TSR,
+-17.77 pp FAR) -- but it is **dominated by `contrast_0.10` on the same six sequences**, which is better
+on both means (+24.31 pp TSR, -27.82 pp FAR) and, decisively, does not destroy `0079`: k = 1 turns
+0.9133 into 0.6800 and raises its FAR from 0.023 to 0.217, while the contrast gate leaves `0079` **bit
+identical** to the shipped arm. Two of the six sequences move in the wrong direction under k = 1.
+
+**The lesson is the shape of the rule, not the threshold.** k = 1 asks "is this look absolutely close
+to *one* known bed", and a similar-looking stranger passes it -- which is exactly the DanceTrack failure
+mode. The contrast gate asks a *relative* question, "is the frozen click crop worse than both refreshed
+references, by a margin", which is what separates "the look changed" from "this is a different person".
+Absolute closeness buys rescues and pays for them in false acquisitions; relative comparison buys the
+same rescues for free on 5 of the 6 sequences. This also explains E082's win/tie/loss shape (7/4/11):
+the contrast gate is the only arm in the family that is not trading one axis for the other.
+
+**E085 (fresh cohort) is blocked, not abandoned.** The only honest way to certify a sparse effect is
+more sequences, and `data/raw/dancetrack/` contains **val only** (25 sequences); the train split is not
+on disk and `huggingface.co` is unreachable from this host (`curl status=000, 20 s timeout` on the
+`noahcao/dancetrack` archives and on the site root). A pre-registered fresh-cohort replication is
+therefore pending the data, not the protocol: `scripts/vote_sweep.py` already accepts the cohort via
+`VOTE_DATA_ROOT` (+ `VOTE_DEV_CHECK=0`, and it refuses the E070 reference comparison on a custom root,
+because val and train share the `dancetrack00XX` numbering and comparing them would be a name
+collision dressed up as a reproduction check).
+
+## E086-r — the lone-candidate guard on real data: a controlled pair at last (2026-10-29)
+
+**Why.** The README claimed a 3.6 pp upper-mask cost for `CostCfg.lone_candidate_accept_cost`;
+that comparison was retracted because `results/target_obs19_shipped` contains no armed
+variant. The synthetic rig (`results/motion_ablation/lone_bound.md`) says the guard cuts
+hijacks 3/4 -> 1/4 at a 2.6 pp price on clean families, but no controlled real pair existed.
+**The original E086 pre-registration (extending `missing_appearance_cost`) was falsified
+before running**: `unid_cost.md` already sweeps it 0.0-1.0 and every metric is bit-identical,
+because the handover has `n_dets = 1` and `select_candidate` leaves `margin = inf`, so price
+never enters. `docs/E086_PLAN.md` carries that post-mortem.
+
+**Design (pre-registered, `docs/E086_PLAN.md` revision).** `scripts/vote_sweep.py`, DanceTrack
+val, 300 frames, subsample 2, mask none, GT detector. Arms `vote_off` (shipped, `None`) vs
+`vote_lone_0.30/0.40/0.50`. Six held-out sequences fixed in advance: four with shipped FAR
+>= 0.40 (`0010` 0.680, `0018` 0.587, `0073` 0.583, `0077` 0.410), two with low FAR (`0034`
+0.155, `0079` 0.023). New arms registered in `scripts/vote_sweep.py`; runner `_x/e086_run.py`.
+
+| seq | TSR off | 0.30 | 0.40 | 0.50 | FAR off | 0.30 | 0.40 | 0.50 |
+|---|---|---|---|---|---|---|---|---|
+| 0010 | 0.2831 | 0.2831 | 0.2831 | 0.2904 | 0.6800 | 0.5867 | 0.5867 | 0.3500 |
+| 0018 | 0.2579 | 0.1706 | 0.1706 | 0.1706 | 0.5873 | 0.1825 | 0.1825 | 0.1825 |
+| 0073 | 0.2280 | 0.1240 | 0.1240 | 0.1080 | 0.5833 | 0.5633 | 0.5600 | 0.5567 |
+| 0077 | 0.2333 | 0.0767 | 0.0767 | 0.0767 | 0.4100 | 0.0300 | 0.0300 | 0.0300 |
+| 0034 | 0.1815 | 0.2944 | 0.2419 | 0.2419 | 0.1546 | 0.0790 | 0.1546 | 0.1546 |
+| 0079 | 0.9133 | 0.9067 | 0.9067 | 0.9067 | 0.0233 | 0.0233 | 0.0233 | 0.0233 |
+| mean | 0.3495 | 0.3092 | 0.3005 | 0.2991 | 0.4064 | 0.2442 | 0.2562 | 0.2162 |
+
+`id_consistency` 0.4397 -> 0.5612 / 0.5281 / 0.5463. Pooled deltas: 0.30 -4.03 pp TSR /
+-16.23 pp FAR; 0.40 -4.90 / -15.02; 0.50 -5.05 / -19.02.
+
+**Verdict: NO CHANGE.** P1 (dFAR <= -2 pp) passes; P2 (dTSR >= -1 pp) fails; worst case
+-15.67 pp (`0077`) fails; P3 (low-FAR sequences bit-identical) fails. On the same six
+sequences `anchor_vote="contrast"` δ=0.10 measures **0.5926 / 0.1282**, dominating every
+lone arm on both axes. Shipped default stays `None`.
+
+**Findings.** (1) The guard is *not* inert on real data — unlike `missing_appearance_cost`,
+it refuses on absolute cost and therefore fires in the `n_dets = 1` regime. Pooled
+`id_consistency` +12.2 pp is the strongest identity result any pure-refusal knob has bought.
+(2) The retracted claim's direction was right, its control was missing, and its price was
+understated. (3) P3 was the wrong shape of falsifier: it assumed low shipped FAR makes a
+sequence a control, but `dancetrack0034` moved *favourably* (+11.3 pp TSR, -7.6 pp FAR),
+i.e. its shipped run was silently latched onto strangers and the guard also kept the gallery
+clean. A falsifier that fires in the good direction still kills the arm by rule — recorded
+as the honest outcome rather than relaxed after the fact.
+
+**Cost.** 17 new pairs, 85 min wall on the 4060; suite untouched (no `src/` change) —
+`scripts/vote_sweep.py` gained three registered arms only.
+
+## E087 — where the target loss actually lives: 70 % of it happens while NOT locked (2026-10-29, no GPU)
+
+**Why.** Round 31 ended with the identity line exhausted (k axis complete, contrast swept,
+adaptive KILL, dual-hypothesis KILL, lone guard dominated) and four mechanisms all landing
+in a 4-7 pp TSR band. Before buying another arm, this asks the prior question: *what share
+of the target loss can an identity decision even touch?* Source: the 22 shipped (`vote_off`)
+held-out summaries already on disk; script `_x/e087_loss_split.py`; definitions read from
+`src/tgtrack/evaluate.py:973-1001` (`loss_rate` = visible frames with no report or a wrong
+box; `loss_rate_locked` = of those, the frames where the tracker held a lock on the wrong
+identity, so the later is a subset of the former).
+
+**Result (22 held-out sequences, sorted by TSR).** Sum over sequences: loss while locked on
+the wrong identity **5.232**, loss not attributable to a wrong lock **12.268** — i.e.
+**30 % locked / 70 % unlocked**. 18 of 22 sequences are unlocked-dominant; 6 of the 7 floor
+sequences (TSR < 0.06) are unlocked-dominant (e.g. `0025` 0.887 of its 0.985 loss, `0035`
+0.961 of 0.978, `0097` 0.840 of 0.840 with `id_consistency` **1.000** and FAR 0.000), and
+only `0090` is locked-dominant (0.573 of 0.996, FAR 0.554).
+
+**Reading.** `dancetrack0097` is the clean control: whenever it reports, it is the right
+person and it is consistent (id_consistency 1.000), it simply does not report for 84 % of
+visible frames. That is a *reporting/seeking* failure, not an identity failure. The same
+shape holds across the floor. Since every identity knob acts only when a candidate is
+accepted, **the whole identity family had a hard ceiling of ~30 % of the loss**, and the
+4-7 pp band those arms delivered (out of 17-35 pp of loss) is the expected size for a
+mechanism operating on the smaller term.
+
+**This retro-explains three observations.** (1) 15 of 22 sequences are bit-unchanged by every
+identity arm — on unlocked-dominant sequences there is no decision to change. (2) Criterion ②
+(TSR >= 0.55) was unreachable by identity work: even a perfect identity decision leaves
+TSR <= 1 - unlocked_loss, which is below 0.45 on the floor sequences. (3) The E082
+"sparse effect" — the vote's gains concentrate where locked-loss happens to be large
+(`0018`, `0034`, `0077`), which is why its per-sequence distribution is so violent.
+
+**Caveat, stated rather than hidden.** "Unlocked" is a residual, so it mixes "should have
+been trackable but was not reported" with "genuinely occluded in the image" (DanceTrack's GT
+visibility is 1 for every annotated box, so an unobservable target still counts as visible).
+The robust claim is only the ceiling statement — identity decisions can address at most the
+~30 % of loss that occurs while locked on the wrong person — not that all 70 % is
+recoverable.
+
+**Next, and it is deliberately not another arm.** The bottleneck is seeking/reporting:
+reacquisition, the gate radius, the appearance-independent re-detection path, and whether the
+report policy should coast through short unobservability. Before touching those, one more
+measurement is required and cheap: on unlocked-dominant sequences, split the unlocked loss
+into `no report` vs `reported, wrong box but unlocked`, and cross it with `reacquire_latency`
+and `frames_since_update`. That needs the per-frame `--debug-csv` dumps (the current vote_sweep
+runs store only the pooled table), so it is a real run: `scripts/run_target.py --debug-csv`
+on the six unlocked-dominant floor sequences, one arm, no new mechanism.
+
+### E088 -- what the unlocked 70 % of the target loss actually is (per-frame attribution)
+
+**Purpose.** E087 split the shipped target loss into a *locked* term (30 %) and an *unlocked*
+residual (70 %) from the 22 held-out `vote_off` summaries, but could not say what the residual
+is made of, because those summaries store only the pooled table. E088 dumps per-frame records
+for three of the worst sequences and attributes every visible frame.
+
+**Protocol.** `scripts/run_target.py --debug-csv`, the shipped `vote:vote_off` arm, default
+detector (`yolo26m@1280`), `--mask none --max-frames 300 --subsample 2 --jobs 1`, target id
+taken from each sequence's `vote_off` summary `meta.target_ids`; sequences `dancetrack0097`,
+`dancetrack0081`, `dancetrack0035`. CSVs under `results/e088_ship/<seq>/runs/*.csv`; readout
+`_x/e088_split.py` + `_x/e088_candidates.py`.
+
+**Fidelity check (this is what makes the dumps comparable).** The three runs reproduce their
+reference summaries exactly:
+
+| seq | TSR | FAR | id_consistency |
+|---|---|---|---|
+| dancetrack0097 | 0.1599 (ref 0.1599) | 0.0000 (ref 0.0000) | 1.0000 |
+| dancetrack0081 | 0.0274 (ref 0.0274) | 0.2000 (ref 0.2000) | 0.0476 |
+| dancetrack0035 | 0.0219 (ref 0.0219) | 0.0572 (ref 0.0572) | 0.1500 |
+
+**A configuration trap worth recording.** The first attempt used `--detector gt`, which hands
+the tracker every GT box of every person. That is a *maximal-distractor* regime, not the shipped
+one, and it does not reproduce the references: `dancetrack0097` gave TSR 0.0816 / FAR 0.3400 /
+idcons 0.1905 against 0.1599 / 0.0000 / 1.0000. The GT-oracle numbers are still useful as a
+contrast (see below) but they must never be quoted as the shipped behaviour.
+
+**Shipped-regime result** (1482 visible target frames over the three sequences):
+
+| bucket | frames | share of loss |
+|---|---|---|
+| correct | 116 (TSR 0.0783) | - |
+| no report | **0** | **0.0 %** |
+| reported, not locked, wrong | 1246 | **91.2 %** |
+| reported, locked, wrong | 120 | 8.8 % |
+
+- The preregistered expectation in round 31 was "`no report` > 80 % of the unlocked loss".
+  It is **REFUTED**: the tracker emits a box on **every** visible frame (0 of 1482 had
+  `reported = False`). There is no "not reporting" mechanism at all.
+- 91 % of the loss is a box that is neither the target nor locked to anyone: dead-reckoned
+  coasting. `frames_since_update` for those frames: 10 % at 1-9, 35 % at 10-59, **55 % at
+  60+**. The tracker is out of contact with the target for over a minute of video and keeps
+  extrapolating.
+- States during those frames: `lost_long` 55 %, `lost_short` 31 %, `occluded_soft` 13 %,
+  `out_of_frame` 1 %. It knows it is lost.
+- `ch_app_valid` is **True on 100 %** of the missed frames: there was a candidate to score
+  every single time. So this is not the detector failing to produce anything.
+- `refuse_reason` on those frames: **41 % `all_gated:anchor_ceiling`**, and most of the rest
+  `ambiguous: margin X < 0.060`.
+- `dancetrack0097` is the sharpest case: `id_consistency` 1.000, FAR 0.000 -- it never once
+  locks a stranger -- and it still reports the right person on only 47 of 294 visible frames.
+
+**GT-oracle contrast, same script, 7 sequences, 3510 visible frames.** `no_report` is again 0;
+the loss splits **70.0 % unlocked / 30.0 % locked**. That reproduces E087's 30/70 split from a
+completely different data source, and it shows the shipped detector's fewer detections are what
+shifts the split to 91/9 (fewer candidates means fewer opportunities to lock a stranger). It
+also confirms the direction: more detections (GT oracle) made the *target tracker* worse, i.e.
+on these sequences the accept path is distractor-limited rather than detection-starved.
+
+**Interpretation.** The loss is a sustained localisation failure under a visible target with a
+candidate in hand: the tracker knows it is lost (`lost_short` / `lost_long`) and refuses to
+accept, most often because of the click-crop anchor ceiling. That ceiling exists to stop an
+identity switch *while tracking*; while lost there is no identity left to protect, which is
+what E089 changes (see round 29).
+
+**What would have made this conclusion wrong, and did not:** if `no_report` had dominated, the
+lever would have been the report policy; if `ch_app_valid` had been false, the lever would have
+been the detector. Neither happened.
+
+
+### E089 -- wiring check (preregistered step 0)
+
+Round 29 (`docs/NEXT_ROUND.md`) pre-committed to this before reading any TSR: on sequences where
+the ceiling is the gate, `all_gated:anchor_ceiling` must drop by >= 50 % at
+`anchor_band_lost_scale = 0.0`; otherwise the knob is not plumbed in and the sweep measures
+nothing. `_x/e089_wire.py` re-ran the two sequences already dumped under `results/e088_ship/`
+with `--ablate ceiling_lost:ceil_lost_off` (300 frames, subsample 2, shipped detector) and the
+per-frame `refuse_reason` was counted by `_x/wire_count.py`.
+
+| sequence | arm | visible frames | `all_gated:anchor_ceiling` | correct | TSR |
+|---|---|---|---|---|---|
+| dancetrack0097 | shipped (scale 1.00) | 294 | **285** | 47 | 0.1599 |
+| dancetrack0097 | scale 0.00 (off) | 294 | **96** | **196** | **0.6667** |
+| dancetrack0035 | shipped (scale 1.00) | 228 | 0 | 5 | 0.0219 |
+| dancetrack0035 | scale 0.00 (off) | 228 | 0 | 5 | 0.0219 |
+
+**Check PASSES**: -66.3 % ceiling refusals on `0097` (bar: -50 %), and the control direction holds
+-- on `0035` the ceiling never fired in either arm, and the arm changed nothing (bit-identical
+TSR/precision/FAR), which is what a correctly scoped change must do. `0097`'s correct frames go
+47 -> 196 of 294 visible; the residual 96 `all_gated` refusals are frames on which the target is
+still lost on the *first* frame of loss (the scale only engages after `lost_short_after`).
+
+This is a wiring result, not a ship result: one sequence, and the 22-sequence sweep decides.
+
+### E089 - widening the identity ceiling while the target is lost (SHIPPED)
+
+Preregistration: round 29 of `docs/NEXT_ROUND.md`. Knob `cost.anchor_band_lost_scale`
+(1.0 = pre-E089 bit-identical, > 1 widens, <= 0 drops), applied once the target has been lost for more
+than `lost_short_after` frames.
+
+**Step 0, wiring check (preregistered: `all_gated:anchor_ceiling` must drop >= 50 %).** On
+`dancetrack0097` it drops 285 -> 96 (-66.3 %) and correct frames rise 47 -> 196 (TSR 0.1599 ->
+0.6667); on `dancetrack0035`, where the ceiling never fired, the run is bit-identical. PASS, so the
+22-sequence measurement was authorised.
+
+**Measurement** (`results/vote_sweep/REPORT.md`, 22 held-out sequences, 6181 frames/point, 66 pairs,
+wall 6360.4 s):
+
+| arm | TSR [95% CI] | FAR [95% CI] | idcons |
+|---|---|---|---|
+| `vote_off` (pre-E089, scale 1.0) | 0.2104 [0.1157, 0.3254] | 0.2472 [0.1489, 0.3487] | 0.4358 |
+| `ceil_lost_1.25` (shipped) | 0.2395 [0.1385, 0.3586] | 0.2089 [0.1170, 0.3078] | 0.4790 |
+| `ceil_lost_off` (drop the ceiling while lost) | 0.2661 [0.1496, 0.3939] | 0.1844 [0.1023, 0.2825] | 0.4824 |
+
+Paired per-sequence deltas vs the reference: `1.25` dTSR **+2.91 pp [+0.13, +6.64]** (6 sequences up,
+3 down, 13 flat), dFAR -3.83 pp [-11.29, +2.02], dID +4.31 pp; `off` dTSR +5.57 pp [+0.02, +11.93],
+dFAR -6.28 pp, dID +4.66 pp. The reference arm reproduces the E070 `margin_0.20` records **22/22
+exactly** (TSR, FAR and target id; max |d| 0.0), so the comparison is anchored on a no-op.
+
+**Predictions, scored honestly.** P1 (pooled TSR >= +3 pp) **missed at +2.91 pp** (0.09 pp short).
+P2 (idcons drop <= 0.05 where the reference was >= 0.90) **passes at 1.25**, **fails at 0.0**
+(`dancetrack0097` 1.000 -> 0.929). P3 (FAR rise <= 0.03) **passes pooled** at both (-3.83 / -6.28 pp),
+with honest per-sequence rises at 1.25 on `0034` (+7.6 pp), `0065` (+17.7) and `0081` (+27.0).
+P4 (the gain concentrates on sequences with unlocked-loss share >= 0.6) is **REFUTED**: the gain lands
+on `0018/0034/0081/0077`, not on the E087/E088 floor set (`0025/0035/0063/0065/0097/0058`), with only
+`0081` overlapping.
+
+**Per-sequence cost at 1.25.** Worst TSR loss -2.0 pp (`0063`); `0018` +31.0 pp / FAR -50.0 / idcons
++56.0; `0034` +21.0 / FAR +7.6; `0081` +10.5 / FAR +27.0; `0077` +3.7 / FAR -17.3; `0047` FAR -37.7
+with TSR flat; `0058` FAR -24.7; `0065` FAR +17.7 / idcons -46.1. **13 of 22 sequences are
+bit-identical.**
+
+**Criterion-3 guard (preregistered: must not regress).** `MOT17-02-FRCNN`, `--mask upper`, target 19,
+300 frames: `baseline`, `ceil_lost_1.00`, `ceil_lost_1.25` and `ceil_lost_off` are all TSR 0.8545 /
+FAR 0.0000 / idcons 1.0000 - bit-identical, i.e. the partial-view result is untouched by the ship.
+
+**Verdict: SHIP `cost.anchor_band_lost_scale = 1.25`.** The campaign rule (paired per-sequence dTSR
+bootstrap CI excluding 0) holds with P2 and P3 clean and the guard untouched. The aggressive arm is
+killed despite a better pooled mean: P2 violation on `0097` plus a -21.0 pp casualty on `0077`.
+
+**Epoch discipline.** `scripts/vote_sweep.py`'s `vote_off` arm now **pins** `anchor_band_lost_scale:
+1.0`, so every E070/E079/E082/E084 22-sequence record stays bit-comparable, and a new `shipped` arm
+tracks the config default. `run_target.py` gains the `shipped_e089` variant (no scale override) in the
+`ceiling_lost` group.
+
+**Why +2.91 pp and not more.** The ceiling is only one refusal reason: E088 measured 41 %
+`all_gated:anchor_ceiling`, and the remainder is `ambiguous: margin X < 0.060`, which no band scale can
+move. The next lever is the reporting/coasting half of the loss, not the ceiling.

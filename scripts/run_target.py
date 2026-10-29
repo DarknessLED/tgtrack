@@ -96,6 +96,7 @@ from tgtrack import (  # noqa: E402
     simulate_click,
 )
 from tgtrack.evaluate import BLIND_STATES, target_frame_table  # noqa: E402
+from tgtrack.hypotheses import MultiHypothesisTracker  # noqa: E402
 from tgtrack.target_tracker import TargetTracker  # noqa: E402
 
 # --------------------------------------------------------------------------- #
@@ -150,6 +151,8 @@ GROUPS = (
     "channel",
     "absorb",
     "vote",
+    "mh",
+    "ceiling_lost",
 )
 
 DEFAULT_MARGINS = (0.0, 0.06, 0.12)
@@ -807,6 +810,37 @@ def build_variants(
                     "reference: the click-crop veto, one reference (shipped behaviour)",
                 )
             )
+            # E084b: k = 1, the one point of the k-axis never measured.  The E084
+            # step-0 audit found that among ceiling refusals that were the TRUE target,
+            # R3 alone would rescue 18 and R2 alone 0; the k = 2 majority therefore
+            # refuses real targets to satisfy a reference that never contributes.
+            out.append(
+                Variant(
+                    "vote_any",
+                    g,
+                    {"cost.anchor_vote": "any", "cost.anchor_vote_alpha": 0.1},
+                    "k = 1: admit when ANY of R1/R2/R3 passes (unmeasured corner of the axis)",
+                )
+            )
+            # E084 step 0 (docs/E084_PLAN.md): instrument, do not change behaviour.
+            # Same arm as the current best (contrast, delta 0.10) plus one JSONL line
+            # per ceiling-refused candidate, so an offline GT join can answer the only
+            # question that matters first: was the refused candidate the TRUE target,
+            # and which bed refused it?  A fixed path means a re-run overwrites rather
+            # than silently appending across epochs.
+            out.append(
+                Variant(
+                    "vote_bedlog",
+                    g,
+                    {
+                        "cost.anchor_vote": "contrast",
+                        "cost.anchor_vote_alpha": 0.1,
+                        "cost.anchor_vote_contrast": 0.10,
+                        "cost.anchor_bed_log": "results/bedlog/e084.jsonl",
+                    },
+                    "E084 step 0: contrast 0.10 + per-candidate ceiling bed log",
+                )
+            )
             out.append(
                 Variant(
                     "vote_majority",
@@ -855,6 +889,100 @@ def build_variants(
                         "cost.anchor_vote_distress_tau": 1.0,
                     },
                     "null control: distress never exceeds 1.0 -> the gate never opens",
+                )
+            )
+        elif g == "ceiling_lost":
+            # E089 (docs/NEXT_ROUND.md round 29): the identity ceiling is load-bearing
+            # only while the tracker is watching the target.  E088's per-frame audit
+            # found 41 % of the frames on which the shipped tracker misses a VISIBLE
+            # target are refused by exactly this gate (`all_gated:anchor_ceiling`) while
+            # the tracker is already in lost_short / lost_long -- with a candidate in
+            # hand every time (`ch_app_valid` 100 %) and 91 % of the loss being a
+            # coasted box.  These arms widen the band (or drop it) after
+            # `lost_short_after` frames without an accepted update; `ceil_lost_1.00` is
+            # the plumbing control and must be bit-identical to `vote_off`.
+            for _scale, _desc in (
+                (1.25, "band x1.25 while lost"),
+                (1.50, "band x1.50 while lost"),
+                (2.00, "band x2.00 while lost"),
+                (0.0, "ceiling OFF while lost"),
+            ):
+                out.append(
+                    Variant(
+                        "ceil_lost_%s" % ("off" if _scale == 0.0 else ("%.2f" % _scale)),
+                        g,
+                        {
+                            "cost.anchor_vote": "off",
+                            "cost.anchor_band_lost_scale": float(_scale),
+                        },
+                        _desc,
+                    )
+                )
+            out.append(
+                Variant(
+                    "shipped_e089",
+                    g,
+                    {"cost.anchor_vote": "off"},
+                    "the shipped default after E089 (cost.anchor_band_lost_scale = 1.25)",
+                )
+            )
+            out.append(
+                Variant(
+                    "ceil_lost_1.00",
+                    g,
+                    {"cost.anchor_vote": "off", "cost.anchor_band_lost_scale": 1.0},
+                    "control: scale 1.0, must be bit-identical to vote_off",
+                )
+            )
+        elif g == "mh":
+            # E083 (docs/E083_PLAN.md, amended in docs/EXPERIMENTS.md): instead of one
+            # tracker, run K = 2 structurally different hypotheses that differ in
+            # exactly one thing -- which reference set they trust -- and report one
+            # box.  H_crop is the shipped tracker (one frozen reference, the click
+            # crop); H_gallery is the E079 k = 2 arm (refreshed anchor R2 + gallery
+            # R3).  The amending design exists because E082 showed the sign of the
+            # vote's effect is a property of the SEQUENCE rather than of the
+            # candidate, so no per-candidate gate can decide it in advance; E083 asks
+            # the sequence itself, via a temporal-validation window that freezes both
+            # reference sets at the first disagreement and scores each on the crops
+            # it goes on to accept.  `mh_off` is the reference (and the plumbing
+            # falsifier: it must be bit-identical to vote_off); `mh_dual_frozen`
+            # runs both hypotheses but pins the reported box to H_crop, which
+            # isolates the cost of two boxes from the effect of the posterior.
+            out.append(
+                Variant(
+                    "mh_off",
+                    g,
+                    {"cost.mh_mode": "off", "cost.anchor_vote": "off"},
+                    "reference: one tracker, the shipped behaviour (mh_off == vote_off)",
+                )
+            )
+            out.append(
+                Variant(
+                    "mh_dual",
+                    g,
+                    {
+                        "cost.mh_mode": "dual",
+                        "cost.mh_commit_margin": 0.15,
+                        "cost.mh_commit_frames": 3,
+                        "cost.mh_validate_frames": 12,
+                        "cost.mh_drift_lambda": 2.0,
+                    },
+                    "H_crop vs H_gallery, decided on 12-frame temporal validation",
+                )
+            )
+            out.append(
+                Variant(
+                    "mh_dual_frozen",
+                    g,
+                    {
+                        "cost.mh_mode": "dual_frozen",
+                        "cost.mh_commit_margin": 0.15,
+                        "cost.mh_commit_frames": 3,
+                        "cost.mh_validate_frames": 12,
+                        "cost.mh_drift_lambda": 2.0,
+                    },
+                    "control: both hypotheses run, the reported box is pinned to H_crop",
                 )
             )
         if only is not None:
@@ -1833,7 +1961,13 @@ def run_sequence(
             print(f"[embed] WARN unavailable ({type(exc).__name__}: {exc}); continuing without ReID", flush=True)
             embedder = None
 
-    tracker = TargetTracker(cfg, embedder)
+    # E083: with mh_mode = "off" this is the shipped single tracker, unchanged; any
+    # other mode runs the K = 2 hypothesis pair (src/tgtrack/hypotheses.py), which
+    # reports one box per frame and keeps the two spawns' event streams merged.
+    if str(getattr(cfg.cost, "mh_mode", "off") or "off").strip().lower() == "off":
+        tracker: Any = TargetTracker(cfg, embedder)
+    else:
+        tracker = MultiHypothesisTracker(cfg, embedder)
 
     click_box = plan.full_gt_target[first]
     if click_box is None:  # pragma: no cover - guarded by `first`

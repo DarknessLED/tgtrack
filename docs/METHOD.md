@@ -193,3 +193,69 @@ defaults are the kind of thing that a future reader will not check.
 - `--target-id` is mandatory for any masked or comparative target run; without it the harness picks
   the *observable* target, and `dancetrack0005` has been picked as both id 0 and id 2 (see the audit
   corrections in `README.md`). A comparison across epochs without a pinned id is comparing people.
+
+## Lesson (E082): choose a gate's threshold from a RETENTION curve, not by intuition
+
+E082 registers a gate that admits a vote only when
+`contrast = d_R1 - min(d_R2, d_R3) >= delta`. The first draft of the experiment named
+`delta in {0.02, 0.05}` because those "looked small enough to be safe". Measured retention of the
+6,714 candidates the blanket vote rescues:
+
+| delta | 0.00 | 0.02 | 0.05 | 0.10 | 0.20 | 0.30 |
+|---|---|---|---|---|---|---|
+| retained | 100.0 % | 100.0 % | 99.7 % | 87.8 % | 66.2 % | 44.3 % |
+
+Two of the three named deltas were therefore **structurally incapable** of changing the result:
+a gate that admits 100 % of the candidates it is supposed to filter is a no-op with extra code.
+The working deltas are 0.10/0.20/0.30, i.e. the ones already written in `docs/E082_PLAN.md`.
+
+Generalise this. Before a gated mechanism is measured:
+
+1. Implement the statistic.
+2. Compute its **retention curve over the eligible set** — the share of candidates the gate still
+   admits at each threshold. This uses NO outcomes, so it cannot bias the measurement
+   (it is label-free, and in E082 it was computed *before* any TSR/FAR number existed).
+3. Choose thresholds where retention is roughly 90/65/45 %, i.e. where the gate demonstrably bites.
+4. Record the curve in the experiment entry; a gate whose retention is 100 % at the shipped
+   threshold is inert and should be reported as inert rather than as a negative result.
+
+Corollary: "small delta = conservative" is wrong. Small deltas are conservative *only* when the
+statistic's distribution actually spans them.
+
+## Lesson (E082): a pooled CI cannot certify a sparse effect — and a sparse effect is what we found
+
+The vote's per-sequence effect on the held-out set is 5 large gains (+177.0 pp), 1–2 large losses
+(−44.5 pp) and **15 sequences that are bit-identical** (median dTSR 0.00). Any pooled mean over
+that set averages zeros with a heavy tail, and a clustered bootstrap over 22 sequences resamples
+"zero, zero, …, +74.2, −23.5" — so the interval is set by whether the few informative
+sequences are drawn, not by the size of the mechanism. That is why the best arm on both axes
+(`contrast_0.10`) still fails a rule whose whole content is "the interval must exclude zero".
+
+Rule that follows: **before running a comparison, estimate the effect's expected sparsity from the
+per-sequence records already on disk, and choose the test to match it.** For a sparse effect the
+readable statistics are (a) win/tie/loss counts **with magnitudes**, (b) the worst-case per-sequence
+delta, and (c) an explicit Pareto statement on the pooled axes. A pooled CI is the right test only
+when the effect is diffuse enough that most sequences move.
+
+Corollary, already bitten once in this campaign: a ship rule is a *pre-commitment*. It may say
+"this benchmark cannot decide the question"; it may not be relaxed after a favourable direction
+appears. `E082b` therefore buys power (twice the source frames, two arms) instead of moving the bar.
+
+## Harness trap (E082b): a sweep that spawns per-pair children cannot inherit an in-process protocol override
+
+`scripts/vote_sweep.py` runs one child process per (arm, sequence) pair and stamps every run with
+`meta.max_frames`; a validator in the parent then refuses any pair whose stamp disagrees with the
+parent's own `PROTOCOL`. E082b needed 600 frames instead of 300, so the override was applied in
+`main()` after `parse_args` -- and **all 22 pairs came back `ERROR: PROTOCOL GUARD failed:
+max_frames=300`**. The override was never wrong; it simply never reached the children, which re-import
+the module and therefore see the module-level default. The stamp is written by the child, the check is
+made by the parent, so the two disagree by construction.
+
+Fix: travel the override by environment (`E079_MAX_FRAMES`) so both sides resolve the same value, and
+read it in the child at the point where it builds `run_target`'s argv.
+
+The generalisable rule for this codebase: **any protocol constant that a child process stamps must be
+passed by environment, not by post-parse mutation.** A guard that compares a parent's expectation
+against a child's stamp is only meaningful if both sides derive the value from the same source. A
+second, cheaper symptom to watch for: if a sweep produces N logs in the time one pair should take, the
+runs are failing fast -- read the tail of the newest log before waiting on progress counters.
