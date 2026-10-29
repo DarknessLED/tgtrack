@@ -4336,3 +4336,41 @@ Consequence for the campaign: with E090 (margin), E092/E092b (temporal hold), E0
 (normalisation) all returning the same shape, the remaining structural lever is not a better *score*
 but a second decision channel (E095b: re-attribution over pre-veto shadow candidates), which is
 implementable but is a redesign of the commit path rather than a knob.
+
+## E101 -- offline selector scores do not transfer to the closed loop (round 45)
+
+Before building another selector, E099's failure was re-examined from the outside: is the re-attribution
+actually harmful *frame-wise*, or does it hurt through the state machine?  `_x/e101_gate.py` replays the
+same greedy pool selector against GT on the five E099 sequences, comparing per frame against the shipped
+`correct` column and the shipped `frames_since_update`:
+
+| gate | changed frames | repaired | damaged | net | net pp |
+|---|---|---|---|---|---|
+| all frames | - | 80 | 20 | +60 | **+4.45 pp** |
+| `fsu >= 60` | - | 7 | 1 | +6 | +0.45 pp |
+| `fsu >= 30` | - | 27 | 1 | +26 | +1.93 pp |
+| shipped appearance > 1.25x trailing median | - | 31 | 7 | +24 | +1.78 pp |
+| `fsu >= 60` AND appearance gate | - | 1 | 0 | +1 | +0.07 pp |
+
+Offline, the selector looks **positive on every sequence** (no repairs or damage at all on `0010` / `0073`
+/ `0077` / `0081`; `+7` repairs on `0097`).  Online, E099 measured `0010` at **-23.90 pp** and `0081` at
+**-10.96 pp**.  The two statements are both true, and that is the finding:
+
+- The online damage is *not* a per-frame miss.  E099 fires only when the tracker has just refused every
+  candidate while coasting (`_on_miss` with `frames_since_update >= lost_short_after`), i.e. exactly where
+  the shipped tracker would otherwise stay silent; committing *any* re-identified person there changes
+  which person the state machine follows afterwards, so the loss appears in later frames, not in the
+  frame where the choice was made.
+- Therefore a frame-wise GT score is **not a valid surrogate** for this selector's online effect.  E097's
+  +19.25 pp offline DP estimate and this +4.45 pp frame-wise estimate are both optimistic in the same way.
+  Any future selector in this architecture has to be judged online, on the pooled TSR/FAR, not on a
+  per-frame join.
+- It also explains the family's near-1:1 exchange rate (E082/E089/E092/E098/E099): every identity decision
+  is a *commitment* that the closed loop then follows, so the cost of a wrong commit is paid over the
+  whole subsequent trajectory while the benefit of a right one is only as large as the remaining time on
+  target.
+
+Campaign consequence: the pre-veto pool is real headroom (E097: 65.84 % vs 22.02 % recall) but it cannot
+be exploited by re-scoring inside the current commit-and-coast design.  The only structural fix is a
+second decision channel that can *withhold* a commitment (report "unassigned" for a frame without ending
+the track), which is a redesign, not a knob -- and it is the honest next milestone.

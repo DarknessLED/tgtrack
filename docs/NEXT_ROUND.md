@@ -724,3 +724,17 @@ sign-flip in E099 comes from the selection objective, not from the units of the 
 State of the identity line: E082/E089 (shipped knobs), E090/E092/E092b/E098/E099/E100 measured and
 closed, E095b pre-registered as the only remaining structural lever (pre-veto re-attribution as a
 *second channel*, not a rescoring knob).
+
+### Round 45 -- E101: offline scores are not a surrogate for the closed loop (2026-10-30 02:20)
+
+Replayed E099's selector frame-wise against GT on the same five sequences: **+4.45 pp net** offline
+(80 repairs, 20 damage, zero of either on `0010`/`0081`) against **-1.40 pp** measured online. The
+discrepancy is the finding: re-attribution fires only where the tracker would otherwise stay silent, so a
+wrong choice is not a one-frame miss but a new commitment the state machine follows -- the loss shows up
+in later frames. Consequence: no future selector in this architecture may be judged by a per-frame GT
+join; only pooled online TSR/FAR counts.
+
+Milestone recorded for the next session: a second decision channel that can withhold a commitment
+(report "unassigned" for a frame without terminating the track). Every experiment from E090 to E101 has
+been an attempt to fix identity *inside* a design where one commit per frame is mandatory, which is why
+they all exchange TSR for FAR at ~1:1.

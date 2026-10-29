@@ -868,6 +868,18 @@ as a selector fix and the sign-flip lives in the selection objective itself. Rea
 (margin), E092/E092b (temporal hold) and E098 (dose), the identity layer is a Pareto surface whose
 exchange rate is near 1:1, and the only remaining structural lever is a second decision channel (E095b).
 
+
+### E101: why every identity fix traded TSR for FAR at 1:1
+
+Replaying E099's selector frame-wise against GT gives **+4.45 pp** (80 repairs, 20 damage, nothing at all
+on the two sequences that lost 23.90 and 10.96 pp online). The re-attribution fires only where the
+tracker would otherwise stay silent, so a wrong choice is not one missed frame -- it is a new commitment
+that the state machine then follows, and the loss is paid over the following trajectory. That is why
+E082/E089/E092/E098/E099 all behave like points on one Pareto surface with a near-unit exchange rate: a
+miss and a false report are the same event when exactly one candidate must be committed per frame. The
+remaining structural work is therefore a second decision channel that can withhold a commitment, not
+another score.
+
 ## Corrections after the first independent audit (round A)
 
 An independent audit re-derived 24 numeric claims in this file from the `results/` artifacts and found
