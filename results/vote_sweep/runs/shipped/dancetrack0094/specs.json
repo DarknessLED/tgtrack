@@ -1,0 +1,11 @@
+[
+  {
+    "seq_name": "dancetrack0094",
+    "variant": "shipped_e089",
+    "overrides": {
+      "cost.anchor_vote": "off"
+    },
+    "mask": "none",
+    "target_id": 0
+  }
+]

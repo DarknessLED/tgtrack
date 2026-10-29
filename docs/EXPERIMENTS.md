@@ -4082,3 +4082,35 @@ decision per frame, so a missed report and a false report are the same event; th
 exchange rate is 1. The way out is not a knob but a second, independent decision channel (E095): a
 per-frame verification/refutation pass using evidence the identity layer does not have. That, plus
 detector-side work for criterion 1, is where the remaining headroom is.
+
+### E094 -- release verification: the shipped default reproduces the arm that justified it
+
+*Motivation*: the ship decision for `anchor_band_lost_scale = 1.25` was made on the `ceil_lost_1.25`
+arm, which sets the value as an **explicit override**. What a user gets is the *config default*,
+reached by the `shipped` arm whose only override is `anchor_vote = "off"`. If those disagree anywhere,
+either the default never landed or another config field drifted -- both release blockers, and neither
+would show up in any experiment that only runs named arms.
+
+*Measurement*: `shipped` over all 22 held-out sequences (job wall 5726.1 s), compared per sequence and
+per metric against the `ceil_lost_1.25` records that justified the ship (`_x/e094_verify.py`), then
+pooled against the frozen pre-E089 `vote_off` epoch.
+
+| metric | shipped (default) | ceil_lost_1.25 (the arm) | vote_off (pre-E089) |
+|---|---|---|---|
+| TSR | 0.2395 [0.1385, 0.3586] | 0.2395 | 0.2104 [0.1157, 0.3254] |
+| FAR | 0.2089 [0.1170, 0.3078] | 0.2089 | 0.2472 [0.1489, 0.3487] |
+| idcons | 0.4790 | 0.4790 | 0.4358 |
+| blind&present | 0.5157 | 0.5157 | 0.4913 |
+
+**Result: PASS, exactly.** 22/22 sequences are bit-identical on TSR, FAR and id_consistency; the pooled
+values match the E089 report to four decimals on every field; the paired delta against `vote_off` is
+dTSR **+2.91 pp** with bootstrap CI **[+0.22, +6.35]** (excludes 0) and dFAR **-3.83 pp**, i.e. the E089
+ship decision is reproducible from the delivered configuration, not just from the arm that argued for
+it. The reference no-op check is 22/22 TSR / 22/22 FAR / 22/22 target-id with max |d| = 0.
+
+**Why this is worth a ledger entry.** Every previous experiment in this campaign measured *arms*. This
+is the only measurement of the *default*, and it is the one a reader who installs this code actually
+inherits. A campaign whose results live only in override dictionaries has not shipped anything; E094
+closes that gap, and the release checklist in `docs/METHOD.md` now requires it for every future default
+change.
+

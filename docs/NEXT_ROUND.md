@@ -515,3 +515,83 @@ an order of magnitude more than any identity knob moves -- so the remaining head
 Handoff state: shipped defaults unchanged (`anchor_band_lost_scale = 1.25`, `anchor_vote = "off"`);
 22-sequence Sweep-report backups exist for E082/E089/E092b/E093; the current `results/vote_sweep/`
 report *is* the E093 run.
+
+## Round 41 -- E094 release verification in flight; E095 pre-registered as the next phase
+
+**E094 (running).** The ship decision for `anchor_band_lost_scale = 1.25` was made on the
+`ceil_lost_1.25` arm, which sets the value as an explicit override. What a user actually gets is the
+*config default*, reached through the `shipped` arm (overrides: only `anchor_vote = "off"`). If those
+two disagree anywhere, either the default did not land or another config field drifted -- both release
+blockers. E094 therefore runs `shipped` across all 22 held-out sequences and compares it, per sequence
+and per metric, against the `ceil_lost_1.25` records that justified the ship, and re-derives the pooled
+numbers against the frozen pre-E089 `vote_off` epoch (`_x/e094_verify.py`). Expected: bit-identical on
+22/22 (the constraints are the same single integer), pooled 0.2395 / 0.2089.
+
+**E095 (pre-registered, `docs/E095_PLAN.md`).** The identity layer is closed (E093): four levers on one
+Pareto surface with a ~1:1 TSR/FAR exchange rate, because one candidate set and one commit per frame
+make a miss and a false report the same event. E095 attacks that coupling directly with a **bounded-lag
+refutation channel**: the per-frame report goes into a ring buffer of depth L, and an entry is revised
+just before delivery by a short-window global assignment over the buffered candidates (trajectory
+smoothness + cross-frame identity competition). Only re-attribution is permitted -- never deletion,
+which is the metric gaming the `blind & present` share exists to expose, and which E095's P3 guard
+forbids explicitly.
+
+Pre-registered predictions for E095: **P1 both metrics improve or the coupling is deeper than assumed**
+(pooled TSR +>= 1 pp *and* FAR ->= 1 pp); P2 id_consistency rises; P3 b&p does not rise by more than
+1.0 pp (anti-gaming guard); P4 gains concentrate on the oscillating sequences (0010, 0077, 0081). Kill
+criteria: TSR falls, or b&p rises while FAR falls, or the `lag_refute_L0` control is not bit-identical.
+Cost: no new model; O(L^2) on already-computed candidates, ~one E093 arm (~100 min) for the full
+22-sequence measurement.
+
+## Round 42 -- E096 pre-registered: the dose axis of the shipped lever was never measured
+
+E089 shipped `anchor_band_lost_scale = 1.25` after a three-arm sweep (`vote_off` / `1.25` / `off`); the
+arms `1.50` and `2.00` were defined in the harness but **never run** because the sweep was scope-cut to
+the arms that decide the hypothesis. That leaves the shipped lever's dose only bracketed: 1.00 = 0 pp,
+1.25 = +2.91 pp, off = +5.57 pp (killed for `dancetrack0077` -21.0 pp and a P2 violation on `0097`).
+The response is monotone in TSR up to the point where it breaks a sequence, and 1.50 is exactly the
+unmeasured point between "shipped" and "broken".
+
+**Measurement.** `ceil_lost_1.50` (already in `scripts/vote_sweep.py`) against `vote_off` and `shipped`
+on the 22-sequence protocol. E094 has just produced a full `shipped` record set, so the delivered
+default is the direct reference; `vote_off` stays in the arm list only because the harness pins target
+ids from it.
+
+**Predictions.** P1: pooled dTSR versus shipped in [+1.0, +4.0] pp (the dose curve from 1.25 to off
+gains 2.66 pp of TSR over the interval; 1.50 sits one third of the way along the scale axis, so
++1 to +4 pp is the honest bracket). P2: pooled FAR not worse than shipped by more than 0.5 pp.
+P3: **no sequence loses more than 2.0 pp** -- this is the clause that E089's 1.25 arm only just met
+(`dancetrack0063` -2.0 pp), and it is the clause the off arm failed catastrophically (`0077` -21.0 pp).
+P4: if the P3 failure appears at 1.50, then the whole dose axis is unsafe beyond 1.25 and the shipped
+value stands; if 1.50 passes cleanly, the campaign has a defensible step.
+
+**Ship rule (unchanged).** To replace the shipped default, the paired per-sequence dTSR bootstrap CI
+versus `shipped` must exclude 0, P2/P3 above must hold, and criterion 3's partial-view guard must be
+re-run and stay at 0.8545. Otherwise 1.25 stays and the dose axis closes with 1.25 as the measured
+optimum.
+
+
+**E094 measured (closing this round): PASS.** `shipped` across 22 sequences is **bit-identical on
+22/22** to the `ceil_lost_1.25` records (TSR 0.2395 / FAR 0.2089 / idcons 0.4790; pooled delta vs
+`vote_off` +2.91 pp, CI [+0.22, +6.35], FAR -3.83 pp; reference no-op 22/22). The default is what was
+measured. `docs/METHOD.md` now carries this as a release requirement: *every future default change must
+be verified through the `shipped` arm, not only through the arm that motivated it.*
+
+
+## Round 43 -- E095 and criterion 1 are the two remaining lines
+
+With E094 closing release hygiene, the campaign's open work is exactly two things:
+
+1. **Criterion 2** (`DanceTrack TSR >= 0.55, FAR < 0.20`; shipped 0.2395 / 0.2089). The identity layer
+   is measurably closed (E093: four levers, one Pareto surface, ~1:1 exchange, substitutes not
+   complements). The only mechanism left with a *reason* to be one-sided is E095's bounded-lag
+   refutation channel (`docs/E095_PLAN.md`, pre-registered: P1 both metrics improve, P3 b&p must not
+   rise -- the anti-gaming guard). This is the recommended next experiment: no new model, one arm's
+   worth of GPU time.
+2. **Criterion 1** (`MOT17 HOTA >= 0.55`, best 0.5050). This is a detector-side problem: the
+   all-person layer is DetA-limited (0.44) and E001/E002/E003/E004/E005/E007/E010/E011/E012 closed the
+   tracker-side routes. The remaining lever allowed by m04393 is a *different third-party pretrained
+   detector of comparable size*, not fine-tuning. Any future attempt should start by re-reading
+   `docs/research/R2_detectors.md` and `R4_all_person.md`, and must be measured on the same
+   `tracktrack` parser + HOTA harness that produced 0.4980/0.5050.
+

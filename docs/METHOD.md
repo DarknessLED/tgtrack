@@ -259,3 +259,13 @@ passed by environment, not by post-parse mutation.** A guard that compares a par
 against a child's stamp is only meaningful if both sides derive the value from the same source. A
 second, cheaper symptom to watch for: if a sweep produces N logs in the time one pair should take, the
 runs are failing fast -- read the tail of the newest log before waiting on progress counters.
+
+## Release rule (E094): verify the default, not the arm that argued for it
+
+A ship decision is made on an experiment, but users inherit a **configuration**. E094 found the gap and
+closed it: re-measuring the shipped default (no overrides) over the full 22-sequence protocol showed it
+bit-identical, on 22/22 sequences, to the arm that justified the ship -- but that equality had to be
+*demonstrated*, because an override dictionary and a class default are two different code paths and a
+drifted default fails silently into every downstream number. **Every future default change must be
+verified through a `shipped`-style arm across the full protocol before it is called shipped**, and the
+verification must print per-sequence bit-identity, not just pooled values.

@@ -773,6 +773,15 @@ rate. That is a statement about the objective -- one candidate set, one commit p
 and a false report are the same event -- and it means the identity layer is done: **no further knob
 in it can reach TSR 0.55 at FAR 0.20**, a gap of 0.28 rather than the 0.03-0.07 the frontier moves.
 
+### Release verification (E094)
+
+The shipped default is verified against the arm that justified it, not merely against its own report:
+the `shipped` configuration (no overrides except `anchor_vote = "off"`) was measured across all 22
+held-out sequences and is **bit-identical on 22/22** to the `ceil_lost_1.25` records from E089 -- TSR
+0.2395 / FAR 0.2089 / idcons 0.4790, with the paired gain over the pre-E089 epoch at **+2.91 pp**
+(CI [+0.22, +6.35]) and FAR **-3.83 pp**. Anyone who runs this code with default settings inherits the
+measured configuration, not an argument about it.
+
 ## Corrections after the first independent audit (round A)
 
 An independent audit re-derived 24 numeric claims in this file from the `results/` artifacts and found
