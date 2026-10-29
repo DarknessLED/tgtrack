@@ -595,3 +595,40 @@ With E094 closing release hygiene, the campaign's open work is exactly two thing
    `docs/research/R2_detectors.md` and `R4_all_person.md`, and must be measured on the same
    `tracktrack` parser + HOTA harness that produced 0.4980/0.5050.
 
+
+**E096 measured (closing this round): KILL, 1.25 stands.** `ceil_lost_1.50` = TSR 0.2481 / FAR **0.1867**
+(the first pooled FAR below 0.20), versus shipped 0.2395 / 0.2089: dTSR +0.86 pp [-1.21, +4.25], dFAR
+-2.22 pp [-6.55, +0.35], **18/22 sequences bit-identical**, movers `0073` +29.60, `0034` -0.81,
+`0097` -4.42 (idcons 1.0000 -> 0.8293), `0077` -6.67. P1 missed by 0.14 pp, P3 fails twice -> P4's
+clause fires: the dose axis is unsafe beyond 1.25. Structural finding: the ceiling is a **bifurcation
+switch**, not a dial -- 18 of 22 sequences do not notice a 20 % parameter change and the four that do
+re-fork their trajectory, which is the same non-monotone signature E090 produced on one knob.
+
+
+## Round 44 -- state of the campaign, and the only two doors left
+
+**Shipped, verified**: `anchor_band_lost_scale = 1.25`, `anchor_vote = "off"`, DanceTrack held-out
+TSR **0.2395** / FAR **0.2089** / idcons 0.4790, bit-identical to the arm that justified it (E094,
+22/22) and unchanged by four later killed experiments (E090, E091, E092/E092b, E096). Partial-view
+criterion met: 0.8545, guard re-verified bit-identical under the shipped levers (E089 guard).
+
+**Closed lines (do not re-open without new evidence).** Identity-layer knobs: four mechanisms measured,
+one Pareto surface, ~1:1 TSR/FAR exchange, recall-side levers are substitutes (E082/E089/E092/E092b/
+E093/E096). All-person tracker-side MOT17 routes: E001-E012. Detector-side: E002 established the
+bottleneck is occlusion, not small objects.
+
+**Two doors left.**
+
+1. **E095 -- the second decision channel** (`docs/E095_PLAN.md`, pre-registered): bounded-lag
+   refutation of committed identities. It is the only remaining mechanism with a *reason* to be
+   one-sided, because it uses evidence that arrives after the decision instead of re-weighting the
+   evidence at it. P1 demands both metrics improve; P3 forbids buying FAR by deleting reports.
+2. **Criterion 1 -- a different third-party detector** at comparable size (m04393 allows swapping,
+   forbids fine-tuning). Best measured HOTA 0.5050 with `yolo26m@1280`; the target 0.55 needs a
+   detector whose recall on *occluded* persons is materially better, not a tracker change.
+
+**Practical next step if data is ever available**: E085 (fresh cohort) remains blocked -- the host
+cannot reach HuggingFace (`status=000`), and `data/raw/dancetrack/` contains only the val split, so
+every number in this campaign is measured on the same 22 held-out sequences. That is a real external
+validity limit and should be stated as such in any write-up.
+

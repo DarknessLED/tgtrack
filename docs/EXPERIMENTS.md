@@ -4114,3 +4114,40 @@ inherits. A campaign whose results live only in override dictionaries has not sh
 closes that gap, and the release checklist in `docs/METHOD.md` now requires it for every future default
 change.
 
+### E096 -- the dose axis of the shipped lever: 1.50 is a bifurcation, not a dial (KILL)
+
+*Preregistration*: docs/NEXT_ROUND.md round 42. *Measurement*: `ceil_lost_1.50` over the 22 held-out
+sequences (wall 5827.3 s) against the freshly verified `shipped` default and the frozen pre-E089
+`vote_off` epoch. The dose `1.50` had been defined in the harness since E089 but never run.
+
+| arm | TSR [CI] | FAR [CI] | idcons | blind&present |
+|---|---|---|---|---|
+| `vote_off` (pre-E089) | 0.2104 [0.1157, 0.3254] | 0.2472 [0.1489, 0.3487] | 0.4358 | 0.4913 |
+| **`shipped` (1.25)** | **0.2395 [0.1385, 0.3586]** | **0.2089 [0.1170, 0.3078]** | 0.4790 | 0.5157 |
+| `ceil_lost_1.50` | 0.2481 [0.1387, 0.3695] | **0.1867** [0.1048, 0.2831] | 0.4944 | 0.5190 |
+
+Paired 1.50 vs shipped: dTSR **+0.86 pp** [-1.21, +4.25], dFAR **-2.22 pp** [-6.55, +0.35], dID +1.54 pp.
+**18 of 22 sequences are bit-identical**; the four movers are violent: `0073` **+29.60 pp**
+(0.2400 -> 0.5360, FAR 0.5800 -> 0.1700, idcons 0.2564 -> 0.7228), `0034` -0.81,
+`0097` **-4.42 pp** (idcons 1.0000 -> 0.8293), `0077` **-6.67 pp**.
+
+**Verdict KILL, by the pre-registered rule.** P1 (pooled dTSR in [+1, +4] pp) is missed by 0.14 pp
+(+0.86); P2 (FAR no worse than shipped by >0.5 pp) holds (-2.22); **P3 (no sequence losing more than
+2.0 pp) fails twice** -- `0097` at -4.42 and `0077` at -6.67. P4's clause therefore fires: the dose axis
+is unsafe beyond 1.25, and **1.25 stands as the measured optimum**. Nothing was shipped.
+
+**What the numbers say structurally.** `1.50` is the first arm in the campaign to put *pooled* FAR
+below the 0.20 barrier (0.1867 versus 0.2089), and it produces the largest single-sequence gain
+measured anywhere (+29.6 pp on 0073) -- and it is still not shippable, because it pays on
+`dancetrack0097` (whose id_consistency falls off 1.0000) and on `dancetrack0077`. Combined with E090's
+non-monotone response (same knob, +27.6 pp at 0.01 and +5.6 pp at 0.03), the picture is now explicit:
+**the lost-regime ceiling is a bifurcation switch, not a continuous dial.** 18 of 22 sequences do not
+notice a 20 % change in the parameter at all, and the four that do re-fork their whole trajectory. Tuning
+a bifurcation by grid search is exactly how a campaign produces arms that look good on the mean and
+break a control sequence -- which is what all three of E090, E091 and E096 measured.
+
+**Consequence for criterion 2.** The FAR half of the criterion is now demonstrated reachable at 0.1867
+(pooled) but not at an admissible per-sequence cost; the TSR half remains 0.30 away. Neither is a
+tuning problem, which is why the recommended next experiment stays E095's second decision channel
+(docs/E095_PLAN.md) rather than any further dose search.
+

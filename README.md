@@ -782,6 +782,17 @@ held-out sequences and is **bit-identical on 22/22** to the `ceil_lost_1.25` rec
 (CI [+0.22, +6.35]) and FAR **-3.83 pp**. Anyone who runs this code with default settings inherits the
 measured configuration, not an argument about it.
 
+### E096: the shipped lever is a switch, not a dial
+
+The dose axis of E089's lever had never been measured above the shipped 1.25. It is now: `1.50` gives
+pooled TSR 0.2481 / FAR **0.1867** -- the first arm ever to put pooled FAR below the 0.20 barrier --
+but it is **KILL by the pre-registered rule**: 18 of 22 sequences are bit-identical, and the four that
+move re-fork violently (`dancetrack0073` **+29.6 pp**, `dancetrack0097` **-4.4 pp** with its idcons
+falling off 1.000, `dancetrack0077` -6.7 pp). So the lost-regime ceiling behaves as a bifurcation
+switch, not a continuous dial, and **1.25 stays shipped**. Tuning a bifurcation by grid search is how a
+campaign manufactures arms that look good on the mean and break a control sequence; that is precisely
+what E090, E091 and E096 each measured.
+
 ## Corrections after the first independent audit (round A)
 
 An independent audit re-derived 24 numeric claims in this file from the `results/` artifacts and found

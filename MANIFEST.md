@@ -1,6 +1,6 @@
 # MANIFEST — what is in this package
 
-Generated 2026-10-29 17:16 中国标准时间 by `scripts/build_handoff.py`. 3973 files, 72.32 MB uncompressed.
+Generated 2026-10-29 18:53 中国标准时间 by `scripts/build_handoff.py`. 4078 files, 74.41 MB uncompressed.
 
 This file is generated; do not edit by hand.
 
@@ -14,7 +14,7 @@ This file is generated; do not edit by hand.
 | `docs/` | 44 | 1.34 MB | reports, the experiment ledger, surveys, plans, external reviews |
 | `pytest.ini/` | 1 | 0.00 MB | — |
 | `requirements.txt/` | 1 | 0.00 MB | — |
-| `results/` | 3815 | 68.77 MB | the measured numbers as markdown/csv/small json summaries |
+| `results/` | 3920 | 70.86 MB | the measured numbers as markdown/csv/small json summaries |
 | `scripts/` | 53 | 1.01 MB | every reproducible entry point; each experiment cites one |
 | `src/` | 19 | 0.63 MB | the library itself (`tgtrack`) |
 | `tests/` | 26 | 0.49 MB | the guarantees: 470+ tests encoding every measured behaviour |
@@ -36,7 +36,7 @@ First 40 files by path, with sha256 prefix (12 hex), so a copy can be verified:
 
 | path | bytes | sha256[:12] |
 |---|---|---|
-| `README.md` | 74120 | `1043a12b6e34` |
+| `README.md` | 74935 | `eeba3ca6b9a1` |
 | `configs/bs_reid.yaml` | 254 | `96710faf56f6` |
 | `configs/ch_1280.yaml` | 97 | `1b237aa3b148` |
 | `configs/ch_960.yaml` | 96 | `6d55902072cb` |
@@ -62,12 +62,12 @@ First 40 files by path, with sha256 prefix (12 hex), so a copy can be verified:
 | `docs/E086_PLAN.md` | 9026 | `de23bd7d9b3c` |
 | `docs/E090_PLAN.md` | 3731 | `713ea92eab0b` |
 | `docs/E095_PLAN.md` | 6529 | `bca5270e890b` |
-| `docs/EXPERIMENTS.md` | 268842 | `a23dcc6b9723` |
+| `docs/EXPERIMENTS.md` | 271616 | `874fe883625e` |
 | `docs/EXPLORATION_TREE.md` | 17127 | `e05ff6c14385` |
 | `docs/HANDOFF.md` | 9722 | `554d51d0a89d` |
 | `docs/HANDOFF.md` | 9722 | `554d51d0a89d` |
 | `docs/METHOD.md` | 18428 | `e2caab5705c0` |
-| `docs/NEXT_ROUND.md` | 45047 | `9b551f691be0` |
+| `docs/NEXT_ROUND.md` | 47648 | `1302e177277c` |
 | `docs/PARETO.md` | 5002 | `876748a48bd0` |
 | `docs/REPORT.md` | 51018 | `e7100a476936` |
 | `docs/REPORT_v1_chronological.md` | 18078 | `539368cad236` |
