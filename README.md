@@ -793,6 +793,20 @@ switch, not a continuous dial, and **1.25 stays shipped**. Tuning a bifurcation 
 campaign manufactures arms that look good on the mean and break a control sequence; that is precisely
 what E090, E091 and E096 each measured.
 
+### E095: the second decision channel is inert, and the reason is the finding
+
+The last structural mechanism on the list was a *bounded-lag* second channel: keep the per-frame decision
+buffer, and before delivery re-attribute an identity to a rival candidate using the frames that came
+after it. Implemented behind `state.decision_lag` (0 = shipped, bit-identical) with 8 tests. On the five
+pre-registered oscillating sequences it is **inert: 5 of 5 bit-identical in TSR**, one frame of FAR cost,
+`blind & present` untouched. The reason is not a tuning failure: while the tracker coasts on a stale
+prediction the anchor ceiling has already vetoed the true target, so the buffer contains no rival to
+re-attribute to (E088 measured 41 % of refusals as `all_gated:anchor_ceiling`; E084 measured 67 % of
+ceiling refusals as distractors). Identity errors are sustained wrong trajectories, not flicker. The
+instructive version of this channel therefore has to buffer the **pre-veto** candidate set -- which is
+exactly what `anchor_bed_log` records -- and that is written up as E095b rather than attempted in the
+last round.
+
 ## Corrections after the first independent audit (round A)
 
 An independent audit re-derived 24 numeric claims in this file from the `results/` artifacts and found

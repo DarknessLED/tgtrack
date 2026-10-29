@@ -4151,3 +4151,50 @@ break a control sequence -- which is what all three of E090, E091 and E096 measu
 tuning problem, which is why the recommended next experiment stays E095's second decision channel
 (docs/E095_PLAN.md) rather than any further dose search.
 
+### E095 -- the second decision channel: the refutation pass is inert, and why (KILL)
+
+*Preregistration*: docs/E095_PLAN.md (P1 both metrics improve, P2 idcons rises, P3 b&p does not rise,
+P4 gains concentrate on the oscillating sequences). *Implementation*: `src/tgtrack/refute.py`
+(`refute_statuses`), `StateCfg.decision_lag` / `StateCfg.refute_window`, the tracker's per-frame
+candidate log (`TargetTracker.refute_candidates()`), a `refute` ablation group (`lag_refute_L8`,
+control `lag_refute_L0`), sweep arms `lag_refute_L8` / `lag_refute_L0`, and `tests/test_refute.py`
+(8 tests, all pass).
+
+**Wiring (step 0).** `dancetrack0018`, shipped default versus both arms: `lag_refute_L0` = TSR
+**0.5675** / FAR **0.0873** -- exactly the shipped record (the pass is not even called at
+`decision_lag = 0`, so the control is bit-identical by construction, and the suite pins that).
+`lag_refute_L8` = TSR 0.5675 / FAR **0.0913**: the pass fired, re-attributed one frame, and made it
+*worse*.
+
+**Screen** (5 pre-registered sequences: 0010, 0073, 0077, 0081, 0097; reference = the shipped default):
+
+| seq | shipped TSR | L8 TSR | shipped FAR | L8 FAR | b&p |
+|---|---|---|---|---|---|
+| 0010 | 0.2831 | 0.2831 | 0.6800 | 0.6800 | 0.0833 |
+| 0073 | 0.2400 | 0.2400 | 0.5800 | 0.5800 | 0.1767 |
+| 0077 | 0.2700 | 0.2700 | 0.2367 | **0.2400** | 0.5400 |
+| 0081 | 0.1324 | 0.1324 | 0.4700 | 0.4700 | 0.4200 |
+| 0097 | 0.1599 | 0.1599 | 0.0000 | 0.0000 | 0.9467 |
+
+**5 of 5 sequences bit-identical in TSR**; one frame of FAR cost on `0077` (+0.33 pp); `blind & present`
+unchanged everywhere. P1 fails, P2 fails (idcons untouched), P3 holds vacuously, P4 is refuted because
+nothing moved at all. **Verdict KILL, and the pass is inert rather than harmful.**
+
+**Why it is inert -- the structural result of this experiment.** The pass can only re-attribute to a
+candidate that *exists in the buffer for that frame*. While the shipped tracker coasts on a stale
+prediction, the only candidates in the pool are the distractor it has latched onto and the background;
+the true target is not in the pool because the anchor ceiling vetoed it (E088: 41 % of refused frames
+are `all_gated:anchor_ceiling`, and E084 measured that 67 % of ceiling refusals are distractors). So the
+refutation pass looks at the right window, finds no rival, and correctly does nothing. This is the same
+wall the knob family hit, seen from the other side: the identity error is a *sustained wrong trajectory*
+(E088: 55 % of wrong frames at `frames_since_update >= 60`), not a one-frame flicker, and a post-pass
+over the same candidate set cannot create the missing candidate.
+
+**Consequence -- what a second channel would actually need.** The buffer must retain the **pre-veto**
+candidate set, i.e. the candidates the ceiling refused (`anchor_bed_log` already records every one of
+them with its bed distances). That is the pre-registered shape of **E095b**: refute over shadow
+candidates, admitting a shadow only when the window-level assignment prefers it to the reported person
+outright -- which re-opens the same 41 % that E089 measured as the ceiling's dominant refusal reason,
+but with the window evidence that the within-frame vote never had. Not started this round; the design
+constraints are recorded in docs/NEXT_ROUND.md round 44.
+

@@ -153,6 +153,7 @@ GROUPS = (
     "vote",
     "mh",
     "ceiling_lost",
+    "refute",
     "ceiling_geom",
     "reacquire",
 )
@@ -1010,6 +1011,25 @@ def build_variants(
                      "state.reacquire_confirm_frames": 2,
                      "state.reacquire_confirm_window": 0},
                     "control: window 0 == E092's strict streak (must equal reacq_confirm_2)",
+                )
+            )
+        elif g == "refute":
+            # E095 -- the second decision channel: bounded-lag refutation of committed
+            # identities.  L0 is the mandatory control (must be bit-identical).
+            out.append(
+                Variant(
+                    "lag_refute_L8",
+                    g,
+                    {"cost.anchor_vote": "off", "state.decision_lag": 8, "state.refute_window": 8},
+                    "re-attribute isolated identity excursions using the next 8 frames",
+                )
+            )
+            out.append(
+                Variant(
+                    "lag_refute_L0",
+                    g,
+                    {"cost.anchor_vote": "off", "state.decision_lag": 0},
+                    "control: refutation off, must be bit-identical to the shipped default",
                 )
             )
         elif g == "mh":
@@ -2127,6 +2147,14 @@ def run_sequence(
         writer.release()
         video_out = str(video_path)
 
+    if int(getattr(cfg.state, "decision_lag", 0) or 0) > 0:
+        from tgtrack.refute import refute_statuses
+
+        statuses = refute_statuses(
+            statuses,
+            tracker.refute_candidates(),
+            window=int(getattr(cfg.state, "refute_window", 8) or 8),
+        )
     events = list(tracker.events)
     metrics = evaluate_target(
         plan.gt_target,

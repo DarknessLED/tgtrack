@@ -922,6 +922,18 @@ class StateCfg:
     #: distractor no longer resets the count.  E092's screen showed the strict streak
     #: is what cost 23-28 pp of TSR on sequences whose re-acquisition was real.
     reacquire_confirm_window: int = 0
+    #: E095 -- bounded-lag refutation.  ``0`` (default) keeps the shipped path
+    #: bit-identical: the tracker reports frame by frame and no offline pass runs.
+    #: ``L > 0`` turns on the second decision channel: after the sequence is
+    #: tracked, the last ``refute_window`` frames around every report are
+    #: re-examined as one short-tracklet assignment and an isolated excursion is
+    #: re-attributed to the candidate the window as a whole agrees on.  Only
+    #: re-attribution is allowed -- the pass may never delete a report, because
+    #: deleting reports is exactly the metric gaming the ``blind & present``
+    #: share exists to expose.
+    decision_lag: int = 0
+    #: E095 -- half-width (frames) of the window the refutation pass looks at.
+    refute_window: int = 8
     #: Freeze the appearance memory while in these states.
     frozen_states: tuple[str, ...] = ("occluded_soft", "lost_short", "lost_long", "out_of_frame")
     #: States in which the prediction is no longer trustworthy, so the motion

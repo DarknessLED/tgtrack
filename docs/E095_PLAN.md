@@ -1,6 +1,8 @@
 # E095 — the second decision channel: bounded-lag refutation
 
-Status: **pre-registered, not implemented**. Written after E093 (docs/EXPERIMENTS.md) established that
+Status: **measured -- KILL (inert)**. Result in docs/EXPERIMENTS.md E095; the pass is bit-identical
+in TSR on 5/5 screened sequences because the post-veto buffer holds no rival candidate. E095b
+(pre-veto shadow candidates) is pre-registered in docs/NEXT_ROUND.md round 44. Written after E093 (docs/EXPERIMENTS.md) established that
 every identity-layer lever lies on one Pareto surface with a ~1:1 TSR/FAR exchange rate.
 
 ## The problem the identity layer cannot solve

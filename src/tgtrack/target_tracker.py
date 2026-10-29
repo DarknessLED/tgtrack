@@ -194,6 +194,11 @@ class TargetTracker:
         #: E092b -- (frame, box) of the candidates considered while lost, used by the
         #: gap-tolerant commit rule.  Empty on the shipped path.
         self._pending_hist: list[tuple[int, np.ndarray]] = []
+        #: E095 -- per-frame candidate boxes, recorded only when the refutation
+        #: channel is armed (``state.decision_lag > 0``); empty otherwise so the
+        #: shipped path pays nothing.
+        self._refute_on: bool = int(getattr(self.cfg.state, "decision_lag", 0) or 0) > 0
+        self._refute_by_frame: dict[int, list[list[float]]] = {}
         self._deferred_frame: bool = False
         #: Per-frame scratch used by the hard-negative bookkeeping.
         self._frame_dets: list[Detection] = []
@@ -381,6 +386,15 @@ class TargetTracker:
     def memory_frozen(self) -> bool:
         """True when appearance memory must not absorb anything this frame."""
         return self.state.value in tuple(self.cfg.state.frozen_states) or self.state in BLIND_STATES
+
+    def refute_candidates(self) -> dict[int, list[list[float]]]:
+        """E095 -- candidate boxes per frame, for the bounded-lag refutation pass.
+
+        Only populated while ``state.decision_lag > 0``; returns an empty mapping
+        otherwise, which is what makes the shipped path bit-identical (the pass is
+        then a no-op because it has nothing to re-attribute).
+        """
+        return self._refute_by_frame
 
     def status(self, frame_idx: int | None = None) -> TargetStatus:
         return TargetStatus(
@@ -1195,6 +1209,10 @@ class TargetTracker:
         # ---- stage 2: appearance on the survivors ------------------------
         self._ensure_features(frame_bgr, [dets[i] for i in keep], h, w)
         sub = [dets[i] for i in keep]
+        if self._refute_on:
+            self._refute_by_frame[int(self.frame_idx)] = [
+                [float(v) for v in np.asarray(d.xyxy, float).ravel()[:4]] for d in sub
+            ]
         self._encoded_dets = sub
         full = compute_costs(
             sub,

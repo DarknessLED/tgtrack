@@ -632,3 +632,35 @@ cannot reach HuggingFace (`status=000`), and `data/raw/dancetrack/` contains onl
 every number in this campaign is measured on the same 22 held-out sequences. That is a real external
 validity limit and should be stated as such in any write-up.
 
+
+## Round 43 -- E095 measured: the refutation pass is inert (KILL)
+
+Mechanism implemented (`src/tgtrack/refute.py`, `StateCfg.decision_lag`, tracker candidate log, 8 tests,
+sweep arms). Control `lag_refute_L0` = TSR 0.5675 / FAR 0.0873 on 0018, exactly the shipped record.
+Screen over 0010/0073/0077/0081/0097: **5/5 TSR bit-identical**, FAR +0.33 pp on one sequence (one
+frame), b&p unchanged. P1/P2/P4 refuted. Reason: the buffer holds no rival candidate because the ceiling
+vetoed the true target (E088: 41 % `all_gated:anchor_ceiling`), and the identity failures are sustained
+wrong trajectories (55 % at `frames_since_update >= 60`), not flicker.
+
+
+## Round 44 addendum -- E095b, the version of the second channel that can work
+
+E095's post-pass was inert for a specific, measured reason: it re-attributes over the *post-veto*
+candidate set, and while coasting that set does not contain the true target. E095b keeps the same window
+machinery but makes the buffer the **pre-veto** set, using the per-bed distances `anchor_bed_log` already
+writes (E084): a shadow candidate enters the buffer with its `d1/d2/d3` and is admitted only when the
+window-level assignment prefers it to the reported person *outright* (not by a margin -- a margin is the
+E082/E096 mistake).
+
+Pre-registered constraints for E095b (do not start it without these):
+
+1. Control `lag_refute_L0` must stay bit-identical, and the shadow-only control (`shadow_log`,
+   no re-attribution) must equal the shipped default on 22/22 -- the buffer must not perturb the online
+   path.
+2. P1 needs **both** metrics to improve; a 1:1 trade is E093's result, not news.
+3. P3 (b&p must not rise) stays a hard constraint: admitting shadows may never delete or blind a report.
+4. The window evidence must be the *pre-veto* set only; reading GT or the vote's own rescue flag would
+   make the pass circular.
+5. Cost: the buffer is per-frame candidate lists, so a full 22-sequence pass is one sweep arm plus
+   no extra tracker work -- budget one screen (5 sequences, ~25 min) before committing.
+

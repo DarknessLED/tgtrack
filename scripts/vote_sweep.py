@@ -353,6 +353,8 @@ ARM_ORDER = [
     "vote_adaptive_0.50",
     "vote_adaptive_0.65",
     "vote_adaptive_1.00",
+    "lag_refute_L8",
+    "lag_refute_L0",
 ] + ["vote_contrast_%.2f" % _d for _d in E082_DELTAS] + ["vote_lone_%.2f" % _l for _l in (0.30, 0.40, 0.50)]
 
 #: E089: widen (or drop) the identity ceiling while the target is LOST.  E088 measured
@@ -470,6 +472,20 @@ for _n, _m in ((2, 4), (3, 6)):
         "label": "E092b: %d agreeing candidates within %d frames confirms a re-acquisition"
                  % (_n, _m),
     }
+ARMS["lag_refute_L8"] = {
+    "variant": "lag_refute_L8",
+    "k": 0,
+    "reference": False,
+    "overrides": {"state.decision_lag": 8, "state.refute_window": 8},
+    "label": "E095 bounded-lag refutation (8-frame window)",
+}
+ARMS["lag_refute_L0"] = {
+    "variant": "lag_refute_L0",
+    "k": 0,
+    "reference": False,
+    "overrides": {"state.decision_lag": 0},
+    "label": "E095 control: refutation off (must be bit-identical)",
+}
 ARMS["reacq_window_2of2"] = {
     "overrides": {"cost.anchor_vote": "off", "state.reacquire_confirm_frames": 2,
                   "state.reacquire_confirm_window": 0},

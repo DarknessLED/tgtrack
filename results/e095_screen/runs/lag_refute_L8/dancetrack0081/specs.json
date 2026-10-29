@@ -1,0 +1,12 @@
+[
+  {
+    "seq_name": "dancetrack0081",
+    "variant": "lag_refute_L8",
+    "overrides": {
+      "state.decision_lag": 8,
+      "state.refute_window": 8
+    },
+    "mask": "none",
+    "target_id": 19
+  }
+]
