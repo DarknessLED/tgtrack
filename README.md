@@ -880,6 +880,20 @@ miss and a false report are the same event when exactly one candidate must be co
 remaining structural work is therefore a second decision channel that can withhold a commitment, not
 another score.
 
+
+### E102/E103: the bottleneck is the descriptor, not the decision rule
+
+Two closing measurements. First, the cheap form of E101's "second channel" -- simply withholding a coasted
+report -- makes things *worse*: at `frames_since_update >= 30` it costs 1.02 pp of TSR and **raises** FAR by
+12.40 pp, because headline FAR counts only frames latched onto a different person, while coasted boxes are
+mostly blank and sit in the denominator without contributing. The decisions that earn FAR are the *accepts*
+while lost, and E092 already showed refusing those is a 1:1 trade. Second, the shipped appearance
+descriptor's discrimination inside the pre-veto pool: **AUC 0.804, rank@1 18.9 %** over 1215
+multi-candidate frames -- pairwise informative, nowhere near decisive. That is why every rule that leans on
+it lands on the same Pareto surface: 80 % pairwise accuracy becomes ~19 % per-frame precision. The lever
+left is the signal itself, and the next measured step is a comparable-size third-party pre-trained re-ID
+backbone with rank@1 18.9 % / AUC 0.804 as the number to beat.
+
 ## Corrections after the first independent audit (round A)
 
 An independent audit re-derived 24 numeric claims in this file from the `results/` artifacts and found

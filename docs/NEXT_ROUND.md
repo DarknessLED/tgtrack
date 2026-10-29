@@ -738,3 +738,17 @@ Milestone recorded for the next session: a second decision channel that can with
 (report "unassigned" for a frame without terminating the track). Every experiment from E090 to E101 has
 been an attempt to fix identity *inside* a design where one commit per frame is mandatory, which is why
 they all exchange TSR for FAR at ~1:1.
+
+### Round 46 -- E102 kills "withhold the report", E103 locates the bottleneck in the signal (2026-10-30 03:25)
+
+E102 replayed the abstention rule on the recorded traces: withholding coasted reports makes FAR *worse* at
+every K (K=30: dTSR -1.02 pp, dFAR **+12.40 pp**), because farced FAR counts only frames latched onto a
+different person while coast boxes are mostly blank -- withholding them shrinks the denominator. The
+frame-earning-FAR decisions are the *accepts* while lost, which E092 already measured as a 1:1 trade with
+TSR. So the useful second channel is "refuse an accept", not "withhold a report".
+
+E103 then measured the distinguishing power of the shipped appearance descriptor in the pool:
+**AUC 0.804, rank@1 18.9 %** over 1215 multi-candidate frames. That is the campaign's best explanation of
+the 1:1 exchange rate, and it relocates the bottleneck from the decision rule (ten experiments agree)
+to the signal. Next session: the same table for third-party pre-trained re-ID backbones (m04393(a)
+permits a comparable-parameter swap with no fine-tuning), with rank@1 18.9 % / AUC 0.804 as the bar.

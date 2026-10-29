@@ -4374,3 +4374,67 @@ Campaign consequence: the pre-veto pool is real headroom (E097: 65.84 % vs 22.02
 be exploited by re-scoring inside the current commit-and-coast design.  The only structural fix is a
 second decision channel that can *withhold* a commitment (report "unassigned" for a frame without ending
 the track), which is a redesign, not a knob -- and it is the honest next milestone.
+
+## E102 -- "just withhold the report" does not work, and the reason is a metric definition (round 46)
+
+E088 measured that the shipped tracker reports on every visible frame and coasts a wrong box on 91.2 % of
+its misses; E101 concluded the next milestone is a channel that can *withhold* a commitment.  E102 tested
+the cheapest form of that idea offline (`docs/E102_PLAN.md`, `_x/e102_abstain.py`): replay the recorded
+shipped traces (`results/e097/<seq>`, `results/e088_ship/<seq>`) and recompute TSR/FAR under the rule
+"while coasting with `frames_since_update >= K`, do not report".
+
+| K | pooled TSR | pooled FAR | dTSR | dFAR | withheld |
+|---|---|---|---|---|---|
+| 0 | 0.1913 | 0.3216 | - | - | 0 |
+| 10 | 0.1727 | 0.5395 | -1.86 | **+21.79** | 735 |
+| 30 | 0.1811 | 0.4456 | -1.02 | **+12.40** | 500 |
+| 60 | 0.1811 | 0.4025 | -1.02 | **+8.09** | 361 |
+| 90 | 0.1836 | 0.3788 | -0.77 | +5.71 | 271 |
+
+**KILL -- P2 refuted and the sign is wrong in every case: abstaining *raises* FAR.**  The reason is a
+definition, and it retires the "withhold the report" idea in its cheap form:
+
+- The headline FAR is ``frames latched onto a different person / reported frames``.  Coast frames are
+  mostly **blank** boxes in empty space (`dancetrack0081`: 88 coast frames at `fsu >= 30`, `best_gt_iou`
+  ~0.05) -- they are *wrong* but they are not *latched onto someone*, so they sit in the FAR denominator
+  without contributing to the numerator.  Withholding them shrinks the denominator and FAR rises.
+- The frames that actually earn FAR are the **accept** frames -- decisions to commit a candidate while
+  lost -- and E092 already measured what refusing those costs: -8.11 pp FAR paid at -8.87 pp TSR.
+- P1 also failed its useful version: on the sequences where the tracker coasts, essentially none of the
+  coast frames at `fsu >= 30` are correct, so abstention is TSR-cheap -- it is simply useless, because
+  the harm it was meant to remove is counted somewhere else.
+
+Revised statement of the E101 milestone: a second channel helps only if it **refuses an accept**
+(committing a candidate while lost) -- and that is exactly the operation E092/E092b/E099 already measured
+to be a 1:1 trade.  Withholding *reports* is not the missing degree of freedom; withholding *decisions*
+is, and it needs better evidence, not a new rule.
+
+## E103 -- the appearance signal is weak, which is the real bottleneck (round 46)
+
+With every decision rule now exhausted (E090-E102), the remaining question is whether the *signal* is good
+enough to be worth better rules.  `_x/e103_embed.py` ranks the pre-veto pool by appearance cost against a
+GT join on the five informative sequences:
+
+| seq | frames | multi-candidate | rank@1 | rank@1 % | AUC |
+|---|---|---|---|---|---|
+| 0010 | 299 | 216 | 68 | 31.5 | 0.888 |
+| 0073 | 299 | 219 | 29 | 13.2 | 0.722 |
+| 0077 | 290 | 211 | 53 | 25.1 | 0.896 |
+| 0081 | 299 | 270 | 27 | 10.0 | 0.736 |
+| 0097 | 299 | 299 | 53 | 17.7 | 0.753 |
+| **pooled** | 1486 | **1215** | **230** | **18.9** | **0.804** |
+
+(`rank@1` = the target's cheapest candidate is the frame's cheapest candidate; `auc` = P(a target
+candidate is cheaper than a distractor), pairwise in-frame.)
+
+Reading: the shipped appearance descriptor is **pairwise informative but not decisive** (AUC 0.804), and
+picking the single cheapest candidate per frame is right only **18.9 %** of the time.  That number is the
+campaign's best explanation of the 1:1 exchange rate: every rule that leans harder on this signal converts
+its 80 % pairwise accuracy into a per-frame decision at ~19 % precision, and the state machine then has to
+survive that.  Two consequences:
+
+- No further decision-rule work on this signal is justified; ten experiments now agree.
+- The legitimate lever is the **signal**, and m04393(a) explicitly allows swapping in a third-party
+  pre-trained re-ID backbone with a comparable parameter count.  E103's follow-up (next session, needs
+  weights) is to measure the same rank@1/AUC table for candidate backbones on the same five dumps and only
+  then revisit the pool selection -- the metric to beat is rank@1 18.9 % / AUC 0.804.

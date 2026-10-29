@@ -1,6 +1,6 @@
 # MANIFEST — what is in this package
 
-Generated 2026-10-30 01:10 中国标准时间 by `scripts/build_handoff.py`. 4212 files, 77.07 MB uncompressed.
+Generated 2026-10-30 01:13 中国标准时间 by `scripts/build_handoff.py`. 4213 files, 77.08 MB uncompressed.
 
 This file is generated; do not edit by hand.
 
@@ -11,7 +11,7 @@ This file is generated; do not edit by hand.
 | `README.md/` | 1 | 0.08 MB | — |
 | `configs/` | 12 | 0.01 MB | tracker configs (ultralytics-compatible) used by the runs |
 | `conftest.py/` | 1 | 0.00 MB | — |
-| `docs/` | 46 | 1.37 MB | reports, the experiment ledger, surveys, plans, external reviews |
+| `docs/` | 47 | 1.38 MB | reports, the experiment ledger, surveys, plans, external reviews |
 | `pytest.ini/` | 1 | 0.00 MB | — |
 | `requirements.txt/` | 1 | 0.00 MB | — |
 | `results/` | 4049 | 73.44 MB | the measured numbers as markdown/csv/small json summaries |
@@ -36,7 +36,7 @@ First 40 files by path, with sha256 prefix (12 hex), so a copy can be verified:
 
 | path | bytes | sha256[:12] |
 |---|---|---|
-| `README.md` | 81033 | `92898845e6ee` |
+| `README.md` | 82124 | `f2753ea27b35` |
 | `configs/bs_reid.yaml` | 254 | `96710faf56f6` |
 | `configs/ch_1280.yaml` | 97 | `1b237aa3b148` |
 | `configs/ch_960.yaml` | 96 | `6d55902072cb` |
@@ -64,17 +64,17 @@ First 40 files by path, with sha256 prefix (12 hex), so a copy can be verified:
 | `docs/E090_PLAN.md` | 3731 | `713ea92eab0b` |
 | `docs/E095_PLAN.md` | 6861 | `0ffaa01d6c84` |
 | `docs/E099_PLAN.md` | 4103 | `b1eee0199e91` |
-| `docs/EXPERIMENTS.md` | 286621 | `b40935497b82` |
+| `docs/E102_PLAN.md` | 3143 | `1ada0aba57df` |
+| `docs/EXPERIMENTS.md` | 290815 | `045b65e5ed75` |
 | `docs/EXPLORATION_TREE.md` | 17127 | `e05ff6c14385` |
 | `docs/HANDOFF.md` | 9722 | `554d51d0a89d` |
 | `docs/HANDOFF.md` | 9722 | `554d51d0a89d` |
 | `docs/METHOD.md` | 18428 | `e2caab5705c0` |
-| `docs/NEXT_ROUND.md` | 55158 | `9b5b588eb4b7` |
+| `docs/NEXT_ROUND.md` | 56288 | `b3779f1591d7` |
 | `docs/PARETO.md` | 5002 | `876748a48bd0` |
 | `docs/REPORT.md` | 51018 | `e7100a476936` |
 | `docs/REPORT_v1_chronological.md` | 18078 | `539368cad236` |
 | `docs/RESEARCH_PLAN.md` | 10296 | `c549f7af1c95` |
 | `docs/research/R1_mot_association.md` | 60749 | `85ba048e4d6f` |
-| `docs/research/R2_reid_partial_occlusion.md` | 87235 | `3f11d00aab6d` |
 
 (Full list is `find . -type f | sort` in the package root.)
