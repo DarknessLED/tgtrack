@@ -752,3 +752,23 @@ E103 then measured the distinguishing power of the shipped appearance descriptor
 the 1:1 exchange rate, and it relocates the bottleneck from the decision rule (ten experiments agree)
 to the signal. Next session: the same table for third-party pre-trained re-ID backbones (m04393(a)
 permits a comparable-parameter swap with no fine-tuning), with rank@1 18.9 % / AUC 0.804 as the bar.
+
+### Round 47 -- E105: the signal is the bottleneck, and the reference bed is the sub-bottleneck (offline)
+
+Ran `_x/e105_parts.py` (offline, no tracker change) over the five E097 dumps with a frame-1 click-crop
+reference and a full encoder pass for every pooled candidate: **part-mean rank@1 48.5 % / AUC 0.813** vs
+**full-only 41.3 % / 0.764**, and both far above the shipped cost's 18.9 % on the same dumps (E103).  Four
+of five sequences improve (0097 +16.3 pp rank@1, 0010 +7.8, 0073 +5.1, 0081 +5.0); `0077` regresses.
+
+Reading: the shipped cost wastes signal twice -- it aggregates parts into one full-body crop, and its
+reference is the grown gallery/EMA bed, which E084 already showed is the wrong bed.  The original click
+crop is the better anchor.
+
+Caveat carried forward from E101: offline separability is not an online gain, so E106 must be measured as
+pooled online TSR/FAR, not as a per-frame join.
+
+**E106 (pre-registered, next round)** -- pool selection by part-consensus against a frozen click-crop
+bank: for each pre-veto candidate compute `mean_parts(1 - cos(cand_part, click_part))` using only parts
+both sides have, and let that cost replace the full-body appearance term while the target is lost.  Switch
+`cost.part_sel = {off, on}` with `off` bit-identical.  Bar: pooled TSR `>= +1.0 pp`, no sequence worse than
+`-2.0 pp`, pooled FAR `<= +1.0 pp`, KL1 recall unchanged.  Screen on `0010/0073/0077/0081/0097` first.

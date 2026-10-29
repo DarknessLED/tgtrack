@@ -1,6 +1,6 @@
 # Campaign state -- the one page to read first
 
-_Written 2026-10-30 02:35 (Asia/Shanghai).  Everything below is measured, on the protocols named, with
+_Written 2026-10-30 (late session); last updated after E105.  Everything below is measured, on the protocols named, with
 the artifacts under `results/`; the long-form record is `docs/EXPERIMENTS.md` and the round log is
 `docs/NEXT_ROUND.md`._
 
@@ -54,6 +54,14 @@ cannot be validated by a per-frame GT join because a wrong commit persists throu
 
 - **The pool is there, the selector is the problem**: E097 joined the pre-veto pool to GT and found the
   target present on **65.84 %** of visible frames against the shipped tracker's **22.02 %**.
+- **The signal, not just the rule, is the bottleneck** (E103/E105): the shipped appearance descriptor
+  separates target from distractor at **AUC 0.804 / rank@1 18.9 %** in that pool, while a *frozen
+  click-crop* reference with the same encoder reaches **rank@1 41.3 %**, and a part-consensus
+  aggregation reaches **48.5 % / AUC 0.813**.  The grown gallery/EMA bed is the weaker anchor (E084).
+  E106 pre-registered: pool selection by part consensus against a frozen click bank, online bar.
+- **E104 is blocked on network**: no third-party re-ID backbone is reachable from this host tonight
+  (GitHub release assets and `download.pytorch.org` return timeout/308), so the E106 arm must be
+  validated with the local `yolo26n-reid` encoder first.
 - **The only structural fix left**: a second decision channel that can *withhold* a commitment -- report
   "unassigned" for a frame without terminating the track, so a wrong identity stops being a commitment
   the state machine must follow. Pre-registered outline in `docs/NEXT_ROUND.md` round 44-45.

@@ -4438,3 +4438,51 @@ survive that.  Two consequences:
   pre-trained re-ID backbone with a comparable parameter count.  E103's follow-up (next session, needs
   weights) is to measure the same rank@1/AUC table for candidate backbones on the same five dumps and only
   then revisit the pool selection -- the metric to beat is rank@1 18.9 % / AUC 0.804.
+
+## E105 -- part-consensus appearance decides the pool better than the full-body crop (offline)
+
+Motivation: E103 measured the shipped appearance descriptor inside the E097 pre-veto pool and got
+**AUC 0.804 / rank@1 18.9 %**, which is the campaign's best explanation of the 1:1 TSR/FAR exchange rate
+of every identity knob (E090-E099).  If the bottleneck is the *signal*, the cheapest question is whether a
+different aggregation of the *same* encoder separates better.  The partial-view line (E027-E031) showed
+that part crops (upper/lower/head) carry what the full crop loses on occluded people.
+
+Setup (all offline, zero tracker changes): `_x/e105_parts.py`, five informative held-out sequences
+(`dancetrack0010/0073/0077/0081/0097`), the E097 pre-veto candidate dumps, `yolo26n-reid.onnx` (512-d,
+448 input, ONNX Runtime CPU EP), and a reference bed built from the target's GT box in frame 1 -- the
+closest offline stand-in for the user's click crop.  Costs are `1 - cos`; per candidate we compute
+`full`, and the per-part mean / min / max over the parts both sides have.  Metric: rank@1 (the cheapest
+candidate is the target) and AUC (a target costs less than a distractor), over the 1144 frames that have
+at least two candidates *and* a GT-visible target.
+
+| aggregation | rank@1 | AUC |
+|---|---|---|
+| `full` (what the shipped cost uses) | 41.3 % | 0.764 |
+| `mean` over parts | **48.5 %** | **0.813** |
+| `min` over parts | 44.2 % | 0.779 |
+| `max` over parts | 44.8 % | 0.789 |
+
+Per sequence, `mean` vs `full` (rank@1 / AUC): 0010 44.9 %/0.918 vs 37.1 %/0.849; 0073 48.4 %/0.973 vs
+43.3 %/0.927; 0077 **33.2 %/0.439 vs 35.1 %/0.521** (the one regression); 0081 18.3 %/0.737 vs 13.3 %/0.646;
+0097 84.6 %/0.947 vs 68.3 %/0.845.
+
+**Two findings.** (1) Part consensus is the better aggregation: **+7.2 pp rank@1, +0.049 AUC** pooled, four
+of five sequences better.  (2) The *reference bed* matters more than the aggregation: the bare frozen
+click crop (41.3 % rank@1 with the full crop alone) already ranks the pool twice as well as the shipped
+cost did on the same dumps (18.9 %).  The shipped cost's reference is the grown LTM gallery / EMA bed,
+and E084 had already measured that it is the *wrong* reference (R3 rescues 18 true-target refusals, R2
+zero).  E105 says the same thing from the signal side: the original crop is a better identity anchor than
+anything the tracker grew from it.
+
+Caveats, all pre-registered-adjacent and all real:
+- The offline pool excludes the ceiling, the gate and the state machine, so this measures *separability*,
+  not a TSR gain.  E101's lesson applies verbatim: a per-frame GT join does not predict the online effect
+  (`+4.45 pp` offline vs `-1.40 pp` online for the same selector).
+- The reference is one GT box at frame 1; the shipped R1 is the user's click crop at an unknown time.  A
+  frame-1 proxy is fair but not exact, and a static single-crop reference has no occlusion handling.
+- `dancetrack0077` regresses on both axes, so no aggregation is uniformly better.
+
+Consequence -> **E106 pre-registered**: select inside the pre-veto pool by a part-consensus cost against a
+*frozen* click-crop bank (no gallery, no EMA), and judge it online on the same five sequences plus the
+22-sequence readout if the five survive.  Bar: pooled TSR `>= +1.0 pp` vs shipped, no sequence worse than
+`-2.0 pp`, pooled FAR not worse than `+1.0 pp`; KL1 recall unchanged.
