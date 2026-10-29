@@ -4294,3 +4294,45 @@ Interpretation, and the reason this is the last appearance-anchored selector exp
 - Consequence: the family "choose among the pre-veto pool by an appearance-anchored score" is closed.
   E100 goes after the *scale problem itself* (prequential per-sequence normalisation) offline on the
   E097 dumps before any GPU time is spent.
+
+## E100 -- the scale hypothesis tested offline (round 44): normalisation does not move the selector
+
+After E098 (shipped 1.0 inert, 1.25 gains, 1.5 loses) and E099 (the absolute appearance anchor makes the
+online selector a sign-flipping bifurcation: +23.1 pp on `0097`, -23.9 pp on `0010`) the natural
+hypothesis was that the missing piece is **scale**: appearance costs are not comparable across
+sequences, so normalising them prequentially within the sequence should make one score work everywhere.
+
+`_x/e100_select.py` screens that offline on the five E097 pre-veto dumps -- a greedy
+``-w_app*A - w_mot*d_pred`` selector with four appearance normalisations (``abs`` raw, ``median`` over
+the trailing 50 frames, ``zscore`` A-MAD, ``rank`` inside the frame's candidate set) -- scoring each
+selection against GT as *hit* (IoU >= 0.5 with the target) or *wrong person* (IoU >= 0.5 with another
+annotated person):
+
+| seq | abs | median | zscore | rank |
+|---|---|---|---|---|
+| 0010 | 27.5 / 21.4 | 28.3 / 20.7 | 27.9 / 21.1 | 27.9 / 20.4 |
+| 0073 | 12.7 / 12.0 | 12.3 / 11.0 | 11.9 / 9.0 | 11.9 / 8.7 |
+| 0077 | 27.2 / 13.8 | 27.2 / 11.0 | 26.2 / 12.1 | 26.6 / 11.7 |
+| 0081 | 9.6 / 16.7 | 9.3 / 17.1 | 9.6 / 22.4 | 9.3 / 17.7 |
+| 0097 | 17.1 / 11.7 | 20.1 / 12.4 | 19.1 / 14.0 | 18.1 / 14.0 |
+| pooled | **18.9 / 16.7** | **19.5 / 16.0** | 19.0 / 17.4 | 18.8 / 16.0 |
+
+(cells are hit % / wrong-person %.)
+
+**Verdict: the scale hypothesis is refuted as a selector fix.** The best normalisation moves pooled hit
+by +0.6 pp and pooled wrong-person by -0.7 pp -- inside the noise of the per-sequence spread, and no
+variant is uniformly better (median improves 0097 and 0073, worsens 0081). Where the score *does*
+differ, it differs per sequence, which is the same sequence-adapted behaviour the four earlier
+experiments found.
+
+Two caveats stated so this is not over-read: (1) this greedy harness is **not** E097's DP (which scored
++19.25 pp offline) -- it is a controlled comparison of normalisation schemes at fixed weights, so the
+claim is narrow: *relative* normalisation does not change which candidate is chosen; (2) the absolute
+hit rate here (18.9 %) is below the shipped pipeline's online TSR on some sequences (`0010` 28.3 %),
+i.e. this simple score is weaker than the shipped association. Both make the conclusion conservative,
+not the opposite.
+
+Consequence for the campaign: with E090 (margin), E092/E092b (temporal hold), E098 (dose) and E100
+(normalisation) all returning the same shape, the remaining structural lever is not a better *score*
+but a second decision channel (E095b: re-attribution over pre-veto shadow candidates), which is
+implementable but is a redesign of the commit path rather than a knob.

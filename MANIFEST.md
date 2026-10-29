@@ -1,6 +1,6 @@
 # MANIFEST — what is in this package
 
-Generated 2026-10-30 01:00 中国标准时间 by `scripts/build_handoff.py`. 4211 files, 77.06 MB uncompressed.
+Generated 2026-10-30 01:07 中国标准时间 by `scripts/build_handoff.py`. 4211 files, 77.06 MB uncompressed.
 
 This file is generated; do not edit by hand.
 
@@ -36,7 +36,7 @@ First 40 files by path, with sha256 prefix (12 hex), so a copy can be verified:
 
 | path | bytes | sha256[:12] |
 |---|---|---|
-| `README.md` | 79354 | `27a832d79a9f` |
+| `README.md` | 80225 | `5502410e783b` |
 | `configs/bs_reid.yaml` | 254 | `96710faf56f6` |
 | `configs/ch_1280.yaml` | 97 | `1b237aa3b148` |
 | `configs/ch_960.yaml` | 96 | `6d55902072cb` |
@@ -63,12 +63,12 @@ First 40 files by path, with sha256 prefix (12 hex), so a copy can be verified:
 | `docs/E090_PLAN.md` | 3731 | `713ea92eab0b` |
 | `docs/E095_PLAN.md` | 6861 | `0ffaa01d6c84` |
 | `docs/E099_PLAN.md` | 4103 | `b1eee0199e91` |
-| `docs/EXPERIMENTS.md` | 281204 | `4f6f760bb82a` |
+| `docs/EXPERIMENTS.md` | 283969 | `a9d415f09f2d` |
 | `docs/EXPLORATION_TREE.md` | 17127 | `e05ff6c14385` |
 | `docs/HANDOFF.md` | 9722 | `554d51d0a89d` |
 | `docs/HANDOFF.md` | 9722 | `554d51d0a89d` |
 | `docs/METHOD.md` | 18428 | `e2caab5705c0` |
-| `docs/NEXT_ROUND.md` | 53306 | `5b8b27614136` |
+| `docs/NEXT_ROUND.md` | 54147 | `2632ed4384b5` |
 | `docs/PARETO.md` | 5002 | `876748a48bd0` |
 | `docs/REPORT.md` | 51018 | `e7100a476936` |
 | `docs/REPORT_v1_chronological.md` | 18078 | `539368cad236` |

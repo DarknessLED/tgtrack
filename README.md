@@ -856,6 +856,18 @@ a bifurcation per sequence rather than an improvement in the mean. Third indepen
 pattern (after E090's margin knob and E098's dose), and the reason the next step attacks the
 **scale** of appearance costs (prequential normalisation) offline instead of adding another selector.
 
+
+### E100: normalisation is not the missing piece
+
+The E098/E099 sign-flips looked like a scale problem -- appearance costs are not comparable across
+sequences -- so the obvious fix was to normalise them prequentially. Measured offline on the five E097
+pre-veto dumps with four normalisations (raw, trailing median, A-MAD z-score, in-frame rank): pooled
+hit **18.8-19.5 %**, pooled wrong-person **16.0-17.4 %**, best variant +0.6 pp hit and -0.7 pp
+wrong-person. No normalisation is uniformly better across sequences, so the scale hypothesis is refuted
+as a selector fix and the sign-flip lives in the selection objective itself. Read together with E090
+(margin), E092/E092b (temporal hold) and E098 (dose), the identity layer is a Pareto surface whose
+exchange rate is near 1:1, and the only remaining structural lever is a second decision channel (E095b).
+
 ## Corrections after the first independent audit (round A)
 
 An independent audit re-derived 24 numeric claims in this file from the `results/` artifacts and found

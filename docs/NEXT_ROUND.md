@@ -712,3 +712,15 @@ mechanism -- appearance costs are not comparable across sequences.  E100 will sc
 that normalise appearance **prequentially within the sequence** (median/A-MAD over the trailing
 window, cost relative to the sequence's own recent distribution) directly on the five E097 dumps, with
 offline TSR/FAR as the criterion, before touching the tracker again.
+
+### Round 44 -- E100 offline: normalisation is not the missing piece (2026-10-30 01:35)
+
+Offline screen of four appearance normalisations (raw / trailing-median / A-MAD z-score / in-frame
+rank) on the five E097 pre-veto dumps: pooled hit 18.8-19.5 %, pooled wrong-person 16.0-17.4 %, best
+normalisation +0.6 pp hit and -0.7 pp wrong-person -> no effect beyond noise, and no variant uniform
+across sequences. The scale hypothesis from E098/E099 is therefore refuted **as a selector fix**; the
+sign-flip in E099 comes from the selection objective, not from the units of the appearance term.
+
+State of the identity line: E082/E089 (shipped knobs), E090/E092/E092b/E098/E099/E100 measured and
+closed, E095b pre-registered as the only remaining structural lever (pre-veto re-attribution as a
+*second channel*, not a rescoring knob).
