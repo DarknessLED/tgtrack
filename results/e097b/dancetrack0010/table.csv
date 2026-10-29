@@ -1,0 +1,3 @@
+group,variant,mask,seqs,frames,visible,TSR,prec,loss,loss_lock,recq_rate,recq_lat,recq_p90,recq_max,FAR,FAR_lock,FA_ev,FA_ev_lock,id_cons,switches,frag,longest,coast_ok,worst_id,detect,ms/frame
+baseline,baseline,none,1,40,40,0.3250,0.3020,0.6750,0.2250,,,,,0.35000,0.63636,3,3,0.2632,2,1,9,,,,152.78
+refute,lag_refute_dump,none,1,40,40,0.3250,0.3020,0.6750,0.2250,,,,,0.35000,0.63636,3,3,0.2632,2,1,9,,,,106.17

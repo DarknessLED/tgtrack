@@ -807,6 +807,42 @@ instructive version of this channel therefore has to buffer the **pre-veto** can
 exactly what `anchor_bed_log` records -- and that is written up as E095b rather than attempted in the
 last round.
 
+### E097: the pre-veto pool holds two thirds of the answer
+
+The identity layer was closed (E092/E093/E096) because every lever exchanged TSR for FAR at about 1:1.
+E097 measured *why* that had to be true. Joining every candidate the tracker saw **before** the identity
+ceiling vetoed it against GT, over five informative held-out sequences:
+
+| sequence | visible frames | shipped TSR | pool-oracle TSR | headroom | candidates / frame |
+|---|---|---|---|---|---|
+| dancetrack0010 | 272 | 0.2831 | 0.4044 | +12.13 pp | 2.58 |
+| dancetrack0073 | 250 | 0.2400 | 0.5040 | +26.40 pp | 4.01 |
+| dancetrack0077 | 300 | 0.2700 | 0.6600 | +39.00 pp | 3.40 |
+| dancetrack0081 | 219 | 0.1324 | 0.7169 | +58.45 pp | 11.63 |
+| dancetrack0097 | 294 | 0.1599 | 0.9796 | +81.97 pp | 3.95 |
+| **pooled** | **1335** | **0.2202** | **0.6584** | **+43.82 pp** | - |
+
+The pool contains the true target on 65.84 % of visible frames on which the shipped tracker is correct
+22.02 % of the time -- **+43.82 pp of headroom that no threshold on the ceiling can reach**, because the
+ceiling throws the true target away before any vote counts (E084: 41 % of missed frames are
+`all_gated:anchor_ceiling`). A 40-line offline window selector over that pool -- appearance cost x2,
+motion smoothness, and a switching prior towards the shipped choice -- recovers **44 % of the headroom,
++19.25 pp TSR** (0.2202 -> 0.4127).
+
+| weights (appearance, motion, switch) | pooled shipped | pooled selector | headroom captured |
+|---|---|---|---|
+| 1.0, 1.0, 0.25 | 0.2202 | 0.3693 | +14.91 pp (34 %) |
+| **2.0, 1.0, 0.25** | **0.2202** | **0.4127** | **+19.25 pp (44 %)** |
+| 1.0, 0.5, 0.10 | 0.2202 | 0.3925 | +17.23 pp (39 %) |
+
+These are TSR-only numbers on five sequences chosen *because* they are informative, with weights fit on
+the same data: an upper-ish estimate of the signal, not a shippable result. FAR -- the constraint that
+killed every recall-side lever -- is not measured by an offline selector. **E099** (`docs/E099_PLAN.md`)
+is the integrated version, pre-registered with the guard the knobs could not offer: it only acts on
+frames where the shipped tracker is provably blind and only when the window evidence names a different
+person outright, so a frame the tracker gets right cannot move.
+
+
 ## Corrections after the first independent audit (round A)
 
 An independent audit re-derived 24 numeric claims in this file from the `results/` artifacts and found

@@ -1,6 +1,6 @@
 # MANIFEST — what is in this package
 
-Generated 2026-10-29 19:54 中国标准时间 by `scripts/build_handoff.py`. 4149 files, 75.85 MB uncompressed.
+Generated 2026-10-29 21:48 中国标准时间 by `scripts/build_handoff.py`. 4180 files, 76.83 MB uncompressed.
 
 This file is generated; do not edit by hand.
 
@@ -11,10 +11,10 @@ This file is generated; do not edit by hand.
 | `README.md/` | 1 | 0.08 MB | — |
 | `configs/` | 12 | 0.01 MB | tracker configs (ultralytics-compatible) used by the runs |
 | `conftest.py/` | 1 | 0.00 MB | — |
-| `docs/` | 44 | 1.35 MB | reports, the experiment ledger, surveys, plans, external reviews |
+| `docs/` | 45 | 1.36 MB | reports, the experiment ledger, surveys, plans, external reviews |
 | `pytest.ini/` | 1 | 0.00 MB | — |
 | `requirements.txt/` | 1 | 0.00 MB | — |
-| `results/` | 3989 | 72.28 MB | the measured numbers as markdown/csv/small json summaries |
+| `results/` | 4019 | 73.24 MB | the measured numbers as markdown/csv/small json summaries |
 | `scripts/` | 53 | 1.01 MB | every reproducible entry point; each experiment cites one |
 | `src/` | 20 | 0.64 MB | the library itself (`tgtrack`) |
 | `tests/` | 27 | 0.49 MB | the guarantees: 470+ tests encoding every measured behaviour |
@@ -36,7 +36,7 @@ First 40 files by path, with sha256 prefix (12 hex), so a copy can be verified:
 
 | path | bytes | sha256[:12] |
 |---|---|---|
-| `README.md` | 76068 | `13f6cab30903` |
+| `README.md` | 78371 | `d9f755b9fed3` |
 | `configs/bs_reid.yaml` | 254 | `96710faf56f6` |
 | `configs/ch_1280.yaml` | 97 | `1b237aa3b148` |
 | `configs/ch_960.yaml` | 96 | `6d55902072cb` |
@@ -62,12 +62,13 @@ First 40 files by path, with sha256 prefix (12 hex), so a copy can be verified:
 | `docs/E086_PLAN.md` | 9026 | `de23bd7d9b3c` |
 | `docs/E090_PLAN.md` | 3731 | `713ea92eab0b` |
 | `docs/E095_PLAN.md` | 6861 | `0ffaa01d6c84` |
-| `docs/EXPERIMENTS.md` | 274960 | `afdc09cfb3db` |
+| `docs/E099_PLAN.md` | 3195 | `1a73baeed6de` |
+| `docs/EXPERIMENTS.md` | 278915 | `fa2711710c2e` |
 | `docs/EXPLORATION_TREE.md` | 17127 | `e05ff6c14385` |
 | `docs/HANDOFF.md` | 9722 | `554d51d0a89d` |
 | `docs/HANDOFF.md` | 9722 | `554d51d0a89d` |
 | `docs/METHOD.md` | 18428 | `e2caab5705c0` |
-| `docs/NEXT_ROUND.md` | 49734 | `afd6b8878b13` |
+| `docs/NEXT_ROUND.md` | 52127 | `fd42cfafb92a` |
 | `docs/PARETO.md` | 5002 | `876748a48bd0` |
 | `docs/REPORT.md` | 51018 | `e7100a476936` |
 | `docs/REPORT_v1_chronological.md` | 18078 | `539368cad236` |
@@ -75,6 +76,5 @@ First 40 files by path, with sha256 prefix (12 hex), so a copy can be verified:
 | `docs/research/R1_mot_association.md` | 60749 | `85ba048e4d6f` |
 | `docs/research/R2_reid_partial_occlusion.md` | 87235 | `3f11d00aab6d` |
 | `docs/research/R3_single_target_uav.md` | 78692 | `8bf29943b42a` |
-| `docs/research/R4_datasets.md` | 64472 | `d6383b66b739` |
 
 (Full list is `find . -type f | sort` in the package root.)

@@ -199,6 +199,9 @@ class TargetTracker:
         #: shipped path pays nothing.
         self._refute_on: bool = int(getattr(self.cfg.state, "decision_lag", 0) or 0) > 0
         self._refute_by_frame: dict[int, list[list[float]]] = {}
+        #: E097 -- per-candidate appearance cost, logged beside the boxes so an
+        #: offline selector can weigh look against motion.
+        self._refute_app_by_frame: dict[int, list[float]] = {}
         self._deferred_frame: bool = False
         #: Per-frame scratch used by the hard-negative bookkeeping.
         self._frame_dets: list[Detection] = []
@@ -386,6 +389,10 @@ class TargetTracker:
     def memory_frozen(self) -> bool:
         """True when appearance memory must not absorb anything this frame."""
         return self.state.value in tuple(self.cfg.state.frozen_states) or self.state in BLIND_STATES
+
+    def refute_appearance(self) -> dict[int, list[float]]:
+        """E097 -- per-candidate appearance cost, parallel to ``refute_candidates()``."""
+        return self._refute_app_by_frame
 
     def refute_candidates(self) -> dict[int, list[list[float]]]:
         """E095 -- candidate boxes per frame, for the bounded-lag refutation pass.
@@ -1233,6 +1240,14 @@ class TargetTracker:
             apply_motion=not searching,
             gate_radius_override=self._gate_override(frame_diag),
         )
+        # E097 diagnostic: the per-candidate appearance cost of the *pre-veto* pool.
+        # It must be read from ``full`` (stage 2, after the encoding gate) because the
+        # cheap stage-1 pass has no appearance term at all -- reading it there raised
+        # UnboundLocalError and killed every ``lag_refute_dump`` run.
+        if self._refute_on:
+            self._refute_app_by_frame[int(self.frame_idx)] = [
+                float(v) for v in np.asarray(full.appearance, np.float64).ravel()
+            ]
         # E059: motion-signature evidence, applied as a soft cost and ONLY while
         # searching.  During normal tracking the motion model already owns this
         # information; the point is to give the search path a channel that does not

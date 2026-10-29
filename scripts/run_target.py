@@ -1026,6 +1026,14 @@ def build_variants(
             )
             out.append(
                 Variant(
+                    "lag_refute_dump",
+                    g,
+                    {"cost.anchor_vote": "off", "state.decision_lag": 8, "state.refute_window": 0},
+                    "E097 diagnostic: log pre-veto candidates, refutation disabled (window 0)",
+                )
+            )
+            out.append(
+                Variant(
                     "lag_refute_L0",
                     g,
                     {"cost.anchor_vote": "off", "state.decision_lag": 0},
@@ -2155,6 +2163,36 @@ def run_sequence(
             tracker.refute_candidates(),
             window=int(getattr(cfg.state, "refute_window", 8) or 8),
         )
+    # E097 -- diagnostic only.  When ``E095_DUMP`` names a directory, write the
+    # per-frame *pre-veto* candidate boxes the tracker saw, so an offline join
+    # against GT can answer the one question that decides whether any post-pass
+    # over this pool can help: is the true target even in the pool on the frames
+    # the tracker gets wrong?  Off by default; the metric path is untouched.
+    _dump_dir = os.environ.get("E095_DUMP") or ""
+    if _dump_dir:
+        try:
+            Path(_dump_dir).mkdir(parents=True, exist_ok=True)
+            _cands = {
+                str(k): [[float(v) for v in box] for box in boxes]
+                for k, boxes in tracker.refute_candidates().items()
+            }
+            _apps = {
+                str(k): [float(v) for v in vals]
+                for k, vals in getattr(tracker, "refute_appearance", dict)().items()
+            }
+            (Path(_dump_dir) / f"{seq.name}.json").write_text(
+                json.dumps(
+                    {
+                        "sequence": seq.name,
+                        "variant": variant,
+                        "candidates": _cands,
+                        "appearance": _apps,
+                    }
+                ),
+                encoding="utf-8",
+            )
+        except OSError:
+            pass
     events = list(tracker.events)
     metrics = evaluate_target(
         plan.gt_target,

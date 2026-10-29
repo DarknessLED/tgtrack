@@ -664,3 +664,35 @@ Pre-registered constraints for E095b (do not start it without these):
 5. Cost: the buffer is per-frame candidate lists, so a full 22-sequence pass is one sweep arm plus
    no extra tracker work -- budget one screen (5 sequences, ~25 min) before committing.
 
+
+## Round 45 -- E097: the pre-veto pool holds two thirds of the answer (measured)
+
+Offline join over the five informative held-out sequences (0010/0073/0077/0081/0097, 300 frames,
+subsample 2, shipped detector): the pre-veto candidate pool contains the true target on **65.84 %** of
+visible frames while the shipped tracker is correct on **22.02 %** -- **+43.82 pp of headroom that is
+scored away by the identity ceiling before any vote is counted.** A 40-line offline window selector
+(appearance x2 + motion + switching prior towards the shipped choice) turns 44 % of that headroom into
+**+19.25 pp TSR** (0.2202 -> 0.4127), with no model and no new evidence.
+
+This is the first mechanism-sized gap found since E092/E093 declared the identity layer a Pareto
+surface, and it is geometrically where the tracker is blind: `0081` +58.45 pp and `0097` +81.97 pp have
+the widest pools (11.6 and 4.0 candidates/frame) and the lowest shipped TSR (0.13 / 0.16).
+
+Caveats that must travel with the number: TSR only (no FAR), five sequences selected *because* they are
+informative, weights chosen on the same data. It is an upper-ish estimate of the signal.
+
+## Round 46 -- E099 pre-registered: put the window selector inside the tracker
+
+`docs/E099_PLAN.md`. The integrated mechanism: keep the pre-veto pool for the last W = 8 frames; when
+the committed identity has been coasting (`frames_since_update > lost_short_after`) anywhere inside the
+window, run the same DP over the window and re-attribute **only if** the winning chain's current-frame
+candidate is a *different person* from the committed one (IoU < 0.3 against every committed box in the
+window) -- an outright replacement, not a margin, because a margin is the E082/E096 failure mode -- and
+only while the tracker is in a blind state (a locked frame is never re-attributed).
+
+Arms: `preveto_L8`, `preveto_L4`, control `preveto_L0` (must be bit-identical to shipped).
+Protocol: 22 held-out sequences, 300 frames, subsample 2, same ship rule as E089 (paired per-sequence
+dTSR bootstrap CI excluding 0; P2 idcons may not drop more than 0.05 where it was >= 0.90; no sequence
+worse than -3.0 pp). Predictions: P1 pooled TSR >= +5 pp; P2 the offline headroom correlates with the
+gain (0081/0097/0077 gain most); P3 locked frames bit-identical; P4 FAR may rise but not beyond the
+E089 envelope (<= +3 pp pooled).

@@ -4198,3 +4198,66 @@ outright -- which re-opens the same 41 % that E089 measured as the ceiling's dom
 but with the window evidence that the within-frame vote never had. Not started this round; the design
 constraints are recorded in docs/NEXT_ROUND.md round 44.
 
+
+## E097 -- the pre-veto pool holds the answer on 66 % of the frames the tracker gets wrong
+
+Measured 2026-10-29, five informative held-out DanceTrack sequences (0010/0073/0077/0081/0097),
+300 frames, subsample 2, shipped detector, `--debug-csv`, `state.decision_lag = 8` with
+`state.refute_window = 0` (the refutation pass disabled, so the run is the shipped tracker) and the
+new `E095_DUMP` diagnostic, which writes the *pre-veto* candidate pool per frame.
+
+### Step 0 -- is the true target even in the pool?
+
+Every candidate box the tracker saw before the identity ceiling vetoed it, joined against GT at
+IoU >= 0.5 on the frames where the target is visible:
+
+| sequence | visible frames | shipped TSR | pool-oracle TSR | headroom | candidates / frame |
+|---|---|---|---|---|---|
+| dancetrack0010 | 272 | 0.2831 | 0.4044 | +12.13 pp | 2.58 |
+| dancetrack0073 | 250 | 0.2400 | 0.5040 | +26.40 pp | 4.01 |
+| dancetrack0077 | 300 | 0.2700 | 0.6600 | +39.00 pp | 3.40 |
+| dancetrack0081 | 219 | 0.1324 | 0.7169 | +58.45 pp | 11.63 |
+| dancetrack0097 | 294 | 0.1599 | 0.9796 | +81.97 pp | 3.95 |
+| **pooled** | **1335** | **0.2202** | **0.6584** | **+43.82 pp** | - |
+
+The pool contains the true target on **65.84 %** of the visible frames on which the shipped tracker is
+correct only 22.02 % of the time: **+43.82 pp of headroom that no identity-layer knob can reach**,
+because the ceiling vetoes the true target *before* the vote is counted (E084 measured this directly:
+41 % of missed frames are `all_gated:anchor_ceiling`).
+
+### Step 1 -- does a plain selector capture any of it?
+
+A bounded-window dynamic program over the pool, minimising
+`w_app * appearance_cost + w_mot * min(|centre - constant_position_prediction| / sqrt(area), 5) + w_switch * [candidate != the shipped choice]`,
+scored against GT (TSR only -- FAR needs the tracker's identity bookkeeping and is out of scope for an
+offline step 0):
+
+| weights (appearance, motion, switch) | pooled shipped | pooled selector | headroom captured |
+|---|---|---|---|
+| 1.0, 1.0, 0.25 | 0.2202 | 0.3693 | +14.91 pp (34 %) |
+| **2.0, 1.0, 0.25** | **0.2202** | **0.4127** | **+19.25 pp (44 %)** |
+| 1.0, 0.5, 0.10 | 0.2202 | 0.3925 | +17.23 pp (39 %) |
+
+A ~40-line offline selector recovers **44 % of the headroom (+19.25 pp TSR)** with no model, no
+training and no new evidence -- only a different use of the candidates the ceiling already throws away.
+
+### What this does and does not say
+
+- **Does**: the pre-veto pool is the largest unexploited resource the campaign has found since the
+  identity layer was declared a Pareto surface (E092/E093). The gap is mechanism-sized, not
+  noise-sized, and it is concentrated exactly where the shipped tracker is blind: `0081` (+58.45 pp)
+  and `0097` (+81.97 pp) are the two sequences with the widest pools (11.6 and 4.0 candidates/frame).
+- **Does not**: these are TSR-only offline numbers on five sequences that were selected *because* they
+  are informative, with weights chosen on the same data. It is an upper-ish estimate of the signal, not
+  a shippable result, and it says nothing about FAR -- which for this campaign is the constraint that
+  has killed every recall-side gain so far.
+
+### Harness bug worth recording
+
+The first dump attempt placed the appearance-cost logging *before* stage 2 of `_associate`, i.e. before
+`full = compute_costs(...)` -- the cheap stage-1 pass has no appearance term at all -- and every dump
+run died with `UnboundLocalError: cannot access local variable 'full' where it is not associated with a
+value` (5 sequences x 2 variants wasted, ~35 min GPU). Moved after stage 2: `ok=2 errors=0`, both
+variants TSR 0.3250 on the 40-frame smoke, so the diagnostic is provably inert on the metric path.
+Lesson: a diagnostic that reads a variable produced later in the same function must be inserted at the
+producer, not at the nearest semantically-similar line.
