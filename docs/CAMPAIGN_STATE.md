@@ -58,10 +58,16 @@ cannot be validated by a per-frame GT join because a wrong commit persists throu
   separates target from distractor at **AUC 0.804 / rank@1 18.9 %** in that pool, while a *frozen
   click-crop* reference with the same encoder reaches **rank@1 41.3 %**, and a part-consensus
   aggregation reaches **48.5 % / AUC 0.813**.  The grown gallery/EMA bed is the weaker anchor (E084).
-  E106 pre-registered: pool selection by part consensus against a frozen click bank, online bar.
+  E107 pre-registered: the same aggregation at an *equal-refusal* operating point, because E106 showed
+  the aggregation moves the operating point rather than the signal.
+- **E106 tested the E105 lead and it was a strictness knob**: part-mean aggregation is online
+  **-5.98 pp TSR / -17.87 pp FAR** on the five-sequence screen (control bit-identical 5/5), i.e. the
+  same Pareto surface.  E107 will retest it at an equal-refusal operating point before the identity
+  line is closed.
 - **E104 is blocked on network**: no third-party re-ID backbone is reachable from this host tonight
-  (GitHub release assets and `download.pytorch.org` return timeout/308), so the E106 arm must be
-  validated with the local `yolo26n-reid` encoder first.
+  (GitHub release assets, `torch.hub` and `download.pytorch.org` return timeout/308), so any stronger-
+  descriptor arm must be validated with the local `yolo26n-reid` encoder or re-pre-registered once a
+  backbone can be fetched.
 - **The only structural fix left**: a second decision channel that can *withhold* a commitment -- report
   "unassigned" for a frame without terminating the track, so a wrong identity stops being a commitment
   the state machine must follow. Pre-registered outline in `docs/NEXT_ROUND.md` round 44-45.

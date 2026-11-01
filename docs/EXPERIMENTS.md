@@ -4486,3 +4486,42 @@ Consequence -> **E106 pre-registered**: select inside the pre-veto pool by a par
 *frozen* click-crop bank (no gallery, no EMA), and judge it online on the same five sequences plus the
 22-sequence readout if the five survive.  Bar: pooled TSR `>= +1.0 pp` vs shipped, no sequence worse than
 `-2.0 pp`, pooled FAR not worse than `+1.0 pp`; KL1 recall unchanged.
+
+## E106 -- KILL: part-mean aggregation is a strictness knob, not a better signal
+
+E105 measured offline that averaging the best match of every available query part ranks the target in the
+pre-veto pool better than the shipped part-min (rank@1 48.5 % vs 44.2 %, AUC 0.813 vs 0.779).  E106 put
+exactly that change behind `cost.part_agg = "mean"` (new knob, `min` = shipped) and measured it online on
+five held-out sequences (`dancetrack0010/0073/0077/0081/0097`, 300 frames, subsample 2, shipped detector,
+frame-weighted pooling, reference = `shipped`).  Wall 3674.5 s.
+
+| arm | pooled TSR | pooled FAR | dTSR | dFAR |
+|---|---|---|---|---|
+| `shipped` (= `partagg_min`, bit-identical 5/5) | 0.2171 | 0.3933 | - | - |
+| `partagg_mean` | **0.1573** | **0.2147** | **-5.98 pp** | **-17.87 pp** |
+
+Per sequence (TSR / FAR): 0010 0.2831/0.6800 -> **0.0625/0.4500** (-22.06 / -23.00); 0073 0.2400/0.5800 ->
+0.2800/0.3433 (**+4.00** / -23.67); 0077 0.2700/0.2367 -> 0.2567/0.2200 (-1.33 / -1.67); 0081 0.1324/0.4700
+-> **0.0274/0.0600** (-10.50 / -41.00); 0097 0.1599/0.0000 -> unchanged.
+
+Control: `partagg_min` reproduced `shipped` **bit-identically on 5/5** (dTSR 0.00, dFAR 0.00, same target
+ids), so the knob plumbing is sound and the shipped default is untouched.
+
+**Verdict KILL** against the pre-registered bar: the TSR clause (`>= +1.0 pp`) fails by 7 pp and the
+per-sequence clause (`no sequence worse than -2.0 pp`) fails twice; only the FAR clause passes, and it
+passes *because* the arm refuses more.
+
+The mechanism, and the lesson that matters more than the verdict: averaging over parts does not make the
+descriptor more accurate, it makes the *cost larger* for every candidate that matches on only some parts.
+That raises effective strictness, so the online operating point slides along the campaign's Pareto surface
+(-6 pp TSR for -18 pp FAR) even though the offline ranking metric improved.  **A change to how a cost is
+aggregated cannot be tested at the shipped acceptance threshold**: it shifts the operating point rather
+than the signal.  E101's warning ("offline separability is not an online gain") gains its mirror image
+here -- a *better* offline rank@1 can come with a *worse* online TSR, because rank@1 ignores how many
+frames the tracker refuses to decide at all.
+
+Consequence -> **E107 pre-registered**: retest part-mean at an *equal-refusal* operating point.  Calibrate
+`accept_cost` / `accept_cost_lost` per arm so that the `reported AND present` share matches the shipped
+arm's 0.49 (or the refusal-reason histogram matches), then compare pooled TSR/FAR.  Only if part-mean wins
+at equal strictness is the aggregation itself an improvement; otherwise the honest reading is that the
+descriptor's ordering and the decision threshold are a single knob in disguise.

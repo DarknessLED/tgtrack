@@ -772,3 +772,20 @@ bank: for each pre-veto candidate compute `mean_parts(1 - cos(cand_part, click_p
 both sides have, and let that cost replace the full-body appearance term while the target is lost.  Switch
 `cost.part_sel = {off, on}` with `off` bit-identical.  Bar: pooled TSR `>= +1.0 pp`, no sequence worse than
 `-2.0 pp`, pooled FAR `<= +1.0 pp`, KL1 recall unchanged.  Screen on `0010/0073/0077/0081/0097` first.
+
+### Round 48 -- E106: the aggregation was a strictness knob in disguise (KILL)
+
+`cost.part_agg = "mean"` (E105's offline winner) measured online on five held-out sequences:
+**pooled TSR 0.2171 -> 0.1573 (-5.98 pp), FAR 0.3933 -> 0.2147 (-17.87 pp)**, `partagg_min` control
+bit-identical to `shipped` on 5/5.  The arm is stricter by construction -- averaging charges every part
+that disagrees, so the tracker refuses more -- and lands on the same Pareto surface as E090/E092/E099
+rather than off it.  `0010` collapses (-22.06 pp TSR) while `0073` gains (+4.00 pp).
+
+Lesson recorded in the ledger: **an aggregation change cannot be judged at the shipped threshold.**  A
+better offline rank@1 (E105: 48.5 % vs 44.2 %) is compatible with a worse online TSR, because rank@1
+counts only frames where a decision is made, and the strictness changes how many frames get one.
+
+**Next (E107)**: part-mean at an equal-refusal operating point -- calibrate `accept_cost` /
+`accept_cost_lost` so `reported AND present` matches shipped (~0.49), then compare TSR/FAR.  If it loses
+there too, the descriptor's ordering and the acceptance threshold are one knob and the identity line is
+closed for good.

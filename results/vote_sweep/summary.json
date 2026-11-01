@@ -36,7 +36,7 @@
   ],
   "partial": true,
   "partial_reason": "--run-only",
-  "n_pairs_run": 2,
+  "n_pairs_run": 3,
   "protocol": {
     "max_frames": 300,
     "subsample": 2,
@@ -59,7 +59,8 @@
   },
   "order": [
     "vote_off",
-    "preveto_L8"
+    "partagg_min",
+    "partagg_mean"
   ],
   "arms": {
     "vote_off": {
@@ -403,40 +404,40 @@
         "text": "Reference arm: the shipped one-reference veto."
       }
     },
-    "preveto_L8": {
-      "arm": "preveto_L8",
+    "partagg_min": {
+      "arm": "partagg_min",
       "k": 0,
-      "label": "E099: pre-veto re-attribution, 8-frame window",
+      "label": "E106 control: min aggregation, must be bit-identical to shipped",
       "overrides": {
         "cost.anchor_vote": "off",
-        "state.preveto_window": 8
+        "cost.part_agg": "min"
       },
-      "variant": "preveto_L8",
+      "variant": "partagg_min",
       "reference": false,
       "rows": [
         {
           "status": "INCLUDED",
           "reason": "included",
           "json_recovered": false,
-          "variant": "preveto_L8",
+          "variant": "partagg_min",
           "overrides": {
             "cost.anchor_vote": "off",
-            "state.preveto_window": 8
+            "cost.part_agg": "min"
           },
-          "tsr": 0.391156462585034,
-          "far": 0.1,
-          "id_consistency": 0.7931034482758621,
+          "tsr": 0.1598639455782313,
+          "far": 0.0,
+          "id_consistency": 1.0,
           "n_report_frames": 300,
           "n_frames": 300,
-          "n_locked_frames": 46,
-          "false_acquisition_frames": 30,
-          "target_switch_count": 15,
-          "fragmentation": 15.0,
-          "ms_per_frame": 116.34177600809683,
+          "n_locked_frames": 10,
+          "false_acquisition_frames": 0,
+          "target_switch_count": 0,
+          "fragmentation": 5.0,
+          "ms_per_frame": 752.731660323528,
           "target_id": 3,
           "target_reason": "forced",
           "guard_passed": true,
-          "harness_wall_seconds": 43.94,
+          "harness_wall_seconds": 259.19,
           "available": true,
           "vote_mode": "off",
           "vote_alpha": 0.1,
@@ -448,7 +449,7 @@
           "vote_rescued": 0,
           "vote_rescued_accepted": 0,
           "vote_r2_updates": 0,
-          "band_frames": 289,
+          "band_frames": 294,
           "band_saturated": 0,
           "band_saturation": 0.0,
           "vote_contrast_n": 0,
@@ -460,29 +461,29 @@
           "vote_contrast_ge_0.10": 0,
           "vote_contrast_ge_0.20": 0,
           "vote_contrast_ge_0.30": 0,
-          "frame_dump": "C:\\Projects\\track\\results\\vote_sweep\\runs\\preveto_L8\\dancetrack0097\\runs\\dancetrack0097__preveto_L8__none.csv",
+          "frame_dump": "C:\\Projects\\track\\results\\vote_sweep\\runs\\partagg_min\\dancetrack0097\\runs\\dancetrack0097__partagg_min__none.csv",
           "rows": 300,
-          "blind_present_frames": 250,
-          "blind_present_share": 0.833333333,
+          "blind_present_frames": 284,
+          "blind_present_share": 0.946666667,
           "band_sat_share": 0.0,
-          "band_frames_in_dump": 289,
+          "band_frames_in_dump": 294,
           "vote_n_in_dump": 0,
           "vote_frame_share": 0.0,
           "exit_code": 0,
-          "wall_seconds": 51.3,
-          "arm": "preveto_L8",
+          "wall_seconds": 274.1,
+          "arm": "partagg_min",
           "k": 0,
           "reference": false,
           "sequence": "dancetrack0097",
           "target_id_forced": 3,
-          "summary_path": "results\\vote_sweep\\runs\\preveto_L8\\dancetrack0097\\summary.json",
-          "log": "results\\vote_sweep\\logs\\preveto_L8__dancetrack0097.log",
+          "summary_path": "results\\vote_sweep\\runs\\partagg_min\\dancetrack0097\\summary.json",
+          "log": "results\\vote_sweep\\logs\\partagg_min__dancetrack0097.log",
           "attempts": [
             {
               "attempt": 1,
               "exit_code": 0,
               "status": "INCLUDED",
-              "wall_seconds": 51.3
+              "wall_seconds": 274.1
             }
           ],
           "from_cache": false
@@ -493,25 +494,25 @@
           "status": "INCLUDED",
           "reason": "included",
           "json_recovered": false,
-          "variant": "preveto_L8",
+          "variant": "partagg_min",
           "overrides": {
             "cost.anchor_vote": "off",
-            "state.preveto_window": 8
+            "cost.part_agg": "min"
           },
-          "tsr": 0.391156462585034,
-          "far": 0.1,
-          "id_consistency": 0.7931034482758621,
+          "tsr": 0.1598639455782313,
+          "far": 0.0,
+          "id_consistency": 1.0,
           "n_report_frames": 300,
           "n_frames": 300,
-          "n_locked_frames": 46,
-          "false_acquisition_frames": 30,
-          "target_switch_count": 15,
-          "fragmentation": 15.0,
-          "ms_per_frame": 116.34177600809683,
+          "n_locked_frames": 10,
+          "false_acquisition_frames": 0,
+          "target_switch_count": 0,
+          "fragmentation": 5.0,
+          "ms_per_frame": 752.731660323528,
           "target_id": 3,
           "target_reason": "forced",
           "guard_passed": true,
-          "harness_wall_seconds": 43.94,
+          "harness_wall_seconds": 259.19,
           "available": true,
           "vote_mode": "off",
           "vote_alpha": 0.1,
@@ -523,7 +524,7 @@
           "vote_rescued": 0,
           "vote_rescued_accepted": 0,
           "vote_r2_updates": 0,
-          "band_frames": 289,
+          "band_frames": 294,
           "band_saturated": 0,
           "band_saturation": 0.0,
           "vote_contrast_n": 0,
@@ -535,29 +536,29 @@
           "vote_contrast_ge_0.10": 0,
           "vote_contrast_ge_0.20": 0,
           "vote_contrast_ge_0.30": 0,
-          "frame_dump": "C:\\Projects\\track\\results\\vote_sweep\\runs\\preveto_L8\\dancetrack0097\\runs\\dancetrack0097__preveto_L8__none.csv",
+          "frame_dump": "C:\\Projects\\track\\results\\vote_sweep\\runs\\partagg_min\\dancetrack0097\\runs\\dancetrack0097__partagg_min__none.csv",
           "rows": 300,
-          "blind_present_frames": 250,
-          "blind_present_share": 0.833333333,
+          "blind_present_frames": 284,
+          "blind_present_share": 0.946666667,
           "band_sat_share": 0.0,
-          "band_frames_in_dump": 289,
+          "band_frames_in_dump": 294,
           "vote_n_in_dump": 0,
           "vote_frame_share": 0.0,
           "exit_code": 0,
-          "wall_seconds": 51.3,
-          "arm": "preveto_L8",
+          "wall_seconds": 274.1,
+          "arm": "partagg_min",
           "k": 0,
           "reference": false,
           "sequence": "dancetrack0097",
           "target_id_forced": 3,
-          "summary_path": "results\\vote_sweep\\runs\\preveto_L8\\dancetrack0097\\summary.json",
-          "log": "results\\vote_sweep\\logs\\preveto_L8__dancetrack0097.log",
+          "summary_path": "results\\vote_sweep\\runs\\partagg_min\\dancetrack0097\\summary.json",
+          "log": "results\\vote_sweep\\logs\\partagg_min__dancetrack0097.log",
           "attempts": [
             {
               "attempt": 1,
               "exit_code": 0,
               "status": "INCLUDED",
-              "wall_seconds": 51.3
+              "wall_seconds": 274.1
             }
           ],
           "from_cache": false
@@ -569,18 +570,18 @@
         "n_included": 1,
         "n_excluded": 0,
         "estimator": "frame-weighted pooled mean over included sequences",
-        "tsr": 0.391156,
-        "tsr_mean": 0.391156,
-        "tsr_median": 0.391156,
-        "far": 0.1,
-        "far_mean": 0.1,
-        "far_median": 0.1,
-        "id_consistency": 0.793103,
-        "id_consistency_mean": 0.793103,
-        "id_consistency_median": 0.793103,
-        "blind_present_share": 0.833333,
-        "blind_present_share_mean": 0.833333,
-        "blind_present_share_median": 0.833333
+        "tsr": 0.159864,
+        "tsr_mean": 0.159864,
+        "tsr_median": 0.159864,
+        "far": 0.0,
+        "far_mean": 0.0,
+        "far_median": 0.0,
+        "id_consistency": 1.0,
+        "id_consistency_mean": 1.0,
+        "id_consistency_median": 1.0,
+        "blind_present_share": 0.946667,
+        "blind_present_share_mean": 0.946667,
+        "blind_present_share_median": 0.946667
       },
       "bootstrap": {
         "tsr": {
@@ -588,40 +589,40 @@
           "n_sequences": 1,
           "seed": 0,
           "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
-          "p2.5": 0.391156,
-          "p50": 0.391156,
-          "p97.5": 0.391156,
-          "mean": 0.391156
+          "p2.5": 0.159864,
+          "p50": 0.159864,
+          "p97.5": 0.159864,
+          "mean": 0.159864
         },
         "far": {
           "reps": 2000,
           "n_sequences": 1,
           "seed": 0,
           "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
-          "p2.5": 0.1,
-          "p50": 0.1,
-          "p97.5": 0.1,
-          "mean": 0.1
+          "p2.5": 0.0,
+          "p50": 0.0,
+          "p97.5": 0.0,
+          "mean": 0.0
         },
         "id_consistency": {
           "reps": 2000,
           "n_sequences": 1,
           "seed": 0,
           "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
-          "p2.5": 0.793103,
-          "p50": 0.793103,
-          "p97.5": 0.793103,
-          "mean": 0.793103
+          "p2.5": 1.0,
+          "p50": 1.0,
+          "p97.5": 1.0,
+          "mean": 1.0
         },
         "blind_present_share": {
           "reps": 2000,
           "n_sequences": 1,
           "seed": 0,
           "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
-          "p2.5": 0.833333,
-          "p50": 0.833333,
-          "p97.5": 0.833333,
-          "mean": 0.833333
+          "p2.5": 0.946667,
+          "p50": 0.946667,
+          "p97.5": 0.946667,
+          "mean": 0.946667
         }
       },
       "engagement": {
@@ -637,7 +638,7 @@
         "vote_rescued": 0,
         "vote_rescued_accepted": 0,
         "vote_r2_updates": 0,
-        "band_frames": 289,
+        "band_frames": 294,
         "band_saturated": 0,
         "contrast_n": 0,
         "contrast_blocked": 0,
@@ -663,19 +664,19 @@
           "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
           "n_paired": 1,
           "unpaired_sequences": [],
-          "delta_mean": 0.231292517,
-          "p2.5": 0.231292517,
-          "p50": 0.231292517,
-          "p97.5": 0.231292517,
-          "sequences_up": 1,
+          "delta_mean": 0.0,
+          "p2.5": 0.0,
+          "p50": 0.0,
+          "p97.5": 0.0,
+          "sequences_up": 0,
           "sequences_down": 0,
-          "sequences_flat": 0,
-          "excludes_zero": true,
+          "sequences_flat": 1,
+          "excludes_zero": false,
           "per_sequence": [
             {
               "sequence": "dancetrack0097",
-              "delta_pp": 23.129,
-              "arm_value": 0.391156463,
+              "delta_pp": 0.0,
+              "arm_value": 0.159863946,
               "reference_value": 0.159863946
             }
           ]
@@ -687,19 +688,19 @@
           "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
           "n_paired": 1,
           "unpaired_sequences": [],
-          "delta_mean": 0.1,
-          "p2.5": 0.1,
-          "p50": 0.1,
-          "p97.5": 0.1,
-          "sequences_up": 1,
+          "delta_mean": 0.0,
+          "p2.5": 0.0,
+          "p50": 0.0,
+          "p97.5": 0.0,
+          "sequences_up": 0,
           "sequences_down": 0,
-          "sequences_flat": 0,
-          "excludes_zero": true,
+          "sequences_flat": 1,
+          "excludes_zero": false,
           "per_sequence": [
             {
               "sequence": "dancetrack0097",
-              "delta_pp": 10.0,
-              "arm_value": 0.1,
+              "delta_pp": 0.0,
+              "arm_value": 0.0,
               "reference_value": 0.0
             }
           ]
@@ -711,19 +712,19 @@
           "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
           "n_paired": 1,
           "unpaired_sequences": [],
-          "delta_mean": -0.206896552,
-          "p2.5": -0.206896552,
-          "p50": -0.206896552,
-          "p97.5": -0.206896552,
+          "delta_mean": 0.0,
+          "p2.5": 0.0,
+          "p50": 0.0,
+          "p97.5": 0.0,
           "sequences_up": 0,
-          "sequences_down": 1,
-          "sequences_flat": 0,
-          "excludes_zero": true,
+          "sequences_down": 0,
+          "sequences_flat": 1,
+          "excludes_zero": false,
           "per_sequence": [
             {
               "sequence": "dancetrack0097",
-              "delta_pp": -20.69,
-              "arm_value": 0.793103448,
+              "delta_pp": 0.0,
+              "arm_value": 1.0,
               "reference_value": 1.0
             }
           ]
@@ -735,73 +736,474 @@
           "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
           "n_paired": 1,
           "unpaired_sequences": [],
-          "delta_mean": -0.113333334,
-          "p2.5": -0.113333334,
-          "p50": -0.113333334,
-          "p97.5": -0.113333334,
+          "delta_mean": 0.0,
+          "p2.5": 0.0,
+          "p50": 0.0,
+          "p97.5": 0.0,
           "sequences_up": 0,
-          "sequences_down": 1,
-          "sequences_flat": 0,
-          "excludes_zero": true,
+          "sequences_down": 0,
+          "sequences_flat": 1,
+          "excludes_zero": false,
           "per_sequence": [
             {
               "sequence": "dancetrack0097",
-              "delta_pp": -11.333,
-              "arm_value": 0.833333333,
+              "delta_pp": 0.0,
+              "arm_value": 0.946666667,
               "reference_value": 0.946666667
             }
           ]
         }
       },
       "verdict": {
-        "arm": "preveto_L8",
+        "arm": "partagg_min",
         "k": 0,
         "rule": "SHIP iff (1) pooled TSR >= +3.0 pp with the paired 95% CI excluding 0, AND (2) paired dFAR 95% CI upper < +3.0 pp, AND (3) the blind AND present frame share falls versus vote_off; otherwise KILL",
         "verdict": "KILL",
-        "pooled_dtsr_pp": 23.129,
-        "pooled_dfar_pp": 10.0,
-        "pooled_did_consistency_pp": -20.69,
-        "paired_dtsr_mean_pp": 23.129,
+        "pooled_dtsr_pp": 0.0,
+        "pooled_dfar_pp": 0.0,
+        "pooled_did_consistency_pp": 0.0,
+        "paired_dtsr_mean_pp": 0.0,
         "paired_dtsr_ci_pp": [
-          23.129,
-          23.129
+          0.0,
+          0.0
         ],
-        "paired_dfar_mean_pp": 10.0,
+        "paired_dfar_mean_pp": 0.0,
         "paired_dfar_ci_pp": [
-          10.0,
-          10.0
+          0.0,
+          0.0
         ],
-        "paired_did_mean_pp": -20.69,
+        "paired_did_mean_pp": 0.0,
         "paired_did_ci_pp": [
-          -20.69,
-          -20.69
+          0.0,
+          0.0
         ],
-        "paired_blind_share_mean_pp": -11.333,
+        "paired_blind_share_mean_pp": 0.0,
         "paired_blind_share_ci_pp": [
-          -11.333,
-          -11.333
+          0.0,
+          0.0
         ],
-        "pooled_blind_share_pp": -11.333,
-        "blinded_share_arm": 83.333,
+        "pooled_blind_share_pp": 0.0,
+        "blinded_share_arm": 94.667,
         "blinded_share_reference": 94.667,
-        "paired_dtsr_excludes_zero": true,
-        "paired_dfar_excludes_zero": true,
-        "paired_did_excludes_zero": true,
-        "far_ci_upper_pp": 10.0,
-        "far_ci_upper_ok": false,
-        "tsr_ok": true,
-        "engagement_ok": true,
+        "paired_dtsr_excludes_zero": false,
+        "paired_dfar_excludes_zero": false,
+        "paired_did_excludes_zero": false,
+        "far_ci_upper_pp": 0.0,
+        "far_ci_upper_ok": true,
+        "tsr_ok": false,
+        "engagement_ok": false,
         "mechanism_inert": true,
-        "sequences_up_tsr": 1,
+        "sequences_up_tsr": 0,
         "sequences_down_tsr": 0,
-        "sequences_flat_tsr": 0,
+        "sequences_flat_tsr": 1,
         "sequences_up_id": 0,
-        "sequences_down_id": 1,
-        "sequences_flat_id": 0,
-        "sequences_up_far": 1,
+        "sequences_down_id": 0,
+        "sequences_flat_id": 1,
+        "sequences_up_far": 0,
         "sequences_down_far": 0,
-        "sequences_flat_far": 0,
-        "text": "KILL: paired dFAR CI upper +10.00 pp >= +3.0 pp; the vote never engaged (0 vetoed candidates, 0 rescued)."
+        "sequences_flat_far": 1,
+        "text": "KILL: pooled dTSR +0.00 pp (CI [+0.00, +0.00]) fails the >= +3.0 pp bar with a CI excluding 0; blind AND present share did not fall (pooled +0.00 pp); the vote never engaged (0 vetoed candidates, 0 rescued)."
+      }
+    },
+    "partagg_mean": {
+      "arm": "partagg_mean",
+      "k": 0,
+      "label": "E106: appearance cost = mean over query parts (shipped is min)",
+      "overrides": {
+        "cost.anchor_vote": "off",
+        "cost.part_agg": "mean"
+      },
+      "variant": "partagg_mean",
+      "reference": false,
+      "rows": [
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "partagg_mean",
+          "overrides": {
+            "cost.anchor_vote": "off",
+            "cost.part_agg": "mean"
+          },
+          "tsr": 0.1598639455782313,
+          "far": 0.0,
+          "id_consistency": 1.0,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 10,
+          "false_acquisition_frames": 0,
+          "target_switch_count": 0,
+          "fragmentation": 5.0,
+          "ms_per_frame": 756.2838873352545,
+          "target_id": 3,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 269.06,
+          "available": true,
+          "vote_mode": "off",
+          "vote_alpha": 0.1,
+          "vote_frames": 0,
+          "vote_n": 0,
+          "vote_r1": 0,
+          "vote_r2": 0,
+          "vote_r3": 0,
+          "vote_rescued": 0,
+          "vote_rescued_accepted": 0,
+          "vote_r2_updates": 0,
+          "band_frames": 294,
+          "band_saturated": 0,
+          "band_saturation": 0.0,
+          "vote_contrast_n": 0,
+          "vote_contrast_blocked": 0,
+          "vote_contrast_mean": null,
+          "vote_contrast_ge_0.00": 0,
+          "vote_contrast_ge_0.02": 0,
+          "vote_contrast_ge_0.05": 0,
+          "vote_contrast_ge_0.10": 0,
+          "vote_contrast_ge_0.20": 0,
+          "vote_contrast_ge_0.30": 0,
+          "frame_dump": "C:\\Projects\\track\\results\\vote_sweep\\runs\\partagg_mean\\dancetrack0097\\runs\\dancetrack0097__partagg_mean__none.csv",
+          "rows": 300,
+          "blind_present_frames": 284,
+          "blind_present_share": 0.946666667,
+          "band_sat_share": 0.0,
+          "band_frames_in_dump": 294,
+          "vote_n_in_dump": 0,
+          "vote_frame_share": 0.0,
+          "exit_code": 0,
+          "wall_seconds": 284.7,
+          "arm": "partagg_mean",
+          "k": 0,
+          "reference": false,
+          "sequence": "dancetrack0097",
+          "target_id_forced": 3,
+          "summary_path": "results\\vote_sweep\\runs\\partagg_mean\\dancetrack0097\\summary.json",
+          "log": "results\\vote_sweep\\logs\\partagg_mean__dancetrack0097.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 284.7
+            }
+          ],
+          "from_cache": false
+        }
+      ],
+      "included": [
+        {
+          "status": "INCLUDED",
+          "reason": "included",
+          "json_recovered": false,
+          "variant": "partagg_mean",
+          "overrides": {
+            "cost.anchor_vote": "off",
+            "cost.part_agg": "mean"
+          },
+          "tsr": 0.1598639455782313,
+          "far": 0.0,
+          "id_consistency": 1.0,
+          "n_report_frames": 300,
+          "n_frames": 300,
+          "n_locked_frames": 10,
+          "false_acquisition_frames": 0,
+          "target_switch_count": 0,
+          "fragmentation": 5.0,
+          "ms_per_frame": 756.2838873352545,
+          "target_id": 3,
+          "target_reason": "forced",
+          "guard_passed": true,
+          "harness_wall_seconds": 269.06,
+          "available": true,
+          "vote_mode": "off",
+          "vote_alpha": 0.1,
+          "vote_frames": 0,
+          "vote_n": 0,
+          "vote_r1": 0,
+          "vote_r2": 0,
+          "vote_r3": 0,
+          "vote_rescued": 0,
+          "vote_rescued_accepted": 0,
+          "vote_r2_updates": 0,
+          "band_frames": 294,
+          "band_saturated": 0,
+          "band_saturation": 0.0,
+          "vote_contrast_n": 0,
+          "vote_contrast_blocked": 0,
+          "vote_contrast_mean": null,
+          "vote_contrast_ge_0.00": 0,
+          "vote_contrast_ge_0.02": 0,
+          "vote_contrast_ge_0.05": 0,
+          "vote_contrast_ge_0.10": 0,
+          "vote_contrast_ge_0.20": 0,
+          "vote_contrast_ge_0.30": 0,
+          "frame_dump": "C:\\Projects\\track\\results\\vote_sweep\\runs\\partagg_mean\\dancetrack0097\\runs\\dancetrack0097__partagg_mean__none.csv",
+          "rows": 300,
+          "blind_present_frames": 284,
+          "blind_present_share": 0.946666667,
+          "band_sat_share": 0.0,
+          "band_frames_in_dump": 294,
+          "vote_n_in_dump": 0,
+          "vote_frame_share": 0.0,
+          "exit_code": 0,
+          "wall_seconds": 284.7,
+          "arm": "partagg_mean",
+          "k": 0,
+          "reference": false,
+          "sequence": "dancetrack0097",
+          "target_id_forced": 3,
+          "summary_path": "results\\vote_sweep\\runs\\partagg_mean\\dancetrack0097\\summary.json",
+          "log": "results\\vote_sweep\\logs\\partagg_mean__dancetrack0097.log",
+          "attempts": [
+            {
+              "attempt": 1,
+              "exit_code": 0,
+              "status": "INCLUDED",
+              "wall_seconds": 284.7
+            }
+          ],
+          "from_cache": false
+        }
+      ],
+      "excluded": [],
+      "pooled": {
+        "total_report_frames": 300,
+        "n_included": 1,
+        "n_excluded": 0,
+        "estimator": "frame-weighted pooled mean over included sequences",
+        "tsr": 0.159864,
+        "tsr_mean": 0.159864,
+        "tsr_median": 0.159864,
+        "far": 0.0,
+        "far_mean": 0.0,
+        "far_median": 0.0,
+        "id_consistency": 1.0,
+        "id_consistency_mean": 1.0,
+        "id_consistency_median": 1.0,
+        "blind_present_share": 0.946667,
+        "blind_present_share_mean": 0.946667,
+        "blind_present_share_median": 0.946667
+      },
+      "bootstrap": {
+        "tsr": {
+          "reps": 2000,
+          "n_sequences": 1,
+          "seed": 0,
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 0.159864,
+          "p50": 0.159864,
+          "p97.5": 0.159864,
+          "mean": 0.159864
+        },
+        "far": {
+          "reps": 2000,
+          "n_sequences": 1,
+          "seed": 0,
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 0.0,
+          "p50": 0.0,
+          "p97.5": 0.0,
+          "mean": 0.0
+        },
+        "id_consistency": {
+          "reps": 2000,
+          "n_sequences": 1,
+          "seed": 0,
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 1.0,
+          "p50": 1.0,
+          "p97.5": 1.0,
+          "mean": 1.0
+        },
+        "blind_present_share": {
+          "reps": 2000,
+          "n_sequences": 1,
+          "seed": 0,
+          "estimator": "frame-weighted pooled mean, resampling sequences with replacement",
+          "p2.5": 0.946667,
+          "p50": 0.946667,
+          "p97.5": 0.946667,
+          "mean": 0.946667
+        }
+      },
+      "engagement": {
+        "available": true,
+        "sequences_with_any_veto": 0,
+        "sequences_with_any_rescue": 0,
+        "sequences_with_any_r2_update": 0,
+        "vote_frames": 0,
+        "vote_n": 0,
+        "vote_r1": 0,
+        "vote_r2": 0,
+        "vote_r3": 0,
+        "vote_rescued": 0,
+        "vote_rescued_accepted": 0,
+        "vote_r2_updates": 0,
+        "band_frames": 294,
+        "band_saturated": 0,
+        "contrast_n": 0,
+        "contrast_blocked": 0,
+        "vote_contrast_ge_0.00": 0,
+        "contrast_keep_0.00": null,
+        "vote_contrast_ge_0.02": 0,
+        "contrast_keep_0.02": null,
+        "vote_contrast_ge_0.05": 0,
+        "contrast_keep_0.05": null,
+        "vote_contrast_ge_0.10": 0,
+        "contrast_keep_0.10": null,
+        "vote_contrast_ge_0.20": 0,
+        "contrast_keep_0.20": null,
+        "vote_contrast_ge_0.30": 0,
+        "contrast_keep_0.30": null,
+        "band_saturation": 0.0
+      },
+      "paired": {
+        "tsr": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 1,
+          "unpaired_sequences": [],
+          "delta_mean": 0.0,
+          "p2.5": 0.0,
+          "p50": 0.0,
+          "p97.5": 0.0,
+          "sequences_up": 0,
+          "sequences_down": 0,
+          "sequences_flat": 1,
+          "excludes_zero": false,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0097",
+              "delta_pp": 0.0,
+              "arm_value": 0.159863946,
+              "reference_value": 0.159863946
+            }
+          ]
+        },
+        "far": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 1,
+          "unpaired_sequences": [],
+          "delta_mean": 0.0,
+          "p2.5": 0.0,
+          "p50": 0.0,
+          "p97.5": 0.0,
+          "sequences_up": 0,
+          "sequences_down": 0,
+          "sequences_flat": 1,
+          "excludes_zero": false,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0097",
+              "delta_pp": 0.0,
+              "arm_value": 0.0,
+              "reference_value": 0.0
+            }
+          ]
+        },
+        "id_consistency": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 1,
+          "unpaired_sequences": [],
+          "delta_mean": 0.0,
+          "p2.5": 0.0,
+          "p50": 0.0,
+          "p97.5": 0.0,
+          "sequences_up": 0,
+          "sequences_down": 0,
+          "sequences_flat": 1,
+          "excludes_zero": false,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0097",
+              "delta_pp": 0.0,
+              "arm_value": 1.0,
+              "reference_value": 1.0
+            }
+          ]
+        },
+        "blind_present_share": {
+          "reps": 2000,
+          "seed": 0,
+          "unit": "sequence",
+          "estimator": "mean of paired per-sequence deltas, resampling sequences with replacement",
+          "n_paired": 1,
+          "unpaired_sequences": [],
+          "delta_mean": 0.0,
+          "p2.5": 0.0,
+          "p50": 0.0,
+          "p97.5": 0.0,
+          "sequences_up": 0,
+          "sequences_down": 0,
+          "sequences_flat": 1,
+          "excludes_zero": false,
+          "per_sequence": [
+            {
+              "sequence": "dancetrack0097",
+              "delta_pp": 0.0,
+              "arm_value": 0.946666667,
+              "reference_value": 0.946666667
+            }
+          ]
+        }
+      },
+      "verdict": {
+        "arm": "partagg_mean",
+        "k": 0,
+        "rule": "SHIP iff (1) pooled TSR >= +3.0 pp with the paired 95% CI excluding 0, AND (2) paired dFAR 95% CI upper < +3.0 pp, AND (3) the blind AND present frame share falls versus vote_off; otherwise KILL",
+        "verdict": "KILL",
+        "pooled_dtsr_pp": 0.0,
+        "pooled_dfar_pp": 0.0,
+        "pooled_did_consistency_pp": 0.0,
+        "paired_dtsr_mean_pp": 0.0,
+        "paired_dtsr_ci_pp": [
+          0.0,
+          0.0
+        ],
+        "paired_dfar_mean_pp": 0.0,
+        "paired_dfar_ci_pp": [
+          0.0,
+          0.0
+        ],
+        "paired_did_mean_pp": 0.0,
+        "paired_did_ci_pp": [
+          0.0,
+          0.0
+        ],
+        "paired_blind_share_mean_pp": 0.0,
+        "paired_blind_share_ci_pp": [
+          0.0,
+          0.0
+        ],
+        "pooled_blind_share_pp": 0.0,
+        "blinded_share_arm": 94.667,
+        "blinded_share_reference": 94.667,
+        "paired_dtsr_excludes_zero": false,
+        "paired_dfar_excludes_zero": false,
+        "paired_did_excludes_zero": false,
+        "far_ci_upper_pp": 0.0,
+        "far_ci_upper_ok": true,
+        "tsr_ok": false,
+        "engagement_ok": false,
+        "mechanism_inert": true,
+        "sequences_up_tsr": 0,
+        "sequences_down_tsr": 0,
+        "sequences_flat_tsr": 1,
+        "sequences_up_id": 0,
+        "sequences_down_id": 0,
+        "sequences_flat_id": 1,
+        "sequences_up_far": 0,
+        "sequences_down_far": 0,
+        "sequences_flat_far": 1,
+        "text": "KILL: pooled dTSR +0.00 pp (CI [+0.00, +0.00]) fails the >= +3.0 pp bar with a CI excluding 0; blind AND present share did not fall (pooled +0.00 pp); the vote never engaged (0 vetoed candidates, 0 rescued)."
       }
     }
   },
@@ -813,55 +1215,105 @@
       "verdict": "REFERENCE",
       "text": "Reference arm: the shipped one-reference veto."
     },
-    "preveto_L8": {
-      "arm": "preveto_L8",
+    "partagg_min": {
+      "arm": "partagg_min",
       "k": 0,
       "rule": "SHIP iff (1) pooled TSR >= +3.0 pp with the paired 95% CI excluding 0, AND (2) paired dFAR 95% CI upper < +3.0 pp, AND (3) the blind AND present frame share falls versus vote_off; otherwise KILL",
       "verdict": "KILL",
-      "pooled_dtsr_pp": 23.129,
-      "pooled_dfar_pp": 10.0,
-      "pooled_did_consistency_pp": -20.69,
-      "paired_dtsr_mean_pp": 23.129,
+      "pooled_dtsr_pp": 0.0,
+      "pooled_dfar_pp": 0.0,
+      "pooled_did_consistency_pp": 0.0,
+      "paired_dtsr_mean_pp": 0.0,
       "paired_dtsr_ci_pp": [
-        23.129,
-        23.129
+        0.0,
+        0.0
       ],
-      "paired_dfar_mean_pp": 10.0,
+      "paired_dfar_mean_pp": 0.0,
       "paired_dfar_ci_pp": [
-        10.0,
-        10.0
+        0.0,
+        0.0
       ],
-      "paired_did_mean_pp": -20.69,
+      "paired_did_mean_pp": 0.0,
       "paired_did_ci_pp": [
-        -20.69,
-        -20.69
+        0.0,
+        0.0
       ],
-      "paired_blind_share_mean_pp": -11.333,
+      "paired_blind_share_mean_pp": 0.0,
       "paired_blind_share_ci_pp": [
-        -11.333,
-        -11.333
+        0.0,
+        0.0
       ],
-      "pooled_blind_share_pp": -11.333,
-      "blinded_share_arm": 83.333,
+      "pooled_blind_share_pp": 0.0,
+      "blinded_share_arm": 94.667,
       "blinded_share_reference": 94.667,
-      "paired_dtsr_excludes_zero": true,
-      "paired_dfar_excludes_zero": true,
-      "paired_did_excludes_zero": true,
-      "far_ci_upper_pp": 10.0,
-      "far_ci_upper_ok": false,
-      "tsr_ok": true,
-      "engagement_ok": true,
+      "paired_dtsr_excludes_zero": false,
+      "paired_dfar_excludes_zero": false,
+      "paired_did_excludes_zero": false,
+      "far_ci_upper_pp": 0.0,
+      "far_ci_upper_ok": true,
+      "tsr_ok": false,
+      "engagement_ok": false,
       "mechanism_inert": true,
-      "sequences_up_tsr": 1,
+      "sequences_up_tsr": 0,
       "sequences_down_tsr": 0,
-      "sequences_flat_tsr": 0,
+      "sequences_flat_tsr": 1,
       "sequences_up_id": 0,
-      "sequences_down_id": 1,
-      "sequences_flat_id": 0,
-      "sequences_up_far": 1,
+      "sequences_down_id": 0,
+      "sequences_flat_id": 1,
+      "sequences_up_far": 0,
       "sequences_down_far": 0,
-      "sequences_flat_far": 0,
-      "text": "KILL: paired dFAR CI upper +10.00 pp >= +3.0 pp; the vote never engaged (0 vetoed candidates, 0 rescued)."
+      "sequences_flat_far": 1,
+      "text": "KILL: pooled dTSR +0.00 pp (CI [+0.00, +0.00]) fails the >= +3.0 pp bar with a CI excluding 0; blind AND present share did not fall (pooled +0.00 pp); the vote never engaged (0 vetoed candidates, 0 rescued)."
+    },
+    "partagg_mean": {
+      "arm": "partagg_mean",
+      "k": 0,
+      "rule": "SHIP iff (1) pooled TSR >= +3.0 pp with the paired 95% CI excluding 0, AND (2) paired dFAR 95% CI upper < +3.0 pp, AND (3) the blind AND present frame share falls versus vote_off; otherwise KILL",
+      "verdict": "KILL",
+      "pooled_dtsr_pp": 0.0,
+      "pooled_dfar_pp": 0.0,
+      "pooled_did_consistency_pp": 0.0,
+      "paired_dtsr_mean_pp": 0.0,
+      "paired_dtsr_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "paired_dfar_mean_pp": 0.0,
+      "paired_dfar_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "paired_did_mean_pp": 0.0,
+      "paired_did_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "paired_blind_share_mean_pp": 0.0,
+      "paired_blind_share_ci_pp": [
+        0.0,
+        0.0
+      ],
+      "pooled_blind_share_pp": 0.0,
+      "blinded_share_arm": 94.667,
+      "blinded_share_reference": 94.667,
+      "paired_dtsr_excludes_zero": false,
+      "paired_dfar_excludes_zero": false,
+      "paired_did_excludes_zero": false,
+      "far_ci_upper_pp": 0.0,
+      "far_ci_upper_ok": true,
+      "tsr_ok": false,
+      "engagement_ok": false,
+      "mechanism_inert": true,
+      "sequences_up_tsr": 0,
+      "sequences_down_tsr": 0,
+      "sequences_flat_tsr": 1,
+      "sequences_up_id": 0,
+      "sequences_down_id": 0,
+      "sequences_flat_id": 1,
+      "sequences_up_far": 0,
+      "sequences_down_far": 0,
+      "sequences_flat_far": 1,
+      "text": "KILL: pooled dTSR +0.00 pp (CI [+0.00, +0.00]) fails the >= +3.0 pp bar with a CI excluding 0; blind AND present share did not fall (pooled +0.00 pp); the vote never engaged (0 vetoed candidates, 0 rescued)."
     }
   },
   "control": null,
@@ -883,7 +1335,11 @@
       "included": 1,
       "of": 1
     },
-    "preveto_L8": {
+    "partagg_min": {
+      "included": 1,
+      "of": 1
+    },
+    "partagg_mean": {
       "included": 1,
       "of": 1
     }
@@ -891,15 +1347,15 @@
   "target_ids": {
     "dancetrack0097": 3
   },
-  "wall_seconds": 51.3,
+  "wall_seconds": 558.9,
   "code_state": {},
   "env": {
     "E079_SRC": null,
     "E079_OUT": null,
-    "tgtrack": "C:\\Projects\\track\\src\\tgtrack\\__init__.py"
+    "tgtrack": null
   },
   "cli": {
-    "arms": "vote_off,preveto_L8",
+    "arms": "vote_off,partagg_min,partagg_mean",
     "limit_seqs": null,
     "run_only": "dancetrack0097",
     "force": false

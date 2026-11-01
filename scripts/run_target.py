@@ -157,6 +157,7 @@ GROUPS = (
     "preveto",
     "ceiling_geom",
     "reacquire",
+    "part_agg",
 )
 
 DEFAULT_MARGINS = (0.0, 0.06, 0.12)
@@ -1012,6 +1013,29 @@ def build_variants(
                      "state.reacquire_confirm_frames": 2,
                      "state.reacquire_confirm_window": 0},
                     "control: window 0 == E092's strict streak (must equal reacq_confirm_2)",
+                )
+            )
+        elif g == "part_agg":
+            # E106 (docs/EXPERIMENTS.md, E105): the shipped part cost keeps the single
+            # cheapest (query part, gallery part) pair.  E105 measured on the pre-veto
+            # pool that averaging the best match of EVERY available query part ranks the
+            # target better (rank@1 48.5 % vs 44.2 % min / 41.3 % full-only, AUC 0.813 vs
+            # 0.779 / 0.764).  E101's lesson binds: this must be judged as pooled online
+            # TSR/FAR, never by a per-frame GT join.
+            out.append(
+                Variant(
+                    "partagg_mean",
+                    g,
+                    {"cost.anchor_vote": "off", "cost.part_agg": "mean"},
+                    "appearance cost = mean over query parts of the best match per part",
+                )
+            )
+            out.append(
+                Variant(
+                    "partagg_min",
+                    g,
+                    {"cost.anchor_vote": "off", "cost.part_agg": "min"},
+                    "control: min aggregation, must be bit-identical to the shipped default",
                 )
             )
         elif g == "refute":

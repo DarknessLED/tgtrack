@@ -544,6 +544,28 @@ ARMS["preveto_L0"] = {
 }
 ARM_ORDER += ["preveto_L8", "preveto_L4", "preveto_L0"]
 
+#: E106 (docs/EXPERIMENTS.md E105): the appearance cost's part aggregation.  Shipped is ``min``
+#: (one good part pair suffices); E105 measured offline that ``mean`` over the available query
+#: parts ranks the target better in the pre-veto pool (rank@1 48.5 % vs 44.2 %, AUC 0.813 vs
+#: 0.779).  ``partagg_min`` is the mandatory control and must be bit-identical to ``shipped``.
+ARMS["partagg_mean"] = {
+    "overrides": {"cost.anchor_vote": "off", "cost.part_agg": "mean"},
+    "variant": "partagg_mean",
+    "reference": False,
+    "k": 0,
+    "lost_scale": 1.25,
+    "label": "E106: appearance cost = mean over query parts (shipped is min)",
+}
+ARMS["partagg_min"] = {
+    "overrides": {"cost.anchor_vote": "off", "cost.part_agg": "min"},
+    "variant": "partagg_min",
+    "reference": False,
+    "k": 0,
+    "lost_scale": 1.25,
+    "label": "E106 control: min aggregation, must be bit-identical to shipped",
+}
+ARM_ORDER += ["partagg_mean", "partagg_min"]
+
 
 # --------------------------------------------------------------------------- #
 # Arms

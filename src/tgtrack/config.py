@@ -591,6 +591,17 @@ class CostCfg:
     hard_negative_penalty: float = 0.35
     #: Use part-aware matching when the query crop is partial.
     part_matching: bool = True
+    #: E106: how the part distances are aggregated into ONE appearance cost per bed.
+    #: ``"min"`` (shipped) keeps the single best (query part, gallery part) pair -- one
+    #: good match is enough, which is what a partial view needs but also what a
+    #: similar-looking stranger needs.  ``"mean"`` averages the best match of EVERY
+    #: available query part, so a candidate has to look like the target in most parts.
+    #: E105 measured the difference offline in the pre-veto candidate pool (five
+    #: informative held-out sequences, frame-1 click-crop reference): part-mean ranked
+    #: the target first on 48.5 % of multi-candidate frames vs 44.2 % for part-min and
+    #: 41.3 % for the full crop alone (AUC 0.813 / 0.779 / 0.764).  Offline
+    #: separability is not an online gain (E101), so E106 judges it as pooled TSR/FAR.
+    part_agg: str = "min"
     #: Minimum visible fraction of the full-body box to trust a full-body embedding.
     partial_full_body_thresh: float = 0.55
 

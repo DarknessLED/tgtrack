@@ -894,6 +894,17 @@ it lands on the same Pareto surface: 80 % pairwise accuracy becomes ~19 % per-fr
 left is the signal itself, and the next measured step is a comparable-size third-party pre-trained re-ID
 backbone with rank@1 18.9 % / AUC 0.804 as the number to beat.
 
+### E106: a better part aggregation is a stricter threshold (KILL)
+
+E105's offline result (part-mean ranks the target first 48.5 % of the time in the pre-veto pool vs 44.2 %
+for the shipped part-min) was implemented as `cost.part_agg = "mean"` and measured online on five
+held-out sequences: **pooled TSR 0.2171 -> 0.1573 (-5.98 pp)**, pooled FAR 0.3933 -> 0.2147 (-17.87 pp),
+with the `min` control bit-identical to shipped 5/5.  Averaging over parts charges candidates that match
+on only some parts, which raises effective strictness: the arm slides along the same Pareto surface
+instead of lifting it.  The lesson is in `docs/EXPERIMENTS.md`: an aggregation change cannot be judged at
+the shipped acceptance threshold, because it moves the operating point, not the signal.  E107 will retest
+it at an equal-refusal point.
+
 ## Corrections after the first independent audit (round A)
 
 An independent audit re-derived 24 numeric claims in this file from the `results/` artifacts and found

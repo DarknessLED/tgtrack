@@ -1,6 +1,6 @@
 # MANIFEST — what is in this package
 
-Generated 2026-10-30 01:39 中国标准时间 by `scripts/build_handoff.py`. 4213 files, 77.09 MB uncompressed.
+Generated 2026-11-01 12:36 中国标准时间 by `scripts/build_handoff.py`. 4264 files, 78.13 MB uncompressed.
 
 This file is generated; do not edit by hand.
 
@@ -14,10 +14,10 @@ This file is generated; do not edit by hand.
 | `docs/` | 47 | 1.39 MB | reports, the experiment ledger, surveys, plans, external reviews |
 | `pytest.ini/` | 1 | 0.00 MB | — |
 | `requirements.txt/` | 1 | 0.00 MB | — |
-| `results/` | 4049 | 73.44 MB | the measured numbers as markdown/csv/small json summaries |
+| `results/` | 4099 | 74.48 MB | the measured numbers as markdown/csv/small json summaries |
 | `scripts/` | 53 | 1.01 MB | every reproducible entry point; each experiment cites one |
 | `src/` | 20 | 0.65 MB | the library itself (`tgtrack`) |
-| `tests/` | 28 | 0.50 MB | the guarantees: 470+ tests encoding every measured behaviour |
+| `tests/` | 29 | 0.51 MB | the guarantees: 470+ tests encoding every measured behaviour |
 | root files | 4 | — | README, pytest config, requirements |
 
 ## Deliberately EXCLUDED (and how to regenerate)
@@ -36,7 +36,7 @@ First 40 files by path, with sha256 prefix (12 hex), so a copy can be verified:
 
 | path | bytes | sha256[:12] |
 |---|---|---|
-| `README.md` | 82124 | `f2753ea27b35` |
+| `README.md` | 82960 | `ef9176a77655` |
 | `configs/bs_reid.yaml` | 254 | `96710faf56f6` |
 | `configs/ch_1280.yaml` | 97 | `1b237aa3b148` |
 | `configs/ch_960.yaml` | 96 | `6d55902072cb` |
@@ -51,7 +51,7 @@ First 40 files by path, with sha256 prefix (12 hex), so a copy can be verified:
 | `configs/trk_reid.yaml` | 369 | `932d099fa5e6` |
 | `conftest.py` | 377 | `4d6e789412d1` |
 | `docs/BRIEF.md` | 33595 | `1fc7a5c1a38e` |
-| `docs/CAMPAIGN_STATE.md` | 5467 | `3ea1b7b64be2` |
+| `docs/CAMPAIGN_STATE.md` | 5937 | `80d4db9d8607` |
 | `docs/E045_PLAN.md` | 4649 | `9bd3080e5161` |
 | `docs/E071_PLAN.md` | 5269 | `953140f88667` |
 | `docs/E077_PLAN.md` | 2591 | `1364dafc01aa` |
@@ -65,12 +65,12 @@ First 40 files by path, with sha256 prefix (12 hex), so a copy can be verified:
 | `docs/E095_PLAN.md` | 6861 | `0ffaa01d6c84` |
 | `docs/E099_PLAN.md` | 4103 | `b1eee0199e91` |
 | `docs/E102_PLAN.md` | 3143 | `1ada0aba57df` |
-| `docs/EXPERIMENTS.md` | 294266 | `4b42e506fe67` |
+| `docs/EXPERIMENTS.md` | 297092 | `1d600412be3c` |
 | `docs/EXPLORATION_TREE.md` | 17127 | `e05ff6c14385` |
 | `docs/HANDOFF.md` | 9722 | `554d51d0a89d` |
 | `docs/HANDOFF.md` | 9722 | `554d51d0a89d` |
 | `docs/METHOD.md` | 18428 | `e2caab5705c0` |
-| `docs/NEXT_ROUND.md` | 57746 | `fb21ec2f086d` |
+| `docs/NEXT_ROUND.md` | 58949 | `1622ac13f2bd` |
 | `docs/PARETO.md` | 5002 | `876748a48bd0` |
 | `docs/REPORT.md` | 51018 | `e7100a476936` |
 | `docs/REPORT_v1_chronological.md` | 18078 | `539368cad236` |

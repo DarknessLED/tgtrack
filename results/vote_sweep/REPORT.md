@@ -6,7 +6,8 @@
 
 > SHIP `vote_majority` iff ALL THREE: (1) pooled TSR rises >= +3.0 pp with the paired 95 % CI excluding 0; (2) the paired dFAR 95 % CI upper bound is < +3.0 pp; (3) the mechanism engaged -- the `blind AND present` frame share falls versus `vote_off`. Otherwise KILL. `vote_unanimous` is a control.
 
-- **`preveto_L8`** (k = 0) -- **KILL**: KILL: paired dFAR CI upper +10.00 pp >= +3.0 pp; the vote never engaged (0 vetoed candidates, 0 rescued).
+- **`partagg_min`** (k = 0) -- **KILL**: KILL: pooled dTSR +0.00 pp (CI [+0.00, +0.00]) fails the >= +3.0 pp bar with a CI excluding 0; blind AND present share did not fall (pooled +0.00 pp); the vote never engaged (0 vetoed candidates, 0 rescued).
+- **`partagg_mean`** (k = 0) -- **KILL**: KILL: pooled dTSR +0.00 pp (CI [+0.00, +0.00]) fails the >= +3.0 pp bar with a CI excluding 0; blind AND present share did not fall (pooled +0.00 pp); the vote never engaged (0 vetoed candidates, 0 rescued).
 
 **Ship decision: kill the mechanism; the shipped default (`anchor_vote = "off"`) stays.**
 
@@ -22,16 +23,17 @@
 - target identity: the reference arm picks it (`stressed`), every other arm is pinned to the same id and the mismatch is a hard error
 - pooling: frame-weighted mean over `n_report_frames`; CIs are cluster bootstraps over **sequences** (2000 reps, seed 0); deltas are **paired** per sequence against the reference arm
 - **PARTIAL COVERAGE**: 1 of 22 sequences ran (--run-only)
-- per-arm coverage: `vote_off` 1/1, `preveto_L8` 1/1
+- per-arm coverage: `vote_off` 1/1, `partagg_min` 1/1, `partagg_mean` 1/1
 - each arm is pooled over its own coverage; paired deltas use the sequences it shares with the reference arm, so a partial arm's pooled row is NOT comparable to the reference pool
-- runs: 2 (including any retried pair); wall 0.9 min
+- runs: 3 (including any retried pair); wall 9.3 min
 
 ## Per-arm results
 
 | arm | k | sequences | report frames | TSR | FAR | id_consistency | blind AND present |
 |---|---|---|---|---|---|---|---|
 | `vote_off` | 0 | 1 | 300 | 0.1599 [0.1599, 0.1599] | 0.0000 [0.0000, 0.0000] | 1.0000 [1.0000, 1.0000] | 0.947 [0.947, 0.947] |
-| `preveto_L8` | 0 | 1 | 300 | 0.3912 [0.3912, 0.3912] | 0.1000 [0.1000, 0.1000] | 0.7931 [0.7931, 0.7931] | 0.833 [0.833, 0.833] |
+| `partagg_min` | 0 | 1 | 300 | 0.1599 [0.1599, 0.1599] | 0.0000 [0.0000, 0.0000] | 1.0000 [1.0000, 1.0000] | 0.947 [0.947, 0.947] |
+| `partagg_mean` | 0 | 1 | 300 | 0.1599 [0.1599, 0.1599] | 0.0000 [0.0000, 0.0000] | 1.0000 [1.0000, 1.0000] | 0.947 [0.947, 0.947] |
 
 [value [95 % CI]]: cluster bootstrap over sequences, 2000 reps, seed 0.
 
@@ -39,24 +41,28 @@
 
 | arm | metric | pooled delta | paired mean | paired 95 % CI | up / down / flat | CI excludes 0 |
 |---|---|---|---|---|---|---|
-| `preveto_L8` | dTSR | +23.13 pp | +23.13 pp | [+23.13, +23.13] pp | 1 / 0 / 0 | yes |
-| `preveto_L8` | dFAR | +10.00 pp | +10.00 pp | [+10.00, +10.00] pp | 1 / 0 / 0 | yes |
-| `preveto_L8` | dID | -20.69 pp | -20.69 pp | [-20.69, -20.69] pp | 0 / 1 / 0 | yes |
+| `partagg_min` | dTSR | +0.00 pp | +0.00 pp | [+0.00, +0.00] pp | 0 / 0 / 1 | no |
+| `partagg_min` | dFAR | +0.00 pp | +0.00 pp | [+0.00, +0.00] pp | 0 / 0 / 1 | no |
+| `partagg_min` | dID | +0.00 pp | +0.00 pp | [+0.00, +0.00] pp | 0 / 0 / 1 | no |
+| `partagg_mean` | dTSR | +0.00 pp | +0.00 pp | [+0.00, +0.00] pp | 0 / 0 / 1 | no |
+| `partagg_mean` | dFAR | +0.00 pp | +0.00 pp | [+0.00, +0.00] pp | 0 / 0 / 1 | no |
+| `partagg_mean` | dID | +0.00 pp | +0.00 pp | [+0.00, +0.00] pp | 0 / 0 / 1 | no |
 
 ## Mechanism engagement (a veto that never fires is not a result)
 
 | arm | vetoed candidates | R1 pass | R2 pass | R3 pass | rescued | rescued+accepted | R2 updates | band frames | band at ceiling |
 |---|---|---|---|---|---|---|---|---|---|
 | `vote_off` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 294 | 0.0 % |
-| `preveto_L8` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 289 | 0.0 % |
+| `partagg_min` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 294 | 0.0 % |
+| `partagg_mean` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 294 | 0.0 % |
 
 R1 pass is 0 by construction for a vetoed candidate (that is why it was vetoed); it is reported to prove the vote saw the right population. `rescued` counts candidates that would have been `+inf` and were left finite by the vote.
 
 ## Per-sequence detail
 
-| sequence | frames | `vote_off` TSR / FAR / b&p | `preveto_L8` TSR / FAR / b&p |
-|---|---|---|---|
-| dancetrack0097 | 300 | 0.160 / 0.000 / 0.947 | 0.391 / 0.100 / 0.833 |
+| sequence | frames | `vote_off` TSR / FAR / b&p | `partagg_min` TSR / FAR / b&p | `partagg_mean` TSR / FAR / b&p |
+|---|---|---|---|---|
+| dancetrack0097 | 300 | 0.160 / 0.000 / 0.947 | 0.160 / 0.000 / 0.947 | 0.160 / 0.000 / 0.947 |
 
 ## Notes
 

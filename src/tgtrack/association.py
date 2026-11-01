@@ -230,6 +230,31 @@ def direction_cost(velocity: np.ndarray | None, last_box: np.ndarray | None, det
     return (weight * cost).astype(np.float32)
 
 
+def _aggregate_part_terms(
+    terms: list[tuple[float, tuple[str, str]]],
+    agg: str,
+) -> float | None:
+    """Collapse per-(query part, gallery part) distances into ONE bed distance.
+
+    ``"min"`` (shipped) is the single cheapest pair: one good match suffices, which is
+    what a partial view needs and also what a similar-looking stranger gets for free.
+    ``"mean"`` first takes the best gallery match *per query part* and then averages
+    over the query parts that had any match, so a candidate has to resemble the target
+    in most parts.  Missing parts are skipped rather than penalised (the encoder omits
+    degenerate crops), so a view with only ``upper`` is judged on ``upper`` alone.
+    """
+    if not terms:
+        return None
+    if agg != "mean":
+        return min(terms)[0]
+    per_query_part: dict[str, float] = {}
+    for cost, (qp, _gp) in terms:
+        prev = per_query_part.get(qp)
+        if prev is None or cost < prev:
+            per_query_part[qp] = cost
+    return sum(per_query_part.values()) / float(len(per_query_part))
+
+
 def appearance_cost_of_query(
     query_feats: Mapping[str, np.ndarray],
     stm_feat: np.ndarray | None,
@@ -301,8 +326,10 @@ def appearance_cost_of_query(
             ltm_terms.append((float(d) + penalty_scale * (1.0 - aff), (qp, gp)))
 
     # --- blend -------------------------------------------------------------
-    stm_d = min(stm_terms)[0] if stm_terms else None
-    ltm_d = min(ltm_terms)[0] if ltm_terms else None
+    # E106: the per-bed reduction is a knob; "min" is the shipped behaviour.
+    agg = str(getattr(cfg, "part_agg", "min") or "min")
+    stm_d = _aggregate_part_terms(stm_terms, agg)
+    ltm_d = _aggregate_part_terms(ltm_terms, agg)
     pair_candidates: list[tuple[float, tuple[str, str]]] = list(stm_terms) + list(ltm_terms)
 
     if stm_d is not None and ltm_d is not None:
